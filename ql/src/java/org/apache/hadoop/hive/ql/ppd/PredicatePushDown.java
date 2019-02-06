@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -101,9 +100,9 @@ public class PredicatePushDown extends Transform {
     opRules.put(new RuleRegExp("R3",
       CommonJoinOperator.getOperatorName() + "%"),
       OpProcFactory.getJoinProc());
-    opRules.put(new RuleRegExp("R4",
+    /*    opRules.put(new RuleRegExp("R4",
       TableScanOperator.getOperatorName() + "%"),
-      OpProcFactory.getTSProc());
+      OpProcFactory.getTSProc());*/
     opRules.put(new RuleRegExp("R5",
       ScriptOperator.getOperatorName() + "%"),
       OpProcFactory.getSCRProc());

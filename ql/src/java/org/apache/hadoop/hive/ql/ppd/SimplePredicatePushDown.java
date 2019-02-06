@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -38,11 +40,14 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,32 +65,32 @@ public class SimplePredicatePushDown extends Transform {
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp("R1",
-      FilterOperator.getOperatorName() + "%"),
-      OpProcFactory.getFilterSyntheticJoinPredicateProc());
+        FilterOperator.getOperatorName() + "%"),
+        OpProcFactory.getFilterSyntheticJoinPredicateProc());
     opRules.put(new RuleRegExp("R2",
-      PTFOperator.getOperatorName() + "%"),
-      OpProcFactory.getPTFProc());
+        PTFOperator.getOperatorName() + "%"),
+        OpProcFactory.getPTFProc());
     opRules.put(new RuleRegExp("R3",
-      CommonJoinOperator.getOperatorName() + "%"),
-      OpProcFactory.getJoinProc());
+        CommonJoinOperator.getOperatorName() + "%"),
+        OpProcFactory.getJoinProc());
     opRules.put(new RuleRegExp("R4",
-      TableScanOperator.getOperatorName() + "%"),
-      OpProcFactory.getTSProc());
+        TableScanOperator.getOperatorName() + "%"),
+        OpProcFactory.getTSProc());
     opRules.put(new RuleRegExp("R5",
-      ScriptOperator.getOperatorName() + "%"),
-      OpProcFactory.getSCRProc());
+        ScriptOperator.getOperatorName() + "%"),
+        OpProcFactory.getSCRProc());
     opRules.put(new RuleRegExp("R6",
-      LimitOperator.getOperatorName() + "%"),
-      OpProcFactory.getLIMProc());
+        LimitOperator.getOperatorName() + "%"),
+        OpProcFactory.getLIMProc());
     opRules.put(new RuleRegExp("R7",
-      UDTFOperator.getOperatorName() + "%"),
-      OpProcFactory.getUDTFProc());
+        UDTFOperator.getOperatorName() + "%"),
+        OpProcFactory.getUDTFProc());
     opRules.put(new RuleRegExp("R8",
-      LateralViewForwardOperator.getOperatorName() + "%"),
-      OpProcFactory.getLVFProc());
+        LateralViewForwardOperator.getOperatorName() + "%"),
+        OpProcFactory.getLVFProc());
     opRules.put(new RuleRegExp("R9",
-      LateralViewJoinOperator.getOperatorName() + "%"),
-      OpProcFactory.getLVJProc());
+        LateralViewJoinOperator.getOperatorName() + "%"),
+        OpProcFactory.getLVJProc());
     opRules.put(new RuleRegExp("R10",
         ReduceSinkOperator.getOperatorName() + "%"),
         OpProcFactory.getRSProc());
@@ -99,12 +104,43 @@ public class SimplePredicatePushDown extends Transform {
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
+    //    linkSignatures(pctx, topNodes);
     ogw.startWalking(topNodes, null);
+    //    linkSignatures(pctx, topNodes);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("After PPD:\n" + Operator.toString(pctx.getTopOps().values()));
     }
     return pGraphContext;
+  }
+
+  static class STP implements NodeProcessor {
+
+    private PlanMapper pm;
+
+    public STP(PlanMapper pm) {
+      this.pm = pm;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      Operator<?> op = (Operator<?>) nd;
+      OpTreeSignature treeSig = pm.getSignatureOf(op);
+      pm.link(op, treeSig);
+      return nd;
+    }
+
+  }
+
+  private void linkSignatures(ParseContext pctx, ArrayList<Node> topNodes) throws SemanticException {
+
+    PlanMapper pm = pctx.getContext().getPlanMapper();
+    Dispatcher disp = new DefaultRuleDispatcher(new STP(pm), new HashMap(), new OpWalkerInfo(pctx));
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    ogw.startWalking(topNodes, null);
+
   }
 
 }
