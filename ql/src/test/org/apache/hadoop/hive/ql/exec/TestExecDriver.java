@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
@@ -63,13 +63,16 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.TextInputFormat;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Mimics the actual query compiler in generating end to end plans and testing
  * them out.
  *
  */
-public class TestExecDriver extends TestCase {
+public class TestExecDriver {
 
   static QueryState queryState;
   static HiveConf conf;
@@ -153,8 +156,8 @@ public class TestExecDriver extends TestCase {
 
   MapredWork mr;
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     mr = PlanUtils.getMapRedWork();
     ctx = new CompilationOpContext();
   }
@@ -491,6 +494,7 @@ public class TestExecDriver extends TestCase {
     LOG.info(testName + " execution completed successfully");
   }
 
+  @Test
   public void testMapPlan1() throws Exception {
 
     LOG.info("Beginning testMapPlan1");
@@ -499,6 +503,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("lt100.txt.deflate", "mapplan1.out");
   }
 
+  @Test
   public void testMapPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
@@ -507,6 +512,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("lt100.txt", "mapplan2.out");
   }
 
+  @Test
   public void testMapRedPlan1() throws Exception {
 
     LOG.info("Beginning testMapRedPlan1");
@@ -516,6 +522,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
   }
 
+  @Test
   public void testMapRedPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
@@ -525,6 +532,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("lt100.sorted.txt", "mapredplan2.out");
   }
 
+  @Test
   public void testMapRedPlan3() throws Exception {
 
     LOG.info("Beginning testMapPlan3");
@@ -534,6 +542,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
   }
 
+  @Test
   public void testMapRedPlan4() throws Exception {
 
     LOG.info("Beginning testMapPlan4");
@@ -543,6 +552,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
   }
 
+  @Test
   public void testMapRedPlan5() throws Exception {
 
     LOG.info("Beginning testMapPlan5");
@@ -552,6 +562,7 @@ public class TestExecDriver extends TestCase {
     fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
   }
 
+  @Test
   public void testMapRedPlan6() throws Exception {
 
     LOG.info("Beginning testMapPlan6");

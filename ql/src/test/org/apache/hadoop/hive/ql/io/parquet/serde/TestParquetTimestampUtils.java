@@ -23,15 +23,17 @@ import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
+
+import org.junit.Test;
 
 
 
 /**
  * Tests util-libraries used for parquet-timestamp.
  */
-public class TestParquetTimestampUtils extends TestCase {
+public class TestParquetTimestampUtils {
 
+  @Test
   public void testJulianDay() {
     //check if May 23, 1968 is Julian Day 2440000
     Calendar cal = Calendar.getInstance();
@@ -106,6 +108,7 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 1464305);
 }
 
+  @Test
   public void testNanos() {
     //case 1: 01:01:01.0000000001
     Calendar cal = Calendar.getInstance();
@@ -169,6 +172,7 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false));
   }
 
+  @Test
   public void testTimezone() {
     Calendar cal = Calendar.getInstance();
     cal.set(Calendar.YEAR,  1968);
@@ -195,14 +199,17 @@ public class TestParquetTimestampUtils extends TestCase {
     Assert.assertEquals(nt.getJulianDay(), 2440001);
   }
 
+  @Test
   public void testTimezoneValues() {
     valueTest(false);
   }
 
+  @Test
   public void testTimezonelessValues() {
     valueTest(true);
   }
 
+  @Test
   public void testTimezoneless() {
     Timestamp ts1 = Timestamp.valueOf("2011-01-01 00:30:30.111111111");
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, true);

@@ -31,10 +31,18 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
-import junit.framework.TestCase;
 
-public class TestGenericUDFMonthsBetween extends TestCase {
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
+/**
+ * TestGenericUDFMonthsBetween.
+ */
+public class TestGenericUDFMonthsBetween {
+
+  @Test
   public void testMonthsBetweenForString() throws HiveException {
     // Default run
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
@@ -43,7 +51,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     ObjectInspector[] arguments = { valueOI1, valueOI2 };
     udf.initialize(arguments);
 
-    testMonthsBetweenForString(udf);
+    testMonthsBetweenForStringM(udf);
 
     // Run without round-off
     GenericUDFMonthsBetween udfWithoutRoundOff = new GenericUDFMonthsBetween();
@@ -55,9 +63,10 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     ObjectInspector[] args = { vOI1, vOI2, vOI3 };
     udfWithoutRoundOff.initialize(args);
 
-    testMonthsBetweenForString(udf);
+    testMonthsBetweenForStringM(udf);
   }
 
+  @Test
   public void testWrongDateStr() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -69,7 +78,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestStr("2002-03-24", "2002-02", null, udf);
   }
 
-  public void testMonthsBetweenForString(GenericUDFMonthsBetween udf) throws HiveException {
+  public void testMonthsBetweenForStringM(GenericUDFMonthsBetween udf) throws HiveException {
     // test month diff with fraction considering time components
     runTestStr("1995-02-02", "1995-01-01", 1.03225806, udf);
     runTestStr("2003-07-17", "2005-07-06", -23.64516129, udf);
@@ -126,6 +135,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
 
 
+  @Test
   public void testMonthsBetweenForTimestamp() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -133,7 +143,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     ObjectInspector[] arguments = { valueOI1, valueOI2 };
     udf.initialize(arguments);
 
-    testMonthsBetweenForTimestamp(udf);
+    testMonthsBetweenForTimestampM(udf);
 
     // Run without round-off
     GenericUDFMonthsBetween udfWithoutRoundOff = new GenericUDFMonthsBetween();
@@ -145,10 +155,10 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     ObjectInspector[] args = { vOI1, vOI2, vOI3 };
     udfWithoutRoundOff.initialize(args);
 
-    testMonthsBetweenForTimestamp(udfWithoutRoundOff);
+    testMonthsBetweenForTimestampM(udfWithoutRoundOff);
   }
 
-  public void testMonthsBetweenForTimestamp(GenericUDFMonthsBetween udf) throws HiveException {
+  public void testMonthsBetweenForTimestampM(GenericUDFMonthsBetween udf) throws HiveException {
     // test month diff with fraction considering time components
     runTestTs("1995-02-02 00:00:00", "1995-01-01 00:00:00", 1.03225806, udf);
     runTestTs("2003-07-17 00:00:00", "2005-07-06 00:00:00", -23.64516129, udf);
@@ -183,6 +193,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2003-04-23 23:59:59", "2003-03-24 00:00:00", 0.99999963, udf);
   }
 
+  @Test
   public void testMonthsBetweenForDate() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -190,7 +201,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     ObjectInspector[] arguments = { valueOI1, valueOI2 };
     udf.initialize(arguments);
 
-    testMonthsBetweenForDate(udf);
+    testMonthsBetweenForDateM(udf);
 
     // Run without round-off
     GenericUDFMonthsBetween udfWithoutRoundOff = new GenericUDFMonthsBetween();
@@ -202,10 +213,10 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     ObjectInspector[] args = { vOI1, vOI2, vOI3 };
     udfWithoutRoundOff.initialize(args);
 
-    testMonthsBetweenForDate(udfWithoutRoundOff);
+    testMonthsBetweenForDateM(udfWithoutRoundOff);
   }
 
-  public void testMonthsBetweenForDate(GenericUDFMonthsBetween udf) throws HiveException {
+  public void testMonthsBetweenForDateM(GenericUDFMonthsBetween udf) throws HiveException {
     // test month diff with fraction considering time components
     runTestDt("1995-02-02", "1995-01-01", 1.03225806, udf);
     runTestDt("2003-07-17", "2005-07-06", -23.64516129, udf);

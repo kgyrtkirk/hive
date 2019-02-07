@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import static org.junit.Assert.fail;
 
 /**
  * Suite for testing running of queries in multi-threaded mode.

@@ -36,14 +36,17 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestPlan.
  *
  */
-public class TestPlan extends TestCase {
+public class TestPlan {
 
+  @Test
   public void testPlan() throws Exception {
 
     final String F1 = "#affiliations";

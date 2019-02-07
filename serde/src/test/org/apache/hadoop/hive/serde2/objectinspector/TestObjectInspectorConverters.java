@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -42,13 +42,16 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * TestObjectInspectorConverters.
  *
  */
-public class TestObjectInspectorConverters extends TestCase {
+public class TestObjectInspectorConverters {
 
+  @Test
   public void testObjectInspectorConverters() throws Throwable {
     try {
       // Boolean
@@ -405,6 +408,7 @@ public class TestObjectInspectorConverters extends TestCase {
 
   }
 
+  @Test
   public void testGetConvertedOI() throws Throwable {
     // Try with types that have type params
     PrimitiveTypeInfo varchar5TI =

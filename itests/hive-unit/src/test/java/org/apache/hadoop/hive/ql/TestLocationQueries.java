@@ -25,6 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import static org.junit.Assert.fail;
+
 
 /**
  * Suite for testing location. e.g. if "alter table alter partition

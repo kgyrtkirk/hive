@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -52,6 +52,12 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * TestHiveMetastoreAuthorizationProvider. Test case for
@@ -68,7 +74,7 @@ import org.slf4j.LoggerFactory;
  * This test is also intended to be extended to provide tests for other
  * authorization providers like StorageBasedAuthorizationProvider
  */
-public class TestMetastoreAuthorizationProvider extends TestCase {
+public class TestMetastoreAuthorizationProvider {
   private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreAuthorizationProvider.class);
 
   protected HiveConf clientHiveConf;
@@ -85,10 +91,10 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return new HiveConf(this.getClass());
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
-    super.setUp();
+
 
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
@@ -130,9 +136,9 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_AUTH_READS.varname, "false");
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDown() throws Exception {
+
   }
 
   private void validateCreateDb(Database expectedDb, String dbName) {
@@ -161,6 +167,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     return ugi.getUserName();
   }
 
+  @Test
   public void testSimplePrivileges() throws Exception {
     if (!isTestEnabled()) {
       System.out.println("Skipping test " + this.getClass().getName());

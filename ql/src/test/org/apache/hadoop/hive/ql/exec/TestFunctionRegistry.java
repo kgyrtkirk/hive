@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -50,8 +50,17 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.After;
+import org.junit.Test;
 
-public class TestFunctionRegistry extends TestCase {
+/**
+ * FunctionRegistry Test.
+ */
+public class TestFunctionRegistry {
 
   public class TestUDF {
     public void same(DoubleWritable x, DoubleWritable y) {}
@@ -76,8 +85,8 @@ public class TestFunctionRegistry extends TestCase {
   TypeInfo char5;
   TypeInfo char10;
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     String maxVarcharTypeName = "varchar(" + HiveVarchar.MAX_VARCHAR_LENGTH + ")";
     maxVarchar = TypeInfoFactory.getPrimitiveTypeInfo(maxVarcharTypeName);
     varchar10 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(10)");
@@ -91,6 +100,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(convertible, TypeInfoUtils.implicitConvertible(a, b));
   }
 
+  @Test
   public void testImplicitConversion() {
     implicit(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
     implicit(TypeInfoFactory.longTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
@@ -149,6 +159,7 @@ public class TestFunctionRegistry extends TestCase {
     }
   }
 
+  @Test
   public void testTypeAffinity() {
     // Prefer numeric type arguments over other method signatures
     typeAffinity("typeaffinity1", TypeInfoFactory.shortTypeInfo, 1, DoubleWritable.class);
@@ -191,6 +202,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(b, result.getParameterTypes()[1]);
   }
 
+  @Test
   public void testGetMethodInternal() {
 
     verify(TestUDF.class, "same", TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo,
@@ -229,6 +241,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(result, FunctionRegistry.getCommonClass(a,b));
   }
 
+  @Test
   public void testCommonClass() {
     common(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
            TypeInfoFactory.decimalTypeInfo);
@@ -251,6 +264,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(result, FunctionRegistry.getCommonClassForComparison(a,b));
   }
 
+  @Test
   public void testCommonClassComparison() {
     comparison(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
                TypeInfoFactory.decimalTypeInfo);
@@ -290,6 +304,7 @@ public class TestFunctionRegistry extends TestCase {
   /**
    * Method to print out the comparison/conversion behavior for data types.
    */
+  @Test
   public void testPrintTypeCompatibility() {
     if (true) {
       return;
@@ -337,6 +352,7 @@ public class TestFunctionRegistry extends TestCase {
     assertEquals(result, FunctionRegistry.getCommonClassForUnionAll(a,b));
   }
 
+  @Test
   public void testCommonClassUnionAll() {
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.intTypeInfo,
         TypeInfoFactory.doubleTypeInfo);
@@ -364,6 +380,7 @@ public class TestFunctionRegistry extends TestCase {
 
   }
 
+  @Test
   public void testGetTypeInfoForPrimitiveCategory() {
     // varchar should take string length into account.
     // varchar(5), varchar(10) => varchar(10)
@@ -394,10 +411,11 @@ public class TestFunctionRegistry extends TestCase {
         PrimitiveCategory.DOUBLE));
   }
 
-  @Override
-  protected void tearDown() {
+  @After
+  public void tearDown() {
   }
 
+  @Test
   public void testIsRankingFunction() throws Exception {
     Assert.assertTrue(FunctionRegistry.isRankingFunction("rank"));
     Assert.assertTrue(FunctionRegistry.isRankingFunction("dense_rank"));
@@ -406,6 +424,7 @@ public class TestFunctionRegistry extends TestCase {
     Assert.assertFalse(FunctionRegistry.isRankingFunction("min"));
   }
 
+  @Test
   public void testImpliesOrder() throws Exception {
     Assert.assertTrue(FunctionRegistry.impliesOrder("rank"));
     Assert.assertTrue(FunctionRegistry.impliesOrder("dense_rank"));
@@ -418,6 +437,7 @@ public class TestFunctionRegistry extends TestCase {
     Assert.assertFalse(FunctionRegistry.impliesOrder("min"));
   }
 
+  @Test
   public void testRegisterTemporaryFunctions() throws Exception {
     FunctionResource[] emptyResources = new FunctionResource[] {};
 
@@ -444,6 +464,7 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(functionInfo.isNative());
   }
 
+  @Test
   public void testRegisterPermanentFunction() throws Exception {
     FunctionResource[] emptyResources = new FunctionResource[] {};
 
@@ -485,12 +506,14 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(functionInfo.isBuiltIn());
   }
 
+  @Test
   public void testBuiltInFunction() throws Exception {
     FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo("ln");
     assertTrue(functionInfo.isBuiltIn());
     assertTrue(functionInfo.isNative());
   }
 
+  @Test
   public void testIsPermanentFunction() throws Exception {
     // Setup exprNode
     GenericUDF udf = new GenericUDFCurrentTimestamp();
@@ -530,6 +553,7 @@ public class TestFunctionRegistry extends TestCase {
     assertFalse(FunctionRegistry.isConsistentWithinQuery(udf));
   }
 
+  @Test
   public void testDeterminism() throws Exception {
     checkDeterministicFn(getUDF("+"));
     checkDeterministicFn(getUDF("ascii"));

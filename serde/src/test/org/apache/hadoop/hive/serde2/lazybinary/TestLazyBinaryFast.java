@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -39,10 +39,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
-public class TestLazyBinaryFast extends TestCase {
+/**
+ * TestLazyBinaryFast.
+ */
+public class TestLazyBinaryFast {
 
-  private void testLazyBinaryFast(
+  private void testLazyBinaryFastM(
       SerdeRandomRowSource source, Object[][] rows,
       AbstractSerDe serde, StructObjectInspector rowOI,
       AbstractSerDe serde_fewer, StructObjectInspector writeRowOI,
@@ -51,7 +57,6 @@ public class TestLazyBinaryFast extends TestCase {
 
     int rowCount = rows.length;
     int columnCount = typeInfos.length;
-
     boolean[] columnsToInclude = null;
     if (useIncludeColumns) {
       columnsToInclude = new boolean[columnCount];
@@ -76,11 +81,9 @@ public class TestLazyBinaryFast extends TestCase {
       Object[] row = rows[i];
       Output output = new Output();
       lazyBinarySerializeWrite.set(output);
-
       for (int index = 0; index < writeColumnCount; index++) {
         VerifyFast.serializeWrite(lazyBinarySerializeWrite, typeInfos[index], row[index]);
       }
-
       BytesWritable bytesWritable = new BytesWritable();
       bytesWritable.set(output.getData(), 0, output.getLength());
       serializeWriteBytes[i] = bytesWritable;
@@ -89,14 +92,12 @@ public class TestLazyBinaryFast extends TestCase {
     // Try to deserialize
     for (int i = 0; i < rowCount; i++) {
       Object[] row = rows[i];
-
       // Specifying the right type info length tells LazyBinaryDeserializeRead which is the last
       // column.
       LazyBinaryDeserializeRead lazyBinaryDeserializeRead =
               new LazyBinaryDeserializeRead(
                   writeTypeInfos,
                   /* useExternalBuffer */ false);
-
       BytesWritable bytesWritable = serializeWriteBytes[i];
       lazyBinaryDeserializeRead.set(bytesWritable.getBytes(), 0, bytesWritable.getLength());
 
@@ -111,7 +112,7 @@ public class TestLazyBinaryFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
+        assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
       }
     }
 
@@ -124,9 +125,7 @@ public class TestLazyBinaryFast extends TestCase {
       } else {
         lazyBinaryStruct = (LazyBinaryStruct) serde.deserialize(bytesWritable);
       }
-
       Object[] row = rows[i];
-
       for (int index = 0; index < writeColumnCount; index++) {
         TypeInfo typeInfo = typeInfos[index];
         Object object = lazyBinaryStruct.getField(index);
@@ -149,24 +148,20 @@ public class TestLazyBinaryFast extends TestCase {
     Object[] serdeRow = new Object[writeColumnCount];
     for (int i = 0; i < rowCount; i++) {
       Object[] row = rows[i];
-
       // LazyBinary seems to work better with an row object array instead of a Java object...
       for (int index = 0; index < writeColumnCount; index++) {
         serdeRow[index] = row[index];
       }
-
       BytesWritable serialized;
       if (doWriteFewerColumns) {
         serialized = (BytesWritable) serde_fewer.serialize(serdeRow, writeRowOI);
       } else {
         serialized = (BytesWritable) serde.serialize(serdeRow, rowOI);
       }
-
       BytesWritable bytesWritable =
           new BytesWritable(
               Arrays.copyOfRange(serialized.getBytes(), 0, serialized.getLength()));
       byte[] bytes1 = bytesWritable.getBytes();
-
       BytesWritable lazySerializedWriteBytes = serializeWriteBytes[i];
       byte[] bytes2 = Arrays.copyOfRange(lazySerializedWriteBytes.getBytes(), 0, lazySerializedWriteBytes.getLength());
       if (bytes1.length != bytes2.length) {
@@ -204,7 +199,7 @@ public class TestLazyBinaryFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
+        assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
       }
     }
   }
@@ -217,7 +212,7 @@ public class TestLazyBinaryFast extends TestCase {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(lazyBinaryDeserializeRead, typeInfo);
       if (expectedObject == null) {
         if (complexFieldObj != null) {
-          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+          fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
               ", " + complexFieldObj.toString() + ")");
         }
       } else {
@@ -229,12 +224,12 @@ public class TestLazyBinaryFast extends TestCase {
               return;
             }
           }
-          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+          fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
               ", " + expectedObject.toString() + ")");
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -285,14 +280,14 @@ public class TestLazyBinaryFast extends TestCase {
         serde_fewer = testLazyBinarySerDe.getSerDe(partialFieldNames, partialFieldTypes);;
     }
 
-    testLazyBinaryFast(
+    testLazyBinaryFastM(
         source, rows,
         serde, rowStructObjectInspector,
         serde_fewer, writeRowStructObjectInspector,
         typeInfos,
         /* useIncludeColumns */ false, /* doWriteFewerColumns */ false, r);
 
-    testLazyBinaryFast(
+    testLazyBinaryFastM(
         source, rows,
         serde, rowStructObjectInspector,
         serde_fewer, writeRowStructObjectInspector,
@@ -303,14 +298,14 @@ public class TestLazyBinaryFast extends TestCase {
      * Can the LazyBinary format really tolerate writing fewer columns?
      */
     // if (doWriteFewerColumns) {
-    //   testLazyBinaryFast(
+    //   testLazyBinaryFastM(
     //       source, rows,
     //       serde, rowStructObjectInspector,
     //       serde_fewer, writeRowStructObjectInspector,
     //       primitiveTypeInfos,
     //       /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
 
-    //   testLazyBinaryFast(
+    //   testLazyBinaryFastM(
     //       source, rows,
     //       serde, rowStructObjectInspector,
     //       serde_fewer, writeRowStructObjectInspector,
@@ -319,7 +314,7 @@ public class TestLazyBinaryFast extends TestCase {
     // }
   }
 
-  private void testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes supportedTypes, int depth) throws Throwable {
+  private void testLazyBinaryFastN(SerdeRandomRowSource.SupportedTypes supportedTypes, int depth) throws Throwable {
     try {
       Random r = new Random(9983);
 
@@ -335,15 +330,18 @@ public class TestLazyBinaryFast extends TestCase {
     }
   }
 
+  @Test
   public void testLazyBinaryFastPrimitive() throws Throwable {
-    testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes.PRIMITIVE, 0);
+    testLazyBinaryFastN(SerdeRandomRowSource.SupportedTypes.PRIMITIVE, 0);
   }
 
+  @Test
   public void testLazyBinaryFastComplexDepthOne() throws Throwable {
-    testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes.ALL, 1);
+    testLazyBinaryFastN(SerdeRandomRowSource.SupportedTypes.ALL, 1);
   }
 
+  @Test
   public void testLazyBinaryFastComplexDepthFour() throws Throwable {
-    testLazyBinaryFast(SerdeRandomRowSource.SupportedTypes.ALL, 4);
+    testLazyBinaryFastN(SerdeRandomRowSource.SupportedTypes.ALL, 4);
   }
 }

@@ -39,15 +39,21 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 
-import junit.framework.TestCase;
-import org.junit.Assert;
 
-public class TestBinarySortableFast extends TestCase {
+import org.junit.Assert;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+
+/**
+ * BinarySortableFast Test.
+ */
+public class TestBinarySortableFast {
 
   private static String debugDetailedReadPositionString;
   private static StackTraceElement[] debugStackTrace;
 
-  private void testBinarySortableFast(
+  private void testBinarySortableFastM(
           SerdeRandomRowSource source, Object[][] rows,
           boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker,
           AbstractSerDe serde, StructObjectInspector rowOI,
@@ -140,7 +146,7 @@ public class TestBinarySortableFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(binarySortableDeserializeRead.isEndOfInputReached());
+        assertTrue(binarySortableDeserializeRead.isEndOfInputReached());
       }
 
       /*
@@ -306,7 +312,7 @@ public class TestBinarySortableFast extends TestCase {
         }
       }
       if (writeColumnCount == columnCount) {
-        TestCase.assertTrue(binarySortableDeserializeRead.isEndOfInputReached());
+        assertTrue(binarySortableDeserializeRead.isEndOfInputReached());
       }
     }
   }
@@ -319,7 +325,7 @@ public class TestBinarySortableFast extends TestCase {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(binarySortableDeserializeRead, typeInfo);
       if (expectedObject == null) {
         if (complexFieldObj != null) {
-          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+          fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
               ", " + complexFieldObj.toString() + ")");
         }
       } else {
@@ -331,12 +337,12 @@ public class TestBinarySortableFast extends TestCase {
               return;
             }
           }
-          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+          fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
               ", " + expectedObject.toString() + ")");
         }
       }
       if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
-        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+        fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -416,14 +422,14 @@ public class TestBinarySortableFast extends TestCase {
     /*
      * Acending.
      */
-    testBinarySortableFast(source, rows,
+    testBinarySortableFastM(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_ascending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
         /* ascending */ true, typeInfos,
         /* useIncludeColumns */ false, /* doWriteFewerColumns */ false, r);
 
-    testBinarySortableFast(source, rows,
+    testBinarySortableFastM(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_ascending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
@@ -431,14 +437,14 @@ public class TestBinarySortableFast extends TestCase {
         /* useIncludeColumns */ true, /* doWriteFewerColumns */ false, r);
 
     if (doWriteFewerColumns) {
-      testBinarySortableFast(source, rows,
+      testBinarySortableFastM(source, rows,
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_ascending, rowStructObjectInspector,
           serde_ascending_fewer, writeRowStructObjectInspector,
           /* ascending */ true, typeInfos,
           /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
 
-      testBinarySortableFast(source, rows,
+      testBinarySortableFastM(source, rows,
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_ascending, rowStructObjectInspector,
           serde_ascending_fewer, writeRowStructObjectInspector,
@@ -451,14 +457,14 @@ public class TestBinarySortableFast extends TestCase {
      */
     Arrays.fill(columnSortOrderIsDesc, true);
 
-    testBinarySortableFast(source, rows,
+    testBinarySortableFastM(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_descending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
         /* ascending */ false, typeInfos,
         /* useIncludeColumns */ false, /* doWriteFewerColumns */ false, r);
 
-    testBinarySortableFast(source, rows,
+    testBinarySortableFastM(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_descending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
@@ -466,14 +472,14 @@ public class TestBinarySortableFast extends TestCase {
         /* useIncludeColumns */ true, /* doWriteFewerColumns */ false, r);
 
     if (doWriteFewerColumns) {
-      testBinarySortableFast(source, rows,
+      testBinarySortableFastM(source, rows,
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_descending, rowStructObjectInspector,
           serde_descending_fewer, writeRowStructObjectInspector,
           /* ascending */ false, typeInfos,
           /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
 
-      testBinarySortableFast(source, rows,
+      testBinarySortableFastM(source, rows,
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_descending, rowStructObjectInspector,
           serde_descending_fewer, writeRowStructObjectInspector,
@@ -500,14 +506,17 @@ public class TestBinarySortableFast extends TestCase {
     }
   }
 
+  @Test
   public void testBinarySortableFastPrimitive() throws Throwable {
     testBinarySortableFast(SerdeRandomRowSource.SupportedTypes.PRIMITIVE, 0);
   }
 
+  @Test
   public void testBinarySortableFastComplexDepthOne() throws Throwable {
     testBinarySortableFast(SerdeRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP, 1);
   }
 
+  @Test
   public void testBinarySortableFastComplexDepthFour() throws Throwable {
     testBinarySortableFast(SerdeRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP, 4);
   }

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.testutil;
 
 import java.util.List;
 
-import junit.framework.TestCase;
+
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
@@ -45,7 +45,7 @@ import org.junit.Ignore;
  */
 @SuppressWarnings("deprecation")
 @Ignore
-public abstract class BaseScalarUdfTest extends TestCase {
+public abstract class BaseScalarUdfTest {
 
   /**
    * The data from this method will be fed through the

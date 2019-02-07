@@ -62,23 +62,26 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.junit.Assert;
-import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.when;
 
-import junit.framework.TestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TestOperators.
  *
  */
-public class TestOperators extends TestCase {
+public class TestOperators {
 
   // this is our row to test expressions on
   protected InspectableObject[] r;
 
-  @Override
-  protected void setUp() {
+  @Before
+  public void setUp() {
     r = new InspectableObject[5];
     ArrayList<String> names = new ArrayList<String>(3);
     names.add("col0");
@@ -126,6 +129,7 @@ public class TestOperators extends TestCase {
    * file naming libraries
    * The old test was deactivated as part of hive-405
    */
+  @Test
   public void testFileSinkOperator() throws Throwable {
 
     try {
@@ -160,6 +164,7 @@ public class TestOperators extends TestCase {
    *  variables. But environment variables have some system limitations and we have to check
    *  job configuration properties firstly. This test checks that staff.
    */
+  @Test
   public void testScriptOperatorEnvVarsProcessing() throws Throwable {
     try {
       ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
@@ -200,6 +205,7 @@ public class TestOperators extends TestCase {
     }
   }
 
+  @Test
   public void testScriptOperatorBlacklistedEnvVarsProcessing() {
     ScriptOperator scriptOperator = new ScriptOperator(new CompilationOpContext());
 
@@ -215,6 +221,7 @@ public class TestOperators extends TestCase {
     Assert.assertTrue(env.containsKey("barfoo"));
   }
 
+  @Test
   public void testScriptOperator() throws Throwable {
     try {
       System.out.println("Testing Script Operator");
@@ -289,6 +296,7 @@ public class TestOperators extends TestCase {
     }
   }
 
+  @Test
   public void testMapOperator() throws Throwable {
     try {
       System.out.println("Testing Map Operator");

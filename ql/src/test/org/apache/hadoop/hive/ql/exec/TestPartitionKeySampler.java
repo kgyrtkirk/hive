@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import junit.framework.TestCase;
+
 
 import java.util.Arrays;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-public class TestPartitionKeySampler extends TestCase {
+/**
+ * PartitionKeySampler Test.
+ */
+public class TestPartitionKeySampler {
 
   private static final byte[] _100 = "100".getBytes();
   private static final byte[] _200 = "200".getBytes();
@@ -32,6 +38,7 @@ public class TestPartitionKeySampler extends TestCase {
   // current random sampling implementation in InputSampler always returns
   // value of index 3, 5, 8, which can be same with previous partition key.
   // That induces "Split points are out of order" exception in TotalOrderPartitioner causing HIVE-7699
+  @Test
   public void test() throws Throwable {
     byte[][] sampled;
     sampled = new byte[][] {
