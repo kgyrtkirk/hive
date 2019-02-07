@@ -456,7 +456,7 @@ public final class OpProcFactory {
 
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
-      LOG.info("Processing for " + Operator.toString2(Lists.newArrayList(op)));
+      LOG.info("Processing for " + Operator.toString(op));
 
       filterIsRedundant(op, owi.getParseContext());
 

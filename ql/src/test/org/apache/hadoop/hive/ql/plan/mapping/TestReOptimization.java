@@ -248,7 +248,7 @@ public class TestReOptimization {
 
   @Test
   public void testReOptimizationCanSendBackStatsToCBO() throws Exception {
-    //    disablePPD();
+    disablePPD();
 
     IDriver driver = createDriver("overlay,reoptimize");
     // @formatter:off
@@ -298,8 +298,9 @@ public class TestReOptimization {
   private void disablePPD() {
     // these things should be able to work with ppd on
     HiveConf conf = env_setup.getTestCtx().hiveConf;
-    conf.set("hive.optimize.ppd", "false");
-    //    conf.set("hive.ppd.remove.duplicatefilters", "false");
+    //    conf.set("hive.optimize.ppd", "false");
+    conf.set("hive.ppd.remove.duplicatefilters", "false");
+
   }
 
   private static IDriver createDriver(String strategies) {

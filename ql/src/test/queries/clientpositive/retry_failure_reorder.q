@@ -34,9 +34,16 @@ select (${hiveconf:zzz} > sum(u*v*w)) from tu
         where w>9 and u>1 and v>3;
 
 
-set hive.query.reexecution.strategy=reoptimize;
-set hive.query.reexecution.explain=true;
+set hive.query.reexecution.strategies=overlay,reoptimize;
+-- set hive.query.reexecution.explain=true;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
+
+explain reoptimization
+select ${hiveconf:zzz} > sum(u*v*w) from tu
+        join tv on (tu.id_uv=tv.id_uv)
+        join tw on (tu.id_uw=tw.id_uw)
+        where w>9 and u>1 and v>3;
+
 set hive.optimize.ppd=false;
 
 select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu
