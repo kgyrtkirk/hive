@@ -18,13 +18,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') is true (type: boolean)
+            filterExpr: (key = '238') (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key = '238') is true (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+              predicate: (key = '238') (type: boolean)
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -208,13 +208,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') is true (type: boolean)
+            filterExpr: (key = '238') (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key = '238') is true (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+              predicate: (key = '238') (type: boolean)
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -321,13 +321,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: (key = '238') is true (type: boolean)
+            filterExpr: (key = '238') (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key = '238') is true (type: boolean)
-              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+              predicate: (key = '238') (type: boolean)
+              Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash

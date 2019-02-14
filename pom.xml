@@ -221,11 +221,6 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
-     <repository>
-       <id>calcite-aux-repo</id>
-       <url>https://www.rxd.hu/misc/calcite-aux/</url>
-     </repository>
-
     <repository>
       <id>central</id>
       <name>central</name>
@@ -279,6 +274,11 @@
          <enabled>false</enabled>
        </snapshots>
     </repository>
+     <repository>
+       <id>calcite-aux-repo</id>
+       <url>https://www.rxd.hu/misc/calcite-aux/</url>
+     </repository>
+
   </repositories>
 
   <dependencyManagement>
