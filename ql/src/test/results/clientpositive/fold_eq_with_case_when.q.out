@@ -44,10 +44,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: lineitem
-            filterExpr: (COALESCE((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))),false) and (l_shipmode = 'RAIL')) (type: boolean)
+            filterExpr: ((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))) and (l_shipmode = 'RAIL')) (type: boolean)
             Statistics: Num rows: 100 Data size: 19000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((l_shipmode = 'RAIL') and COALESCE((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))),false)) (type: boolean)
+              predicate: ((DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP))) and (l_shipmode = 'RAIL')) (type: boolean)
               Statistics: Num rows: 7 Data size: 1330 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0D) (type: double)
