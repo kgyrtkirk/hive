@@ -109,7 +109,7 @@ HiveSortLimit(sort0=[$5], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC-nulls-l
                             HiveProject(d_date_sk=[$0], d_week_seq=[$4])
                               HiveFilter(condition=[IS NOT NULL($4)])
                                 HiveTableScan(table=[[default, date_dim]], table:alias=[d2])
-                            HiveProject(d_date_sk=[$0], d_week_seq=[$4], +=[+(CAST($2):DOUBLE, CAST(5):DOUBLE)])
+                            HiveProject(d_date_sk=[$0], d_week_seq=[$4], +=[+(CAST($2):DOUBLE, 5)])
                               HiveFilter(condition=[AND(=($6, 2001), IS NOT NULL($4))])
                                 HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
                     HiveProject(w_warehouse_sk=[$0], w_warehouse_name=[$2])
