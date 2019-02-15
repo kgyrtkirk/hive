@@ -250,7 +250,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds2`
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
 FROM (SELECT `key`, `value`, `ds1`
 FROM `default`.`pcr_t1_n1`
 WHERE `ds2` = '2001-04-08' AND (`ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2)
@@ -391,7 +391,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, `t3`.`ds1` AS `ds11`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds21`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, `t3`.`ds1` AS `ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
 FROM (SELECT *
 FROM (SELECT `key`, `value`, `ds2`
 FROM `default`.`pcr_t1_n1`
@@ -632,7 +632,7 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds11`, `t3`.`ds20` AS `ds21`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t3`.`ds20` AS `ds21`
 FROM (SELECT *
 FROM (SELECT `key`, `value`, `ds2`
 FROM `default`.`pcr_t1_n1`
@@ -1682,7 +1682,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds2`
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
 FROM (SELECT `key`, `value`, `ds1`
 FROM `default`.`pcr_t1_n1`
 WHERE ROW(`key`, `ds1`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09')) AND `ds2` = '2001-04-08'
@@ -1823,7 +1823,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, `t3`.`ds1` AS `ds11`, CAST('2001-04-08' AS VARCHAR(65536)) AS `ds21`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, `t3`.`ds1` AS `ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
 FROM (SELECT *
 FROM (SELECT `key`, `value`, `ds2`
 FROM `default`.`pcr_t1_n1`
@@ -2064,7 +2064,7 @@ POSTHOOK: Input: default@pcr_t1_n1
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds11`, `t3`.`ds20` AS `ds21`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t3`.`ds2`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t3`.`ds20` AS `ds21`
 FROM (SELECT *
 FROM (SELECT `key`, `value`, `ds2`
 FROM `default`.`pcr_t1_n1`

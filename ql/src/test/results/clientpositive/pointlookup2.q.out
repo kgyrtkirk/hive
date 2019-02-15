@@ -294,7 +294,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
@@ -534,7 +534,7 @@ POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds1`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
@@ -1924,7 +1924,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`
@@ -2164,7 +2164,7 @@ POSTHOOK: Input: default@pcr_t1_n2
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1_n2@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds1`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1_n2`

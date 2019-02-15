@@ -2443,7 +2443,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds1`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
@@ -2723,7 +2723,7 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS VARCHAR(65536)) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS VARCHAR(65536)) AS `ds1`
+OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
 FROM (SELECT *
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
@@ -5061,7 +5061,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS VARCHAR(65536)) AS `ds`, `hr`
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM (SELECT `key`, `value`, `hr`
 FROM `default`.`srcpart`
 WHERE `hr` IN ('11', '12') AND `ds` = '2008-04-08' AND `key` = 11
@@ -5261,7 +5261,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS VARCHAR(65536)) AS `hr`
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
 FROM (SELECT `key`, `value`, `ds`
 FROM `default`.`srcpart`
 WHERE `hr` = '11' AND `key` = 11
