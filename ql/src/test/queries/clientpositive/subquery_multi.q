@@ -30,14 +30,14 @@ LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into tab
 insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith');
 
 -- corr, mix of IN/NOT IN
-explain cbo select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
-        AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+explain cbo select * from part_null where 
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
 
-explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
-        AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+explain select * from part_null where
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
 
-select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
-        AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+select * from part_null where
+        p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
