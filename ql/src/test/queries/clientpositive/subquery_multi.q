@@ -41,3 +41,10 @@ explain select * from part_null where
 select * from part_null where
         p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
+
+select part_null.* from part_null left join
+    (select p1.p_container,p1.p_type from part p1 join part pp on (p1.p_type = pp.p_type and p1.p_brand = pp.p_brand) ) sq1 on (part_null.p_type = sq1.p_type and part_null.p_brand = sq1.p_container)
+    where sq1.p_container is null
+    ;
+
+
