@@ -881,7 +881,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: CASE WHEN ((member = 1L)) THEN ((attr + 1L)) ELSE ((attr + 2L)) END (type: bigint)
+                    expressions: CASE WHEN ((member = 1L)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: bigint)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -966,7 +966,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: CASE WHEN ((member = 1L)) THEN (null) ELSE ((attr + 2L)) END (type: bigint)
+                    expressions: CASE WHEN ((member = 1L)) THEN (null) ELSE ((attr + 2)) END (type: bigint)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1051,7 +1051,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: CASE WHEN ((member = 1L)) THEN ((attr + 1L)) ELSE (null) END (type: bigint)
+                    expressions: CASE WHEN ((member = 1L)) THEN ((attr + 1)) ELSE (null) END (type: bigint)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
