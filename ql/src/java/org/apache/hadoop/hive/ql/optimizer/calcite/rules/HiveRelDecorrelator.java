@@ -1194,7 +1194,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       final RexFieldAccess f = (RexFieldAccess) e;
       if (f.getField().getIndex() == correlation.field
           && f.getReferenceExpr() instanceof RexCorrelVariable) {
-        if (((RexCorrelVariable) f.getReferenceExpr()).id == correlation.corr) {
+        if (((RexCorrelVariable) f.getReferenceExpr()).id.equals(correlation.corr)) {
           return true;
         }
       }
