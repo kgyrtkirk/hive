@@ -47,14 +47,14 @@ STAGE PLANS:
                 TableScan
                   alias: t
                   filterExpr: (a = 2) (type: boolean)
-                  Statistics: Num rows: 5/1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5/5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (a = 2) (type: boolean)
-                    Statistics: Num rows: 2/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2/3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: 2 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2/3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         Statistics: Num rows: 2/3 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
