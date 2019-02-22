@@ -22,3 +22,13 @@ set hive.optimize.index.filter=true;
 select *,hash(*) from newtypesorc_n1 where v="bee";
 select sum(hash(*)) from newtypesorc_n1 where v="bee";
 
+create table t (a varchar(10));
+
+insert into t values('bee'),('xxx');
+
+-- select	assert_true(t0.v = t1.v) from
+select	t0.v,t1.v from
+	(select hash(a) as v from t where a='bee') as t0
+join	(select hash(a) as v from t where a='bee' or a='xbee') as t1 on (true);
+
+
