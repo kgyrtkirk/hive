@@ -7,6 +7,9 @@ set hive.metastore.disallow.incompatible.col.type.changes=false;
 
 
 
+explain
+select key, value from src1
+where key not in (select key+18 from src1) order by key;
 
 select key, value from src1
 where key not in (select key+18 from src1) order by key;
