@@ -14,8 +14,8 @@ set hive.optimize.index.filter=false;
 
 -- varchar data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
 explain
-select hash(c),hash(v),hash(d),hash(da),*,hash(*) from newtypesorc_n1 where v="bee" or v="xbee";
-select hash(c),hash(v),hash(d),hash(da),*,hash(*) from newtypesorc_n1 where v="bee" or v="xbee";
+select hash(c),hash(v),hash(d),hash(da),*,hash(*) from newtypesorc_n1 where v="bee" ; -- or v="xbee";
+select hash(c),hash(v),hash(d),hash(da),*,hash(*) from newtypesorc_n1 where v="bee" ; -- or v="xbee";
 select sum(hash(*)) from newtypesorc_n1 where v="bee" or v="xbee";
 
 set hive.optimize.index.filter=true;
