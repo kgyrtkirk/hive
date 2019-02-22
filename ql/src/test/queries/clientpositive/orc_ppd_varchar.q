@@ -13,68 +13,10 @@ insert overwrite table newtypesorc_n1 select * from (select cast("apple" as char
 set hive.optimize.index.filter=false;
 
 -- varchar data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
+select *,hash(*) from newtypesorc_n1 where v="bee";
 select sum(hash(*)) from newtypesorc_n1 where v="bee";
 
 set hive.optimize.index.filter=true;
+select *,hash(*) from newtypesorc_n1 where v="bee";
 select sum(hash(*)) from newtypesorc_n1 where v="bee";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v!="bee";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v!="bee";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v<"world";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v<"world";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v<="world";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v<="world";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v="bee   ";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v="bee   ";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "orange");
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "orange");
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "world");
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "world");
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v in ("orange");
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v in ("orange");
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "orange";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "orange";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "zombie";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "zombie";
-
-set hive.optimize.index.filter=false;
-select sum(hash(*)) from newtypesorc_n1 where v between "orange" and "pine";
-
-set hive.optimize.index.filter=true;
-select sum(hash(*)) from newtypesorc_n1 where v between "orange" and "pine";
 
