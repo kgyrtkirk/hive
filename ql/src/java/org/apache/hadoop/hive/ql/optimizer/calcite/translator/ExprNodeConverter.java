@@ -39,17 +39,14 @@ import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimeString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -80,12 +77,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -336,17 +331,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
       case VARCHAR:
-        if (isStringType(lType)) {
-          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-        } else {
-          int precision = lType.getPrecision();
-          HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
-          return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
-        }
       case CHAR: {
-        int precision = lType.getPrecision();
-        HiveChar value = new HiveChar((String) literal.getValue3(), precision);
-        return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+        return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:
@@ -375,13 +361,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }
-  }
-
-  /**
-   * In Calcite the String type is represented as a varchar(2147483647).
-   */
-  private boolean isStringType(RelDataType type) {
-    return type.getSqlTypeName() == SqlTypeName.VARCHAR && type.getPrecision() == 2147483647;
   }
 
   @Override
