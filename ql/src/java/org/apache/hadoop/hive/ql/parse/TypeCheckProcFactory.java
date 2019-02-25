@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1429,17 +1430,31 @@ public class TypeCheckProcFactory {
       // if column type is char and constant type is string, then convert the constant to char
       // type with padded spaces.
       String constTypeInfoName = constTypeInfo.getTypeName();
-      if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) && colTypeInfo instanceof CharTypeInfo) {
-        final String constValue = constVal.toString();
-        final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
-        HiveChar newValue = new HiveChar(constValue, length);
-        HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
-        if (maxCharConst.equals(newValue)) {
-          return newValue;
-        } else {
-          return null;
+      if (constTypeInfoName.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)) {
+        if (colTypeInfo instanceof CharTypeInfo) {
+          final String constValue = constVal.toString();
+          final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
+          HiveChar newValue = new HiveChar(constValue, length);
+          HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
+          if (maxCharConst.equals(newValue)) {
+            return newValue;
+          } else {
+            return null;
+          }
+        }
+        if (colTypeInfo instanceof VarcharTypeInfo) {
+          final String constValue = constVal.toString();
+          final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
+          HiveVarchar newValue = new HiveVarchar(constValue, length);
+          HiveVarchar maxCharConst = new HiveVarchar(constValue, HiveVarchar.MAX_VARCHAR_LENGTH);
+          if (maxCharConst.equals(newValue)) {
+            return newValue;
+          } else {
+            return null;
+          }
         }
       }
+
       return constVal;
     }
 
