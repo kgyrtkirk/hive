@@ -716,6 +716,27 @@ public class RexNodeConverter {
     return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
 
+  private static NlsString asVCUnicodeString(int l1, String text) {
+    return new MXNlsString(l1, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  }
+
+  static class MXNlsString extends NlsString {
+
+    final public int l1;
+
+    public MXNlsString(int l1, String value, String charsetName, SqlCollation collation) {
+      super(value, charsetName, collation);
+      this.l1 = l1;
+    }
+
+  }
+
+  //  public RexLiteral makeVarCharLiteral(RexBuilder rexBuilder, NlsString str) {
+  //    assert str != null;
+  //    RelDataType type = SqlUtil.createNlsStringType(rexBuilder.getTypeFactory(), str);
+  //    return new RexLiteral(str, type, SqlTypeName.VARCHAR);
+  //  }
+
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
     final RexBuilder rexBuilder = cluster.getRexBuilder();
     final RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
@@ -813,10 +834,10 @@ public class RexNodeConverter {
       if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(asVCUnicodeString(0, (String) value));
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(asVCUnicodeString(1, (String) value));
       break;
     case DATE:
       final Date date = (Date) value;
