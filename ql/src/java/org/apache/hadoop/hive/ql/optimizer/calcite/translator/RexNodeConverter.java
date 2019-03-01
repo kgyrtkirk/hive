@@ -736,12 +736,6 @@ public class RexNodeConverter {
 
   }
 
-  //  public RexLiteral makeVarCharLiteral(RexBuilder rexBuilder, NlsString str) {
-  //    assert str != null;
-  //    RelDataType type = SqlUtil.createNlsStringType(rexBuilder.getTypeFactory(), str);
-  //    return new RexLiteral(str, type, SqlTypeName.VARCHAR);
-  //  }
-
   protected RexNode convert(ExprNodeConstantDesc literal) throws CalciteSemanticException {
     final RexBuilder rexBuilder = cluster.getRexBuilder();
     final RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
