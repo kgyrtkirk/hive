@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.MXNlsString;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -345,21 +345,20 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
           return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
         }
       case CHAR: {
-        if (literal.getValue() instanceof MXNlsString) {
-
-          MXNlsString mxNlsString = (MXNlsString) literal.getValue();
-          if (mxNlsString.l1 > 0) {
+        if (literal.getValue() instanceof HiveNlsString) {
+          HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
+          switch (mxNlsString.interpretation) {
+          case STRING:
             return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-          } else {
+          case VARCHAR:
             int precision = lType.getPrecision();
             HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
             return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
           }
-        } else {
-          int precision = lType.getPrecision();
-          HiveChar value = new HiveChar((String) literal.getValue3(), precision);
-          return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
         }
+        int precision = lType.getPrecision();
+        HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+        return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:

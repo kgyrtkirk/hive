@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticExcept
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -716,17 +717,21 @@ public class RexNodeConverter {
     return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
 
-  private static NlsString asVCUnicodeString(int l1, String text) {
-    return new MXNlsString(l1, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
+  private static NlsString makeHiveUnicodeString(Interpretation interpretation, String text) {
+    return new HiveNlsString(interpretation, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
 
-  static class MXNlsString extends NlsString {
+  static class HiveNlsString extends NlsString {
 
-    final public int l1;
+    enum Interpretation {
+      VARCHAR, STRING;
+    }
 
-    public MXNlsString(int l1, String value, String charsetName, SqlCollation collation) {
+    public final Interpretation interpretation;
+
+    public HiveNlsString(Interpretation interpretation, String value, String charsetName, SqlCollation collation) {
       super(value, charsetName, collation);
-      this.l1 = l1;
+      this.interpretation = interpretation;
     }
 
   }
@@ -834,10 +839,10 @@ public class RexNodeConverter {
       if (value instanceof HiveVarchar) {
         value = ((HiveVarchar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(asVCUnicodeString(0, (String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(makeHiveUnicodeString(Interpretation.VARCHAR, (String) value));
       break;
     case STRING:
-      calciteLiteral = rexBuilder.makeCharLiteral(asVCUnicodeString(1, (String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(makeHiveUnicodeString(Interpretation.STRING, (String) value));
       break;
     case DATE:
       final Date date = (Date) value;
