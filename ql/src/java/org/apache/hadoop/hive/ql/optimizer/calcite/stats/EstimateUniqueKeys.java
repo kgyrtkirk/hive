@@ -102,6 +102,9 @@ public final class EstimateUniqueKeys {
     colStatsPos = 0;
     for (ColStatistics cStat : colStats) {
       boolean isKey = false;
+      if (cStat.isEstimated()) {
+        continue;
+      }
       if (cStat.getCountDistint() >= numRows) {
         isKey = true;
       }
