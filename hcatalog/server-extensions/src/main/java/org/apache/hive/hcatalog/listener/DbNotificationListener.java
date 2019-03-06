@@ -759,7 +759,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
             .buildUpdateTableColumnStatMessage(updateTableColumnStatEvent.getColStats(),
                     updateTableColumnStatEvent.getTableObj(),
                     updateTableColumnStatEvent.getTableParameters(),
-                    updateTableColumnStatEvent.getValidWriteIds(), updateTableColumnStatEvent.getWriteId());
+                    updateTableColumnStatEvent.getWriteId());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.UPDATE_TABLE_COLUMN_STAT.toString(),
                     msgEncoder.getSerializer().serialize(msg));
     ColumnStatisticsDesc statDesc = updateTableColumnStatEvent.getColStats().getStatsDesc();
@@ -789,7 +789,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                     updatePartColStatEvent.getPartVals(),
                     updatePartColStatEvent.getPartParameters(),
                     updatePartColStatEvent.getTableObj(),
-                    updatePartColStatEvent.getValidWriteIds(), updatePartColStatEvent.getWriteId());
+                    updatePartColStatEvent.getWriteId());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.UPDATE_PARTITION_COLUMN_STAT.toString(),
                     msgEncoder.getSerializer().serialize(msg));
     ColumnStatisticsDesc statDesc = updatePartColStatEvent.getPartColStats().getStatsDesc();
@@ -1142,10 +1142,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         } catch (Exception ex) {
           //catching exceptions here makes sure that the thread doesn't die in case of unexpected
           //exceptions
-          LOG.warn(
-              "Exception received while cleaning notifications. More details can be found in debug mode"
-                  + ex.getMessage());
-          LOG.debug(ex.getMessage(), ex);
+          LOG.warn("Exception received while cleaning notifications: ", ex);
         }
 
         LOG.debug("Cleaner thread done");

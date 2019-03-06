@@ -132,6 +132,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1289,7 +1290,6 @@ public class Hive {
       }
     } catch (NoSuchObjectException e) {
       if (throwException) {
-        LOG.error("Table " + dbName + "." + tableName + " not found: " + e.getMessage());
         throw new InvalidTableException(tableName);
       }
       return null;
@@ -1355,6 +1355,18 @@ public class Hive {
    */
   public List<Table> getAllTableObjects(String dbName) throws HiveException {
     return getTableObjects(dbName, ".*", null);
+  }
+
+  /**
+   * Get tables for the specified database that match the provided regex pattern and table type.
+   * @param dbName
+   * @param pattern
+   * @param tableType
+   * @return List of table objects
+   * @throws HiveException
+   */
+  public List<Table> getTableObjectsByType(String dbName, String pattern, TableType tableType) throws HiveException {
+    return getTableObjects(dbName, pattern, tableType);
   }
 
   /**
@@ -2973,6 +2985,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             org.apache.hadoop.hive.metastore.api.Partition ptn =
                 getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
             if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn.getParameters())){
+              ReplicationSpec.copyLastReplId(ptn.getParameters(), p.getParameters());
               partsToAlter.add(p);
             } // else ptn already exists, but we do nothing with it.
           } catch (NoSuchObjectException nsoe){

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ddl.DDLTask2;
+import org.apache.hadoop.hive.ql.ddl.DDLWork2;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpTask;
@@ -88,6 +90,7 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<CopyWork>(CopyWork.class, CopyTask.class));
     taskvec.add(new TaskTuple<ReplCopyWork>(ReplCopyWork.class, ReplCopyTask.class));
     taskvec.add(new TaskTuple<DDLWork>(DDLWork.class, DDLTask.class));
+    taskvec.add(new TaskTuple<DDLWork2>(DDLWork2.class, DDLTask2.class));
     taskvec.add(new TaskTuple<MaterializedViewDesc>(
         MaterializedViewDesc.class,
         MaterializedViewTask.class));
@@ -129,7 +132,7 @@ public final class TaskFactory {
 
   public static int getAndIncrementId() {
     int curValue = tid.get().intValue();
-    tid.set(new Integer(curValue + 1));
+    tid.set(Integer.valueOf(curValue + 1));
     return curValue;
   }
 

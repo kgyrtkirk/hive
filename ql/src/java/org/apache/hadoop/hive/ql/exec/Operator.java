@@ -901,13 +901,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void vectorForward(VectorizedRowBatch batch)
       throws HiveException {
 
-    runTimeNumRows++;
     if (getDone()) {
       return;
     }
 
     // Data structures to store original values
     final int size = batch.size;
+    runTimeNumRows += size;
     final boolean selectedInUse = batch.selectedInUse;
     final boolean saveState = (selectedInUse && multiChildren);
     if (saveState) {
@@ -1021,10 +1021,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public String dump(int level, HashSet<Integer> seenOpts) {
-    if (seenOpts.contains(new Integer(id))) {
+    Integer idObj = Integer.valueOf(id);
+    if (seenOpts.contains(idObj)) {
       return null;
     }
-    seenOpts.add(new Integer(id));
+    seenOpts.add(idObj);
 
     StringBuilder s = new StringBuilder();
     String ls = getLevelString(level);

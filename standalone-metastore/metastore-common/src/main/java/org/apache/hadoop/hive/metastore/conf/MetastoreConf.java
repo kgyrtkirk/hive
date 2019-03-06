@@ -544,7 +544,7 @@ public class MetastoreConf {
             "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
     EVENT_MESSAGE_FACTORY("metastore.event.message.factory",
         "hive.metastore.event.message.factory",
-        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder",
+        "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     EVENT_NOTIFICATION_PARAMETERS_EXCLUDE_PATTERNS("metastore.notification.parameters.exclude.patterns",
         "hive.metastore.notification.parameters.exclude.patterns", "",
@@ -555,6 +555,11 @@ public class MetastoreConf {
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
         "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
         "time after which events will be removed from the database listener queue"),
+    EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
+            "hive.metastore.event.db.clean.maxevents", 10000,
+            "Limit on number events to be cleaned at a time in metastore cleanNotificationEvents " +
+                    "call, to avoid OOM. The configuration is not effective when set to zero or " +
+                    "a negative value."),
     EVENT_DB_LISTENER_CLEAN_INTERVAL("metastore.event.db.listener.clean.interval",
             "hive.metastore.event.db.listener.clean.interval", 7200, TimeUnit.SECONDS,
             "sleep interval between each run for cleanup of events from the database listener queue"),
@@ -731,9 +736,10 @@ public class MetastoreConf {
       "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
       "Comma separated list of table types to use for partition management"),
     PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE("metastore.partition.management.task.thread.pool.size",
-      "metastore.partition.management.task.thread.pool.size", 5,
+      "metastore.partition.management.task.thread.pool.size", 3,
       "Partition management uses thread pool on to which tasks are submitted for discovering and retaining the\n" +
-      "partitions. This determines the size of the thread pool."),
+      "partitions. This determines the size of the thread pool. Note: Increasing the thread pool size will cause\n" +
+      "threadPoolSize * maxConnectionPoolSize connections to backend db"),
     PARTITION_MANAGEMENT_CATALOG_NAME("metastore.partition.management.catalog.name",
       "metastore.partition.management.catalog.name", "hive",
       "Automatic partition management will look for tables under the specified catalog name"),
