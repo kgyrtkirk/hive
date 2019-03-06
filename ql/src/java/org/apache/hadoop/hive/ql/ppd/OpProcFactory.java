@@ -118,7 +118,7 @@ public final class OpProcFactory {
   }
 
   private static void removeCandidates(Operator<?> operator, OpWalkerInfo owi) {
-    filterIsRedundant(operator, owi.getParseContext());
+//    filterIsRedundant(operator, owi.getParseContext());
     if (operator instanceof FilterOperator) {
       if (owi.getCandidateFilterOps().contains(operator)) {
         removeOperator(operator);
@@ -426,7 +426,7 @@ public final class OpProcFactory {
           HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
         // remove all the candidate filter operators
         // when we get to the TS
-        //        removeAllCandidates(owi);
+        removeAllCandidates(owi);
       }
       ExprWalkerInfo pushDownPreds = owi.getPrunedPreds(tsOp);
       // nonFinalCandidates predicates should be empty
@@ -458,7 +458,7 @@ public final class OpProcFactory {
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
       LOG.info("Processing for " + Operator.toString(op));
 
-      filterIsRedundant(op, owi.getParseContext());
+//      filterIsRedundant(op, owi.getParseContext());
 
       // if this filter is generated one, predicates need not to be extracted
       ExprWalkerInfo ewi = owi.getPrunedPreds(op);
@@ -476,8 +476,7 @@ public final class OpProcFactory {
           if (op.getChildren() != null && op.getChildren().size() == 1) {
             createFilter(op, owi
                 .getPrunedPreds((Operator<? extends OperatorDesc>) (op
-                    .getChildren().get(0))),
-                owi);
+                .getChildren().get(0))), owi);
           }
           return null;
         }
@@ -514,7 +513,7 @@ public final class OpProcFactory {
 
   }
 
-  private static boolean filterIsRedundant(Operator<?> filterOp, ParseContext parseContext) {
+  private static boolean filterIsRedundant0(Operator<?> filterOp, ParseContext parseContext) {
     Operator<?> currentOp = filterOp;
     do {
       List<Operator<?>> childs = currentOp.getChildOperators();
