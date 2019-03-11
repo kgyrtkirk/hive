@@ -1211,6 +1211,11 @@ public interface RawStore extends Configurable {
   List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException;
 
   /**
+   * Clear the aggregated stats cache if it is enabled.
+   */
+  void clear_aggregate_col_stats_cache();
+
+  /**
    * Get aggregated stats for a table or partition(s).
    * @param catName catalog name.
    * @param dbName database name.

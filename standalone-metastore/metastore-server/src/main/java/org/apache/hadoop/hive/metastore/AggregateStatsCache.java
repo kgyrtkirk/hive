@@ -568,4 +568,8 @@ public class AggregateStatsCache {
       this.misses = misses;
     }
   }
+
+  public void clear() {
+    cacheStore.clear();
+  }
 }

@@ -1132,6 +1132,8 @@ public class QTestUtil {
       newSession(false);
     }
 
+    db.getMSC().clearAggregateColStatsCache();
+
     CliSessionState ss = (CliSessionState) SessionState.get();
 
     String outFileExtension = getOutFileExtension(fileName);

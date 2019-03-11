@@ -2211,6 +2211,11 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public void clear_aggregate_col_stats_cache() {
+    rawStore.clear_aggregate_col_stats_cache();
+  }
+
+  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName, List<String> partNames,
       List<String> colNames) throws MetaException, NoSuchObjectException {
     return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, null);

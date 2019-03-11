@@ -1270,6 +1270,12 @@ class MetaStoreDirectSql {
     return result;
   }
 
+  public void clearCache() {
+    if (aggrStatsCache != null) {
+      aggrStatsCache.clear();
+    }
+  }
+
   public AggrStats aggrColStatsForPartitions(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames, boolean useDensityFunctionForNDVEstimation,
       double ndvTuner, boolean enableBitVector) throws MetaException {
