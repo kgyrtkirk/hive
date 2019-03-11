@@ -1903,21 +1903,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_statistics_req failed: unknown result')
     end
 
-    def clear_aggregate_col_stats_cache()
-      send_clear_aggregate_col_stats_cache()
-      recv_clear_aggregate_col_stats_cache()
-    end
-
-    def send_clear_aggregate_col_stats_cache()
-      send_message('clear_aggregate_col_stats_cache', Clear_aggregate_col_stats_cache_args)
-    end
-
-    def recv_clear_aggregate_col_stats_cache()
-      result = receive_message(Clear_aggregate_col_stats_cache_result)
-      raise result.o1 unless result.o1.nil?
-      return
-    end
-
     def get_aggr_stats_for(request)
       send_get_aggr_stats_for(request)
       return recv_get_aggr_stats_for()
@@ -5240,17 +5225,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partitions_statistics_req', seqid)
-    end
-
-    def process_clear_aggregate_col_stats_cache(seqid, iprot, oprot)
-      args = read_args(iprot, Clear_aggregate_col_stats_cache_args)
-      result = Clear_aggregate_col_stats_cache_result.new()
-      begin
-        @handler.clear_aggregate_col_stats_cache()
-      rescue ::MetaException => o1
-        result.o1 = o1
-      end
-      write_result(result, oprot, 'clear_aggregate_col_stats_cache', seqid)
     end
 
     def process_get_aggr_stats_for(seqid, iprot, oprot)
@@ -10803,37 +10777,6 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::PartitionsStatsResult},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Clear_aggregate_col_stats_cache_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-
-    FIELDS = {
-
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Clear_aggregate_col_stats_cache_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    O1 = 1
-
-    FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

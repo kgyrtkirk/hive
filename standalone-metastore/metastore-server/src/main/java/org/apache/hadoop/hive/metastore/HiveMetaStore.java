@@ -7877,11 +7877,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void clear_aggregate_col_stats_cache() throws MetaException {
-      getMS().clear_aggregate_col_stats_cache();
-    }
-
-    @Override
     public AggrStats get_aggr_stats_for(PartitionsStatsRequest request) throws TException {
       String catName = request.isSetCatName() ? request.getCatName().toLowerCase() :
           getDefaultCatalog(conf);

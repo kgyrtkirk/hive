@@ -853,10 +853,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void clear_aggregate_col_stats_cache() {
-  }
-
-  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
       String tblName, List<String> partNames, List<String> colNames)
       throws MetaException {
@@ -866,7 +862,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public AggrStats get_aggr_stats_for(
       String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames, String writeIdList)
+      List<String> colNames, String  writeIdList)
       throws MetaException, NoSuchObjectException {
     return null;
   }

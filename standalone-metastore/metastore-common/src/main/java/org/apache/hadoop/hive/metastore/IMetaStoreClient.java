@@ -3403,12 +3403,6 @@ public interface IMetaStoreClient {
       GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException;
 
   /**
-   * Clears the cache (if enabled) storing aggregate column stats.
-   * @throws TException thrift transport exception
-   */
-  void clearAggregateColStatsCache() throws TException;
-
-  /**
    * Get aggregated column stats for a set of partitions.
    * @param dbName database name
    * @param tblName table name

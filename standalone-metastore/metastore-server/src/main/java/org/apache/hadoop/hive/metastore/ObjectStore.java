@@ -8889,11 +8889,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void clear_aggregate_col_stats_cache() {
-    directSql.clearCache();
-  }
-
-  @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
       final List<String> partNames, final List<String> colNames,
       String writeIdList) throws MetaException, NoSuchObjectException {

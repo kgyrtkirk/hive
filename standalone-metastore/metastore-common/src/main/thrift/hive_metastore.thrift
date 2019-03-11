@@ -2222,7 +2222,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
               (1:NoSuchObjectException o1, 2:MetaException o2)
   PartitionsStatsResult get_partitions_statistics_req(1:PartitionsStatsRequest request) throws
               (1:NoSuchObjectException o1, 2:MetaException o2)
-  void clear_aggregate_col_stats_cache() throws (1:MetaException o1)
   AggrStats get_aggr_stats_for(1:PartitionsStatsRequest request) throws
               (1:NoSuchObjectException o1, 2:MetaException o2)
   bool set_aggr_stats_for(1:SetPartitionsStatsRequest request) throws
