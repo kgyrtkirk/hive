@@ -1963,13 +1963,8 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
-<<<<<<< HEAD
             filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
-            Statistics: Num rows: 60 Data size: 5640 Basic stats: COMPLETE Column stats: PARTIAL
-=======
-            filterExpr: ((ds >= '2000-04-08') or ds is not null) (type: boolean)
             Statistics: Num rows: 60 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> asf/master
             GatherStats: false
             Select Operator
               expressions: key (type: int), value (type: string)
