@@ -73,7 +73,12 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
+<<<<<<< HEAD
                         aggregations: count()
+=======
+                        aggregations: count(), count(i_item_id)
+                        minReductionHashAggr: 0.99
+>>>>>>> asf/master
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -145,6 +150,7 @@ STAGE PLANS:
                       Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: i_item_id (type: string)
+                        minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
@@ -319,6 +325,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: sum(_col3)
                           keys: _col8 (type: string), _col7 (type: string)
+                          minReductionHashAggr: 0.99
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 191667562 Data size: 27786253572 Basic stats: COMPLETE Column stats: NONE

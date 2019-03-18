@@ -26,7 +26,11 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v="bee"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
+<<<<<<< HEAD
 -265249175500
+=======
+-252951929000
+>>>>>>> asf/master
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v="bee"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -35,7 +39,11 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v="bee"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
+<<<<<<< HEAD
 -265249175500
+=======
+-252951929000
+>>>>>>> asf/master
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v!="bee"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -44,7 +52,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v!="bee"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-336445133500
+334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v!="bee"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -53,7 +61,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v!="bee"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-336445133500
+334427804500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<"world"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -62,7 +70,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<"world"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
--250934600000
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<"world"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -71,7 +79,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<"world"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
--250934600000
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<="world"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -80,7 +88,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<="world"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-85510533500
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<="world"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -89,7 +97,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v<="world"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-85510533500
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v="bee   "
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -116,7 +124,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "ora
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
--250934600000
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "orange")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -125,7 +133,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "ora
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
--250934600000
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "world")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -134,7 +142,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "wor
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-85510533500
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "world")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -143,7 +151,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("bee", "wor
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-85510533500
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v in ("orange")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -170,7 +178,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
--250934600000
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "orange"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -179,7 +187,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
--250934600000
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "zombie"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -188,7 +196,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-85510533500
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" and "zombie"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1
@@ -197,7 +205,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "bee" a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc_n1
 #### A masked pattern was here ####
-85510533500
+81475875500
 PREHOOK: query: select sum(hash(*)) from newtypesorc_n1 where v between "orange" and "pine"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc_n1

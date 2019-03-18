@@ -78,7 +78,12 @@ STAGE PLANS:
                       predicate: false (type: boolean)
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
+<<<<<<< HEAD
                         aggregations: count()
+=======
+                        keys: true (type: boolean)
+                        minReductionHashAggr: 0.99
+>>>>>>> asf/master
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
@@ -98,8 +103,15 @@ STAGE PLANS:
                     Filter Operator
                       predicate: false (type: boolean)
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+<<<<<<< HEAD
                       Select Operator
                         expressions: true (type: boolean)
+=======
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+>>>>>>> asf/master
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                         Reduce Output Operator
