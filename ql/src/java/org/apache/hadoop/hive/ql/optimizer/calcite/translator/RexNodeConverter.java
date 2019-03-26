@@ -713,10 +713,6 @@ public class RexNodeConverter {
   private static final BigInteger MIN_LONG_BI = BigInteger.valueOf(Long.MIN_VALUE),
       MAX_LONG_BI = BigInteger.valueOf(Long.MAX_VALUE);
 
-  private static NlsString asUnicodeString(String text) {
-    return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
-  }
-
   private static NlsString makeHiveUnicodeString(Interpretation interpretation, String text) {
     return new HiveNlsString(interpretation, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
@@ -724,7 +720,7 @@ public class RexNodeConverter {
   static class HiveNlsString extends NlsString {
 
     enum Interpretation {
-      VARCHAR, STRING;
+      CHAR, VARCHAR, STRING;
     }
 
     public final Interpretation interpretation;
@@ -827,7 +823,7 @@ public class RexNodeConverter {
       if (value instanceof HiveChar) {
         value = ((HiveChar) value).getValue();
       }
-      calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
+      calciteLiteral = rexBuilder.makeCharLiteral(makeHiveUnicodeString(Interpretation.CHAR, (String) value));
       break;
     case VARCHAR:
       if (value instanceof HiveVarchar) {

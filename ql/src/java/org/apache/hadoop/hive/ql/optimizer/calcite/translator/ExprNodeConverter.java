@@ -39,7 +39,6 @@ import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimeString;
@@ -337,28 +336,26 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
       case VARCHAR:
-        if (isStringType(lType)) {
-          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-        } else {
-          int precision = lType.getPrecision();
-          HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
-          return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
-        }
+        throw new RuntimeException("unexpected type; varchar/string/char types are handled as char");
       case CHAR: {
         if (literal.getValue() instanceof HiveNlsString) {
           HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
           switch (mxNlsString.interpretation) {
           case STRING:
             return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, literal.getValue3());
-          case VARCHAR:
+          case CHAR: {
+            int precision = lType.getPrecision();
+            HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+            return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+          }
+          case VARCHAR: {
             int precision = lType.getPrecision();
             HiveVarchar value = new HiveVarchar((String) literal.getValue3(), precision);
             return new ExprNodeConstantDesc(new VarcharTypeInfo(precision), value);
           }
+          }
         }
-        int precision = lType.getPrecision();
-        HiveChar value = new HiveChar((String) literal.getValue3(), precision);
-        return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
+        throw new RuntimeException("varchar/string/char values must use HiveNlsString for correctness");
       }
       case INTERVAL_YEAR:
       case INTERVAL_MONTH:
@@ -387,13 +384,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }
-  }
-
-  /**
-   * In Calcite the String type is represented as a varchar(2147483647).
-   */
-  private boolean isStringType(RelDataType type) {
-    return type.getSqlTypeName() == SqlTypeName.VARCHAR && type.getPrecision() == 2147483647;
   }
 
   @Override
