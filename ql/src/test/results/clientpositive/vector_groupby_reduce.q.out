@@ -890,7 +890,7 @@ order by ss_ticket_number
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
-1	85411	816	58.285714285714285	-5080.169999999999	-362.86928571428564	621.350000000000000000	44.382142857142857143
+1	85411	816	58.285714285714285	-5080.17	-362.8692857142857	621.350000000000000000	44.382142857142857143
 PREHOOK: query: explain vectorization expression
 select
     ss_ticket_number, ss_item_sk, sum(q), avg(q), sum(np), avg(np), sum(decwc), avg(decwc)
