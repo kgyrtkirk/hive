@@ -336,7 +336,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.getDecimalTypeInfo(lType.getPrecision(),
             lType.getScale()), HiveDecimal.create((BigDecimal)literal.getValue3()));
       case VARCHAR:
-        throw new RuntimeException("unexpected type; varchar/string/char types are handled as char");
       case CHAR: {
         if (literal.getValue() instanceof HiveNlsString) {
           HiveNlsString mxNlsString = (HiveNlsString) literal.getValue();
