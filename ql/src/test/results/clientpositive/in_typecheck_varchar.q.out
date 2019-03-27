@@ -87,20 +87,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 expected 1	1
-PREHOOK: query: explain vectorization detail
+PREHOOK: query: explain
 select 'expected 2',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ax
 #### A masked pattern was here ####
-POSTHOOK: query: explain vectorization detail
+POSTHOOK: query: explain
 select 'expected 2',count(*) from ax where (s,t) in (('a','a'),('b','bb'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-PLAN VECTORIZATION:
-  enabled: true
-  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -128,16 +124,6 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-          notVectorizedReason: FILTER operator: org.apache.hadoop.hive.ql.metadata.HiveException: Unexpected constant String type HiveVarcharWritable
-          vectorized: false
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
