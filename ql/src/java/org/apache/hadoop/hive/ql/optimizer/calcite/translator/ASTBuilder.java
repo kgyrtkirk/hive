@@ -226,6 +226,7 @@ public class ASTBuilder {
   }
 
   public static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
+    // FIXME: remove "useTypeQualInLiteral"
     useTypeQualInLiteral = true;
     Object val = null;
     int type = 0;
@@ -272,30 +273,28 @@ public class ASTBuilder {
 
     switch (sqlType) {
     case TINYINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "Y";
-      } else {
-        val = literal.getValue3();
-      }
-      type = HiveParser.IntegralLiteral;
-      break;
     case SMALLINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "S";
-      } else {
-        val = literal.getValue3();
-      }
-      type = HiveParser.IntegralLiteral;
-      break;
     case INTEGER:
-      val = literal.getValue3();
-      type = HiveParser.IntegralLiteral;
-      break;
     case BIGINT:
-      if (useTypeQualInLiteral) {
-        val = literal.getValue3() + "L";
-      } else {
-        val = literal.getValue3();
+      val = literal.getValue3();
+      // Calcite considers all numeric literals as bigdecimal values
+      // Hive makes a distinction between them most importantly IntegralLiteral
+      if (val instanceof BigDecimal) {
+        val = ((BigDecimal) val).longValue();
+      }
+      switch (sqlType) {
+      case TINYINT:
+        val += "Y";
+        break;
+      case SMALLINT:
+        val += "S";
+        break;
+      case INTEGER:
+        val += "";
+        break;
+      case BIGINT:
+        val += "L";
+        break;
       }
       type = HiveParser.IntegralLiteral;
       break;
