@@ -222,12 +222,6 @@ public class ASTBuilder {
   }
 
   public static ASTNode literal(RexLiteral literal) {
-    return literal(literal, false);
-  }
-
-  public static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
-    // FIXME: remove "useTypeQualInLiteral"
-    useTypeQualInLiteral = true;
     Object val = null;
     int type = 0;
     SqlTypeName sqlType = literal.getType().getSqlTypeName();
