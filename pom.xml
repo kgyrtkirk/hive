@@ -224,6 +224,7 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+<!--
     <repository>
       <id>central</id>
       <name>central</name>
@@ -277,6 +278,7 @@
          <enabled>false</enabled>
        </snapshots>
     </repository>
+-->
     <repository>
        <id>druid-apache-rc-testing</id>
        <url>https://repository.apache.org/content/repositories/orgapachedruid-1001/</url>
