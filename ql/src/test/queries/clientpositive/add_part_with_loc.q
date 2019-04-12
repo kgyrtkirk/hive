@@ -1,3 +1,4 @@
+set hive.fileformat.check=true;
 --dfs -mkdir ${system:test.tmp.dir}/;
 -- dfs -cp ${system:hive.root}/data/files/ext_test ${system:test.tmp.dir}/analyze_external;
 
