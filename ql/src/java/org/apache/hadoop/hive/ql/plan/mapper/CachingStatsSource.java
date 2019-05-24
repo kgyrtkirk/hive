@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -30,7 +28,6 @@ import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 
 public class CachingStatsSource implements StatsSource {
 
@@ -56,13 +53,6 @@ public class CachingStatsSource implements StatsSource {
       return true;
     }
     return false;
-  }
-
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    for (Entry<OpTreeSignature, OperatorStats> entry : map.entrySet()) {
-      put(entry.getKey(), entry.getValue());
-    }
   }
 
   private void put(OpTreeSignature sig, OperatorStats opStat) {

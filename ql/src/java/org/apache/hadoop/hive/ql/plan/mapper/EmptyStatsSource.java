@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
@@ -48,10 +47,6 @@ public final class EmptyStatsSource implements StatsSource {
     return Optional.empty();
   }
 
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    throw new RuntimeException("This is an empty source!");
-  }
 
   @Override
   public void putAll2(List<PersistedRuntimeStats> statMap) {

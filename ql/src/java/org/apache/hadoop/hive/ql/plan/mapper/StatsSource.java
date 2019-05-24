@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -35,10 +34,6 @@ public interface StatsSource {
   Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
   Optional<OperatorStats> lookup(RelTreeSignature of);
-
-  //FIXME remove
-  @Deprecated
-  void putAll(Map<OpTreeSignature, OperatorStats> map);
 
   void putAll2(List<PersistedRuntimeStats> statMap);
 

@@ -50,10 +50,6 @@ public class MapBackedStatsSource implements StatsSource {
     return Optional.ofNullable(map.get(treeSig));
   }
 
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    this.map.putAll(map);
-  }
 
   @Override
   public Optional<OperatorStats> lookup(RelTreeSignature of) {

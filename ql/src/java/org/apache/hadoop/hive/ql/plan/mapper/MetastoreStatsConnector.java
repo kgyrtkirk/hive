@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -116,16 +115,6 @@ class MetastoreStatsConnector implements StatsSource {
   @Override
   public Optional<OperatorStats> lookup(RelTreeSignature treeSig) {
     return ss.lookup(treeSig);
-  }
-
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    if (map.size() == 0) {
-      return;
-    }
-    ss.putAll(map);
-    throw new RuntimeException();
-    //    executor.submit(new RuntimeStatsSubmitter(map));
   }
 
   @Override
