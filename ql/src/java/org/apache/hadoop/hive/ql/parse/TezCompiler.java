@@ -123,6 +123,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.AuxOpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -228,6 +229,7 @@ public class TezCompiler extends TaskCompiler {
     }
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    doLink2(procCtx);
     markOperatorsWithUnstableRuntimeStats(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
@@ -240,6 +242,44 @@ public class TezCompiler extends TaskCompiler {
     // Update bucketing version of ReduceSinkOp if needed
     updateBucketingVersionForUpgrade(procCtx);
 
+  }
+
+
+  static class STP implements NodeProcessor {
+
+    private PlanMapper pm;
+
+    public STP(PlanMapper pm) {
+      this.pm = pm;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      Operator<?> op = (Operator<?>) nd;
+      AuxOpTreeSignature treeSig = pm.getAuxSignatureOf(op);
+      pm.link(op, treeSig, true);
+      return nd;
+    }
+
+  }
+
+  private static void linkSignatures(ParseContext pctx, ArrayList<Node> topNodes) throws SemanticException {
+
+    PlanMapper pm = pctx.getContext().getPlanMapper();
+    pm.clearSignatureCache();
+    Dispatcher disp = new DefaultRuleDispatcher(new STP(pm), new HashMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    ogw.startWalking(topNodes, null);
+
+  }
+
+  public static void doLink(ParseContext parseContext) throws SemanticException {
+    linkSignatures(parseContext, new ArrayList(parseContext.getTopOps().values()));
+  }
+  public static void doLink2(OptimizeTezProcContext procCtx) throws SemanticException {
+    doLink(procCtx.parseContext);
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,

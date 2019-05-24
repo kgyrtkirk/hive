@@ -46,7 +46,7 @@ import com.google.common.collect.Sets;
 public class PlanMapper {
 
   Set<EquivGroup> groups = new HashSet<>();
-  private Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class);
+  private Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class, AuxOpTreeSignature.class);
 
   /**
    * Specialized class which can compare by identity or value; based on the key type.
@@ -182,13 +182,16 @@ public class PlanMapper {
     }
   }
 
+  public void link(Object o1, Object o2) {
+    link(o1, o2, false);
+  }
   /**
    * States that the two objects are representing the same.
    *
    * For example if during an optimization Operator_A is replaced by a specialized Operator_A1;
    * then those two can be linked.
    */
-  public void link(Object o1, Object o2) {
+  public void link(Object o1, Object o2, boolean mayMerge) {
 
     Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
     keySet.add(o1);
@@ -205,12 +208,25 @@ public class PlanMapper {
       }
     }
     if (mGroups.size() > 1) {
-      throw new RuntimeException("equivalence mapping violation");
+      if (!mayMerge) {
+        throw new RuntimeException("equivalence mapping violation");
+      }
+      EquivGroup newGrp = new EquivGroup();
+      newGrp.add(o1);
+      newGrp.add(o2);
+      for (EquivGroup g : mGroups) {
+        for (Object o : g.members) {
+          newGrp.add(o);
+        }
+      }
+      groups.add(newGrp);
+      groups.removeAll(mGroups);
+    } else {
+      EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
+      groups.add(targetGroup);
+      targetGroup.add(o1);
+      targetGroup.add(o2);
     }
-    EquivGroup targetGroup = mGroups.isEmpty() ? new EquivGroup() : mGroups.iterator().next();
-    groups.add(targetGroup);
-    targetGroup.add(o1);
-    targetGroup.add(o2);
 
   }
 
@@ -264,6 +280,40 @@ public class PlanMapper {
   public OpTreeSignature getSignatureOf(Operator<?> op) {
     OpTreeSignature sig = signatureCache.getSignature(op);
     return sig;
+  }
+
+  public void clearSignatureCache() {
+    //    auxSignatureCache.clear();
+  }
+
+  private OpTreeSignatureFactory auxSignatureCache = OpTreeSignatureFactory.newCache();
+
+  public static final class AuxOpTreeSignature {
+    private OpTreeSignature sig;
+
+    public AuxOpTreeSignature(OpTreeSignature sig) {
+      this.sig = sig;
+    }
+
+    @Override
+    public int hashCode() {
+      return sig.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return (obj.getClass() == AuxOpTreeSignature.class) && sig.equals(((AuxOpTreeSignature) obj).sig);
+    }
+
+    @Override
+    public String toString() {
+      return sig.toString();
+    }
+  }
+
+  public AuxOpTreeSignature getAuxSignatureOf(Operator<?> op) {
+    OpTreeSignature x = auxSignatureCache.getSignature(op);
+    return new AuxOpTreeSignature(x);
   }
 
 }

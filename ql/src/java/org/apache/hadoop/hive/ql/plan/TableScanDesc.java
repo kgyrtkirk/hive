@@ -161,7 +161,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return alias;
   }
 
-  @Signature
+  // FIXME: also mark it as bad for runtime stats if predicate is set
+  //  @Signature
   public String getPredicateString() {
     if (filterExpr == null) {
       return null;
