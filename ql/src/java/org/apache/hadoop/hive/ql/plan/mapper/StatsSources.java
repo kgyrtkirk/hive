@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
@@ -68,13 +69,12 @@ public class StatsSources {
       statsSource = new MapBackedStatsSource();
     }
 
-    ImmutableList<PersistedRuntimeStats> statMap = extractStatMapFromPlanMapper(pm);
+    ImmutableList<PersistedRuntimeStats> statMap = extractStatsFromPlanMapper(pm);
     statsSource.load(statMap);
     return statsSource;
   }
 
-  @Deprecated // FIXME: renamemethod
-  private static ImmutableList<PersistedRuntimeStats> extractStatMapFromPlanMapper(PlanMapper pm) {
+  private static ImmutableList<PersistedRuntimeStats> extractStatsFromPlanMapper(PlanMapper pm) {
     Builder<PersistedRuntimeStats> li = ImmutableList.builder();
     Iterator<EquivGroup> it = pm.iterateGroups();
     while (it.hasNext()) {
@@ -108,7 +108,6 @@ public class StatsSources {
     return li.build();
   }
 
-  // FIXME: think about using optional?
   private static <T> T first(List<T> rSig) {
     if (rSig.size() > 0) {
       return rSig.iterator().next();
