@@ -36,6 +36,8 @@ public interface StatsSource {
 
   Optional<OperatorStats> lookup(RelTreeSignature of);
 
+  //FIXME remove
+  @Deprecated
   void putAll(Map<OpTreeSignature, OperatorStats> map);
 
   void putAll2(List<PersistedRuntimeStats> statMap);

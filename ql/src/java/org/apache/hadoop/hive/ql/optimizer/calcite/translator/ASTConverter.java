@@ -131,7 +131,6 @@ public class ASTConverter {
       ASTNode cond = where.getCondition().accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder()));
       hiveAST.where = ASTBuilder.where(cond);
       planMapper.link(cond, where);
-      // FIXME: ugly hack
       planMapper.link(cond, RelTreeSignature.of(where));
     }
 

@@ -278,6 +278,8 @@ public class TezCompiler extends TaskCompiler {
   public static void doLink(ParseContext parseContext) throws SemanticException {
     linkSignatures(parseContext, new ArrayList(parseContext.getTopOps().values()));
   }
+
+  // FIXME move
   public static void doLink2(OptimizeTezProcContext procCtx) throws SemanticException {
     doLink(procCtx.parseContext);
   }
@@ -1046,6 +1048,12 @@ public class TezCompiler extends TaskCompiler {
           mark(dped.getTableScan());
         }
       }
+      if (nd instanceof TableScanOperator) {
+        TableScanOperator ts = (TableScanOperator) nd;
+        if (ts.getConf().getPredicateString() != null) {
+          mark(ts);
+        }
+      }
       return null;
     }
 
@@ -1079,7 +1087,10 @@ public class TezCompiler extends TaskCompiler {
         new RuleRegExp("R2",
             AppMasterEventOperator.getOperatorName() + "%"),
         new MarkRuntimeStatsAsIncorrect());
-    opRules.put(new RuleRegExp("R3", FilterOperator.getOperatorName() + "%"), new CollectAll());
+    opRules.put(
+        new RuleRegExp("R3",
+            TableScanOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
