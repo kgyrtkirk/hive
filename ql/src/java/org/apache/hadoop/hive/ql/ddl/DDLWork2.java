@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.ddl;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
 
@@ -34,9 +36,9 @@ public final class DDLWork2 implements Serializable {
   boolean needLock = false;
 
   /** ReadEntitites that are passed to the hooks. */
-  protected Set<ReadEntity> inputs;
+  private Set<ReadEntity> inputs;
   /** List of WriteEntities that are passed to the hooks. */
-  protected Set<WriteEntity> outputs;
+  private Set<WriteEntity> outputs;
 
   public DDLWork2() {
   }
@@ -67,6 +69,7 @@ public final class DDLWork2 implements Serializable {
     this.needLock = needLock;
   }
 
+  @Explain(skipHeader = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public DDLDesc getDDLDesc() {
     return ddlDesc;
   }

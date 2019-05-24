@@ -116,11 +116,6 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <profiles>
@@ -309,7 +304,6 @@
                       <exclude>org.datanucleus:*</exclude>
                       <exclude>org.fusesource.leveldbjni:*</exclude>
                       <exclude>org.htrace:*</exclude>
-                      <exclude>org.mortbay.jetty:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
                       <exclude>com.tdunning:*</exclude>
                       <exclude>tomcat:*</exclude>

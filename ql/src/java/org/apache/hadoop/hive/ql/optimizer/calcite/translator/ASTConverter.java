@@ -475,7 +475,6 @@ public class ASTConverter {
   static class RexVisitor extends RexVisitorImpl<ASTNode> {
 
     private final Schema schema;
-    private final boolean useTypeQualInLiteral;
     private final RexBuilder rexBuilder;
     // this is to keep track of null literal which already has been visited
     private Map<RexLiteral, Boolean> nullLiteralMap ;
@@ -492,7 +491,6 @@ public class ASTConverter {
     protected RexVisitor(Schema schema, boolean useTypeQualInLiteral, RexBuilder rexBuilder) {
       super(true);
       this.schema = schema;
-      this.useTypeQualInLiteral = useTypeQualInLiteral;
       this.rexBuilder = rexBuilder;
 
       this.nullLiteralMap =
@@ -540,14 +538,14 @@ public class ASTConverter {
         // It is NULL value with different type, we need to introduce a CAST
         // to keep it
         if(nullLiteralMap.containsKey(literal)) {
-          return ASTBuilder.literal(literal, useTypeQualInLiteral);
+          return ASTBuilder.literal(literal);
         }
         nullLiteralMap.put(literal, true);
         RexNode r = rexBuilder.makeAbstractCast(literal.getType(), literal);
 
         return r.accept(this);
       }
-      return ASTBuilder.literal(literal, useTypeQualInLiteral);
+      return ASTBuilder.literal(literal);
     }
 
     private ASTNode getPSpecAST(RexWindow window) {

@@ -98,7 +98,7 @@ import org.slf4j.LoggerFactory;
  **/
 @SuppressWarnings("deprecation")
 public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
-    Serializable {
+    Serializable, IConfigureJobConf {
 
   public static final Logger LOG = LoggerFactory.getLogger(FileSinkOperator.class);
 
@@ -383,8 +383,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
      * FileSink, in ways similar to the multi file spray, but without knowing the total number of
      * buckets ahead of time.
      *
-     * ROW__ID (1,2[0],3) => bucket_00002
-     * ROW__ID (1,3[0],4) => bucket_00003 etc
+     * ROW__ID (1,2[0],3) =&gt; bucket_00002
+     * ROW__ID (1,3[0],4) =&gt; bucket_00003 etc
      *
      * A new FSP is created for each partition, so this only requires the bucket numbering and that
      * is mapped in directly as an index.
@@ -1260,13 +1260,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     if (!bDynParts && !filesCreated) {
-      boolean skipFiles = "tez".equalsIgnoreCase(
+      boolean isTez = "tez".equalsIgnoreCase(
           HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE));
-      if (skipFiles) {
-        Class<?> clazz = conf.getTableInfo().getOutputFileFormatClass();
-        skipFiles = !StreamingOutputFormat.class.isAssignableFrom(clazz);
-      }
-      if (!skipFiles) {
+      Class<?> clazz = conf.getTableInfo().getOutputFileFormatClass();
+      boolean isStreaming = StreamingOutputFormat.class.isAssignableFrom(clazz);
+
+      if (!isTez || isStreaming || this.isInsertOverwrite) {
         createBucketFiles(fsp);
       }
     }
@@ -1607,4 +1606,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return !conf.getTableInfo().isNonNative();
   }
 
+  @Override
+  public void configureJobConf(JobConf job) {
+    if (conf.getInsertOverwrite()) {
+      job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
 }

@@ -108,7 +108,7 @@
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
     <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
-    <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
+    <maven.shade.plugin.version>3.2.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
@@ -127,7 +127,7 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.17.0</calcite.version>
+    <calcite.version>1.19.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -147,7 +147,7 @@
     <derby.version>10.14.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.12.1</druid.version>
+    <druid.version>0.14.0-incubating</druid.version>
     <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
     <guava.version>19.0</guava.version>
     <groovy.version>2.4.11</groovy.version>
@@ -164,7 +164,7 @@
     <httpcomponents.client.version>4.5.6</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.10</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
-    <jackson.version>2.9.5</jackson.version>
+    <jackson.version>2.9.8</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
@@ -178,18 +178,18 @@
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
     <jline.version>2.12</jline.version>
-    <jms.version>1.1</jms.version>
+    <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
-    <kryo.version>3.0.3</kryo.version>
+    <kryo.version>4.0.2</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
     <orc.version>1.5.4</orc.version>
-    <mockito-all.version>1.10.19</mockito-all.version>
+    <mockito-core.version>1.10.19</mockito-core.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.17.Final</netty.version>
@@ -224,6 +224,16 @@
 
   <repositories>
    <!-- This needs to be removed before checking in-->
+    <repository>
+      <id>central</id>
+      <name>central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </repository>
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
@@ -265,6 +275,16 @@
        </releases>
        <snapshots>
          <enabled>false</enabled>
+       </snapshots>
+    </repository>
+    <repository>
+       <id>druid-apache-rc-testing</id>
+       <url>https://repository.apache.org/content/repositories/orgapachedruid-1001/</url>
+       <releases>
+         <enabled>true</enabled>
+       </releases>
+       <snapshots>
+         <enabled>true</enabled>
        </snapshots>
     </repository>
   </repositories>
@@ -385,8 +405,8 @@
         <version>${jdo-api.version}</version>
       </dependency>
       <dependency>
-        <groupId>javax.jms</groupId>
-        <artifactId>jms</artifactId>
+        <groupId>jakarta.jms</groupId>
+        <artifactId>jakarta.jms-api</artifactId>
         <version>${jms.version}</version>
       </dependency>
       <dependency>
@@ -490,16 +510,6 @@
         <artifactId>avro-mapred</artifactId>
         <classifier>hadoop2</classifier>
         <version>${avro.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-          </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty</artifactId>
-        </exclusion>
-        </exclusions>
      </dependency>
       <dependency>
         <groupId>org.apache.derby</groupId>
@@ -550,16 +560,6 @@
         <groupId>org.apache.pig</groupId>
         <artifactId>pig</artifactId>
         <version>${pig.version}</version>
-         <exclusions>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-          </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty</artifactId>
-        </exclusion>
-        </exclusions>
      </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>
@@ -716,8 +716,8 @@
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-all</artifactId>
-        <version>${mockito-all.version}</version>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito-core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -756,10 +756,6 @@
         <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
-           <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-sslengine</artifactId>
-          </exclusion>
          <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -903,22 +899,6 @@
             <artifactId>netty</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jsp-2.1</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jsp-api-2.1</artifactId>
-         </exclusion>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>servlet-api-2.5</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>servlet-api-2.5</artifactId>
-          </exclusion>
-          <exclusion>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-core</artifactId>
          </exclusion>
@@ -929,14 +909,6 @@
           <exclusion>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
           </exclusion>
           <exclusion>
             <groupId>com.codahale.metrics</groupId>
@@ -1004,7 +976,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
       <exclusions>
         <exclusion>

@@ -23,7 +23,6 @@ import static org.apache.commons.lang.StringUtils.normalizeSpace;
 import static org.apache.commons.lang.StringUtils.repeat;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -450,13 +449,14 @@ class MetaStoreDirectSql {
    * @param tableType Table type, or null if we want to get all tables
    * @return list of table names
    */
-  public List<String> getTables(String catName, String dbName, TableType tableType)
+  public List<String> getTables(String catName, String dbName, TableType tableType, int limit)
       throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
       + " WHERE " + DBS + ".\"NAME\" = ? AND " + DBS + ".\"CTLG_NAME\" = ? "
       + (tableType == null ? "" : "AND " + TBLS + ".\"TBL_TYPE\" = ? ") ;
+
 
     List<String> pms = new ArrayList<>();
     pms.add(dbName);
@@ -467,7 +467,7 @@ class MetaStoreDirectSql {
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
     return executeWithArray(
-        queryParams, pms.toArray(), queryText);
+        queryParams, pms.toArray(), queryText, limit);
   }
 
   /**
@@ -754,10 +754,7 @@ class MetaStoreDirectSql {
 
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    if (max != null) {
-      query.setRange(0, max.shortValue());
-    }
-    List<Object> sqlResult = executeWithArray(query, params, queryText);
+    List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null)  ? -1 : max.intValue()));
     long queryTime = doTrace ? System.nanoTime() : 0;
     MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
     if (sqlResult.isEmpty()) {
@@ -1173,6 +1170,7 @@ class MetaStoreDirectSql {
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
 
+      String nodeValue0 = "?";
       if (node.isReverseOrder) {
         params.add(nodeValue);
       }
@@ -1206,14 +1204,23 @@ class MetaStoreDirectSql {
           params.add(table.getCatName().toLowerCase());
         }
         tableValue += " then " + tableValue0 + " else null end)";
+
+        if (valType == FilterType.Date) {
+          if (dbType == DatabaseProduct.ORACLE) {
+            // Oracle requires special treatment... as usual.
+            nodeValue0 = "TO_DATE(" + nodeValue0 + ", 'YYYY-MM-DD')";
+          } else {
+            nodeValue0 = "cast(" + nodeValue0 + " as date)";
+          }
+        }
       }
       if (!node.isReverseOrder) {
         params.add(nodeValue);
       }
 
       filterBuffer.append(node.isReverseOrder
-          ? "(? " + node.operator.getSqlOp() + " " + tableValue + ")"
-          : "(" + tableValue + " " + node.operator.getSqlOp() + " ?)");
+          ? "(" + nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue + ")"
+          : "(" + tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0 + ")");
     }
   }
 
@@ -1870,7 +1877,12 @@ class MetaStoreDirectSql {
 
   @SuppressWarnings("unchecked")
   private <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
-    return MetastoreDirectSqlUtils.executeWithArray(query, params, sql);
+    return executeWithArray(query, params, sql, -1);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T executeWithArray(Query query, Object[] params, String sql, int limit) throws MetaException {
+    return MetastoreDirectSqlUtils.executeWithArray(query, params, sql, limit);
   }
 
   /**

@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -1008,7 +1010,7 @@ public final class PlanUtils {
   }
 
   /**
-   * Remove prefix from "Path -> Alias"
+   * Remove prefix from "Path -&gt; Alias"
    * This is required for testing.
    * In order to verify that path is right, we need to display it in expected test result.
    * But, mask pattern masks path with some patterns.
