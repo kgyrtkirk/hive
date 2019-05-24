@@ -90,7 +90,7 @@ class MetastoreStatsConnector implements StatsSource {
             loadedEntries += thriftStat.getWeight();
             lastCreateTime = Math.min(lastCreateTime, thriftStat.getCreateTime() - 1);
             try {
-              ss.putAll2(decode(thriftStat));
+              ss.load(decode(thriftStat));
             } catch (IOException e) {
               logException("Exception while loading runtime stats", e);
             }
@@ -118,11 +118,11 @@ class MetastoreStatsConnector implements StatsSource {
   }
 
   @Override
-  public void putAll2(List<PersistedRuntimeStats> statList) {
+  public void load(List<PersistedRuntimeStats> statList) {
     if (statList.size() == 0) {
       return;
     }
-    ss.putAll2(statList);
+    ss.load(statList);
     executor.submit(new RuntimeStatsSubmitter(statList));
   }
 

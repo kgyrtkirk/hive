@@ -57,7 +57,7 @@ public class MapBackedStatsSource implements StatsSource {
   }
 
   @Override
-  public void putAll2(List<PersistedRuntimeStats> statMap) {
+  public void load(List<PersistedRuntimeStats> statMap) {
     for (PersistedRuntimeStats persistedRuntimeStats : statMap) {
       if (persistedRuntimeStats.sig != null) {
         map.put(persistedRuntimeStats.sig, persistedRuntimeStats.stat);

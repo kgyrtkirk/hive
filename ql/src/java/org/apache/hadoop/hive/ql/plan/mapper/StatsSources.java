@@ -69,7 +69,7 @@ public class StatsSources {
     }
 
     ImmutableList<PersistedRuntimeStats> statMap = extractStatMapFromPlanMapper(pm);
-    statsSource.putAll2(statMap);
+    statsSource.load(statMap);
     return statsSource;
   }
 

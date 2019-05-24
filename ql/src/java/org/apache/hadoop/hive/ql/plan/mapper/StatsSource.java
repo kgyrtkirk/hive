@@ -33,8 +33,8 @@ public interface StatsSource {
 
   Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
-  Optional<OperatorStats> lookup(RelTreeSignature of);
+  Optional<OperatorStats> lookup(RelTreeSignature treeSig);
 
-  void putAll2(List<PersistedRuntimeStats> statMap);
+  void load(List<PersistedRuntimeStats> list);
 
 }

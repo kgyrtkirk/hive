@@ -60,7 +60,7 @@ public class CachingStatsSource implements StatsSource {
   }
 
   @Override
-  public void putAll2(List<PersistedRuntimeStats> statMap) {
+  public void load(List<PersistedRuntimeStats> statMap) {
     for (PersistedRuntimeStats entry : statMap) {
       if (entry.rSig != null) {
         cache.put(entry.rSig, entry.stat);

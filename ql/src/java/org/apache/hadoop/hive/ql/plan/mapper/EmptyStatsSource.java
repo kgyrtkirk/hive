@@ -49,7 +49,7 @@ public final class EmptyStatsSource implements StatsSource {
 
 
   @Override
-  public void putAll2(List<PersistedRuntimeStats> statMap) {
+  public void load(List<PersistedRuntimeStats> statMap) {
     throw new RuntimeException();
     // TODO Auto-generated method stub
     //
