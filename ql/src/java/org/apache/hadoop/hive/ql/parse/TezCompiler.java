@@ -229,7 +229,7 @@ public class TezCompiler extends TaskCompiler {
     }
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    doLink2(procCtx);
+    AuxOpTreeSignature.linkAuxSignatures(procCtx.parseContext);
     markOperatorsWithUnstableRuntimeStats(procCtx);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
@@ -242,16 +242,6 @@ public class TezCompiler extends TaskCompiler {
     // Update bucketing version of ReduceSinkOp if needed
     updateBucketingVersionForUpgrade(procCtx);
 
-  }
-
-  // FIXME move
-  public static void doLink2(OptimizeTezProcContext procCtx) throws SemanticException {
-    AuxOpTreeSignature.linkAuxSignatures(procCtx.parseContext);
-  }
-
-  // FIXME move
-  public static void doLink(ParseContext procCtx) throws SemanticException {
-    AuxOpTreeSignature.linkAuxSignatures(procCtx);
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
