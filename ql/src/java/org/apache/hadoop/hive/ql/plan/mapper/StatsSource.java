@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,8 +26,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
-
-import com.google.common.collect.ImmutableList;
 
 @InterfaceAudience.Private
 public interface StatsSource {
@@ -39,6 +38,6 @@ public interface StatsSource {
 
   void putAll(Map<OpTreeSignature, OperatorStats> map);
 
-  void putAll2(ImmutableList<PersistedRuntimeStats> statMap);
+  void putAll2(List<PersistedRuntimeStats> statMap);
 
 }

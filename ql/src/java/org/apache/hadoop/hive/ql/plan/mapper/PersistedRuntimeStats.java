@@ -22,11 +22,19 @@ import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PersistedRuntimeStats {
 
-  public final OpTreeSignature sig;
-  public final OperatorStats stat;
-  public final RelTreeSignature rSig;
+  @JsonProperty
+  public OpTreeSignature sig;
+  @JsonProperty
+  public OperatorStats stat;
+  @JsonProperty
+  public RelTreeSignature rSig;
+
+  PersistedRuntimeStats() {
+  }
 
   public PersistedRuntimeStats(OpTreeSignature sig, OperatorStats stat, RelTreeSignature rSig) {
     this.sig = sig;

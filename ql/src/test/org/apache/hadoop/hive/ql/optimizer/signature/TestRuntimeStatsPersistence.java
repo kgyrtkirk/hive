@@ -21,10 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.signature;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -37,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -119,21 +115,21 @@ public class TestRuntimeStatsPersistence {
 
   }
 
-  @Test
-  public void checkCanStoreMap() throws Exception {
-
-    Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
-    map.put(signatureFactory.getSignature(getTsOp(0)), new OperatorStats("ts0"));
-    map.put(signatureFactory.getSignature(getTsOp(1)), new OperatorStats("ts1"));
-
-    RuntimeStatsMap rsm = new RuntimeStatsMap(map);
-
-    RuntimeStatsMap rsm2 = persistenceLoop(rsm, RuntimeStatsMap.class);
-    OpTreeSignature k1 = rsm.toMap().keySet().iterator().next();
-    OpTreeSignature k2 = rsm2.toMap().keySet().iterator().next();
-    assertEquals(k1, k2);
-    assertEquals(rsm, rsm2);
-  }
+  //  @Test
+  //  public void checkCanStoreMap() throws Exception {
+  //
+  //    Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
+  //    map.put(signatureFactory.getSignature(getTsOp(0)), new OperatorStats("ts0"));
+  //    map.put(signatureFactory.getSignature(getTsOp(1)), new OperatorStats("ts1"));
+  //
+  //    RuntimeStatsMap rsm = new RuntimeStatsMap(map);
+  //
+  //    RuntimeStatsMap rsm2 = persistenceLoop(rsm, RuntimeStatsMap.class);
+  //    OpTreeSignature k1 = rsm.toMap().keySet().iterator().next();
+  //    OpTreeSignature k2 = rsm2.toMap().keySet().iterator().next();
+  //    assertEquals(k1, k2);
+  //    assertEquals(rsm, rsm2);
+  //  }
 
   private <T> T persistenceLoop(T sig, Class<T> clazz) throws IOException {
     RuntimeStatsPersister sp = RuntimeStatsPersister.INSTANCE;

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -33,17 +34,19 @@ import com.google.common.collect.ImmutableList;
 
 public class CachingStatsSource implements StatsSource {
 
-
-  private final Cache<OpTreeSignature, OperatorStats> cache;
-  private final Cache<RelTreeSignature, OperatorStats> cache2;
+  private final Cache<Object, OperatorStats> cache;
 
   public CachingStatsSource(int cacheSize) {
     cache = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
-    cache2 = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
   }
 
   @Override
   public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+    return Optional.ofNullable(cache.getIfPresent(treeSig));
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(RelTreeSignature treeSig) {
     return Optional.ofNullable(cache.getIfPresent(treeSig));
   }
 
@@ -67,15 +70,15 @@ public class CachingStatsSource implements StatsSource {
   }
 
   @Override
-  public Optional<OperatorStats> lookup(RelTreeSignature of) {
-    throw new RuntimeException();
-  }
-
-  @Override
-  public void putAll2(ImmutableList<PersistedRuntimeStats> statMap) {
-    throw new RuntimeException();
-    // TODO Auto-generated method stub
-    //
+  public void putAll2(List<PersistedRuntimeStats> statMap) {
+    for (PersistedRuntimeStats entry : statMap) {
+      if (entry.rSig != null) {
+        cache.put(entry.rSig, entry.stat);
+      }
+      if (entry.sig != null) {
+        cache.put(entry.sig, entry.stat);
+      }
+    }
   }
 
 }

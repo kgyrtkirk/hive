@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,8 +28,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
-
-import com.google.common.collect.ImmutableList;
 
 public class MapBackedStatsSource implements StatsSource {
 
@@ -62,7 +61,7 @@ public class MapBackedStatsSource implements StatsSource {
   }
 
   @Override
-  public void putAll2(ImmutableList<PersistedRuntimeStats> statMap) {
+  public void putAll2(List<PersistedRuntimeStats> statMap) {
     for (PersistedRuntimeStats persistedRuntimeStats : statMap) {
       if (persistedRuntimeStats.sig != null) {
         map.put(persistedRuntimeStats.sig, persistedRuntimeStats.stat);
