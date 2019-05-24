@@ -288,29 +288,6 @@ public class PlanMapper {
 
   private OpTreeSignatureFactory auxSignatureCache = OpTreeSignatureFactory.newCache();
 
-  public static final class AuxOpTreeSignature {
-    private OpTreeSignature sig;
-
-    public AuxOpTreeSignature(OpTreeSignature sig) {
-      this.sig = sig;
-    }
-
-    @Override
-    public int hashCode() {
-      return sig.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return (obj.getClass() == AuxOpTreeSignature.class) && sig.equals(((AuxOpTreeSignature) obj).sig);
-    }
-
-    @Override
-    public String toString() {
-      return sig.toString();
-    }
-  }
-
   public AuxOpTreeSignature getAuxSignatureOf(Operator<?> op) {
     OpTreeSignature x = auxSignatureCache.getSignature(op);
     return new AuxOpTreeSignature(x);
