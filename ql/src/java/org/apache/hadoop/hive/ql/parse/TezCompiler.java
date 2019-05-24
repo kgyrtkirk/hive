@@ -244,44 +244,14 @@ public class TezCompiler extends TaskCompiler {
 
   }
 
-
-  static class STP implements NodeProcessor {
-
-    private PlanMapper pm;
-
-    public STP(PlanMapper pm) {
-      this.pm = pm;
-    }
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      Operator<?> op = (Operator<?>) nd;
-      AuxOpTreeSignature treeSig = pm.getAuxSignatureOf(op);
-      pm.link(op, treeSig, true);
-      return nd;
-    }
-
-  }
-
-  private static void linkSignatures(ParseContext pctx, ArrayList<Node> topNodes) throws SemanticException {
-
-    PlanMapper pm = pctx.getContext().getPlanMapper();
-    pm.clearSignatureCache();
-    Dispatcher disp = new DefaultRuleDispatcher(new STP(pm), new HashMap(), null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
-
-    ogw.startWalking(topNodes, null);
-
-  }
-
-  public static void doLink(ParseContext parseContext) throws SemanticException {
-    linkSignatures(parseContext, new ArrayList(parseContext.getTopOps().values()));
+  // FIXME move
+  public static void doLink2(OptimizeTezProcContext procCtx) throws SemanticException {
+    AuxOpTreeSignature.linkAuxSignatures(procCtx.parseContext);
   }
 
   // FIXME move
-  public static void doLink2(OptimizeTezProcContext procCtx) throws SemanticException {
-    doLink(procCtx.parseContext);
+  public static void doLink(ParseContext procCtx) throws SemanticException {
+    AuxOpTreeSignature.linkAuxSignatures(procCtx);
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,

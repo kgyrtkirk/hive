@@ -18,7 +18,21 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Stack;
+
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public final class AuxOpTreeSignature {
   private OpTreeSignature sig;
@@ -40,5 +54,39 @@ public final class AuxOpTreeSignature {
   @Override
   public String toString() {
     return sig.toString();
+  }
+
+  static class AuxSignatureLinker implements NodeProcessor {
+
+    private PlanMapper pm;
+
+    public AuxSignatureLinker(PlanMapper pm) {
+      this.pm = pm;
+    }
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      Operator<?> op = (Operator<?>) nd;
+      AuxOpTreeSignature treeSig = pm.getAuxSignatureOf(op);
+      pm.link(op, treeSig, true);
+      return nd;
+    }
+
+  }
+
+  private static void linkAuxSignatures(ParseContext pctx, ArrayList<Node> topNodes) throws SemanticException {
+
+    PlanMapper pm = pctx.getContext().getPlanMapper();
+    pm.clearSignatureCache();
+    Dispatcher disp = new DefaultRuleDispatcher(new AuxSignatureLinker(pm), new HashMap(), null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+
+    ogw.startWalking(topNodes, null);
+
+  }
+
+  public static void linkAuxSignatures(ParseContext parseContext) throws SemanticException {
+    linkAuxSignatures(parseContext, new ArrayList(parseContext.getTopOps().values()));
   }
 }
