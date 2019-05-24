@@ -44,7 +44,7 @@ select ${hiveconf:zzz} > sum(u*v*w) from tu
         join tw on (tu.id_uw=tw.id_uw)
         where w>9 and u>1 and v>3;
 
-set hive.optimize.ppd=false;
+-- set hive.optimize.ppd=false;
 
 select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
