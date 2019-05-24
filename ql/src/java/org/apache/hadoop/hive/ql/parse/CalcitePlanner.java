@@ -415,7 +415,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg) {
+      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg,
       StatsSource statsSource) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
