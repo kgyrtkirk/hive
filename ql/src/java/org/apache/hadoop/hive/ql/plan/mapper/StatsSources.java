@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -104,7 +105,7 @@ public class StatsSources {
         continue;
       }
       if (e.getAll(OperatorStats.MayNotUseForRelNodes.class).size() > 0) {
-        rSig = null;
+        rSig = new ArrayList<>();
       }
       li.add(new PersistedRuntimeStats(first(sig), first(stat), first(rSig)));
     }
