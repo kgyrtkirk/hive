@@ -13,6 +13,6 @@ insert into store_s0 values
 insert into store_sales_s0 partition(ss_store_sk=9) values (1,'xxx','xxx','xxx'),(2,'xxx','xxx','xxx'),(3,'xxx','xxx','xxx'),(4,'xxx','xxx','xxx'),(5,'xxx','xxx','xxx');
 insert into store_sales_s0 partition(ss_store_sk=39) values (1,'xxx','xxx','xxx'),(2,'xxx','xxx','xxx'),(3,'xxx','xxx','xxx'),(4,'xxx','xxx','xxx'),(5,'xxx','xxx','xxx');
 
-explain select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state) order by s_state;
-select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state) order by s_state;
+explain select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state);
+select grouping(s_state) from store_s0, store_sales_s0 where ss_store_sk = s_store_sk and s_state in ('SD','FL', 'MI', 'LA', 'MO', 'SC') group by rollup(ss_item_sk, s_state);
 
