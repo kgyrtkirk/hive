@@ -18,13 +18,15 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.Objects;
+
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PersistedRuntimeStats {
+public final class PersistedRuntimeStats {
 
   @JsonProperty
   public OpTreeSignature sig;
@@ -42,4 +44,17 @@ public class PersistedRuntimeStats {
     this.rSig = rSig;
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(sig, stat, rSig);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof PersistedRuntimeStats)) {
+      return false;
+    }
+    PersistedRuntimeStats o = (PersistedRuntimeStats) obj;
+    return Objects.equals(sig, o.sig) && Objects.equals(stat, o.stat) && Objects.equals(rSig, o.rSig);
+  }
 }
