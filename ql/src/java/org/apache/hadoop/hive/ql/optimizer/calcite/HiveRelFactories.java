@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
@@ -39,11 +39,9 @@ import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.RelFactories.SemiJoinFactory;
 import org.apache.calcite.rel.core.RelFactories.SetOpFactory;
 import org.apache.calcite.rel.core.RelFactories.SortFactory;
-import org.apache.calcite.rel.rel2sql.SqlImplementor;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
@@ -130,19 +128,19 @@ public class HiveRelFactories {
       RelOptCluster cluster = child.getCluster();
       HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
 
-      HivePlannerContext hpc = ((HivePlannerContext) cluster.getPlanner().getContext());
-      StatsSource ss = hpc.getStatsSource();
+      Context context = cluster.getPlanner().getContext();
+      if (context instanceof HivePlannerContext) {
+        StatsSource ss = ((HivePlannerContext) context).getStatsSource();
 
-      if (ss.canProvideStatsFor(HiveFilter.class)) {
-        Optional<OperatorStats> os = ss.lookup(RelTreeSignature.of(filter));
-        if (os.isPresent()) {
-          long outputRecords = os.get().getOutputRecords();
-          HiveFilter.StatEnhancedHiveFilter newFilter =
-              new HiveFilter.StatEnhancedHiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child,
-              condition, outputRecords);
+        if (ss.canProvideStatsFor(HiveFilter.class)) {
+          Optional<OperatorStats> os = ss.lookup(RelTreeSignature.of(filter));
+          if (os.isPresent()) {
+            long outputRecords = os.get().getOutputRecords();
+            HiveFilter.StatEnhancedHiveFilter newFilter = new HiveFilter.StatEnhancedHiveFilter(cluster,
+                TraitsUtil.getDefaultTraitSet(cluster), child, condition, outputRecords);
 
-          String ss1 = RelOptUtil.toString(newFilter, SqlExplainLevel.ALL_ATTRIBUTES);
-          return newFilter;
+            return newFilter;
+          }
         }
       }
       return filter;
