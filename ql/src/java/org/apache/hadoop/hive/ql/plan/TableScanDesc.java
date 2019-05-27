@@ -161,6 +161,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return alias;
   }
 
+  @Signature
   public String getPredicateString() {
     if (filterExpr == null) {
       return null;

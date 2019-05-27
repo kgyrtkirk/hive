@@ -103,6 +103,9 @@ public class StatsSources {
         LOG.debug("Ignoring {}, marked with OperatorStats.IncorrectRuntimeStatsMarker", sig.get(0));
         continue;
       }
+      if (e.getAll(OperatorStats.MayNotUseForRelNodes.class).size() > 0) {
+        rSig = null;
+      }
       li.add(new PersistedRuntimeStats(first(sig), first(stat), first(rSig)));
     }
     return li.build();

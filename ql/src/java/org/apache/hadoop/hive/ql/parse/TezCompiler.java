@@ -1011,7 +1011,7 @@ public class TezCompiler extends TaskCompiler {
       if (nd instanceof TableScanOperator) {
         TableScanOperator ts = (TableScanOperator) nd;
         if (ts.getConf().getPredicateString() != null) {
-          mark(ts);
+          planMapper.link(ts, new OperatorStats.MayNotUseForRelNodes());
         }
       }
       return null;

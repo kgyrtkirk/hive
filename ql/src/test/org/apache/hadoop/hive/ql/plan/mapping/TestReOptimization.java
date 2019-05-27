@@ -240,9 +240,9 @@ public class TestReOptimization {
       res.addAll(res1);
     }
 
-    assertEquals("2TS", 2, res.stream().filter(line -> line.contains("TS_")).count());
-    assertEquals("2TS(runtime)", 2,
-        res.stream().filter(line -> line.contains("TS") && line.contains("runtime")).count());
+    assertEquals("2FIL", 2, res.stream().filter(line -> line.contains("FIL_")).count());
+    assertEquals("2FIL(runtime)", 2,
+        res.stream().filter(line -> line.contains("FIL") && line.contains("runtime")).count());
 
   }
 
