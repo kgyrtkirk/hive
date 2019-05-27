@@ -115,6 +115,7 @@ public class TestRuntimeStatsPersistence {
 
   }
 
+  // FIXME: redo test
   //  @Test
   //  public void checkCanStoreMap() throws Exception {
   //
