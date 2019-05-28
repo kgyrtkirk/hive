@@ -204,4 +204,3 @@ POSTHOOK: Input: default@store_sales_s0
 POSTHOOK: Input: default@store_sales_s0@ss_store_sk=39
 POSTHOOK: Input: default@store_sales_s0@ss_store_sk=9
 #### A masked pattern was here ####
-1

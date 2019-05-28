@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -763,6 +764,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       LOG.info("number of splits " + result.size());
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+
+    if (result.isEmpty() && newjob.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      String scratchDir = job.get(DagUtils.TEZ_TMP_DIR_KEY);
+      Path dir = new Path(scratchDir);
+      dir.getFileSystem(job).mkdirs(dir);
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+      result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(dir),
+          ZeroRowsInputFormat.class.getName()));
+    }
+
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 

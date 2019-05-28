@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -264,12 +263,12 @@ public class DynamicPartitionPruner {
     ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(si.partKey);
     eval.initialize(soi);
 
-    applyFilterToPartitions(converter, eval, columnName, values, si.mustKeepOnePartition);
+    applyFilterToPartitions(converter, eval, columnName, values);
   }
 
   @SuppressWarnings("rawtypes")
   private void applyFilterToPartitions(Converter converter, ExprNodeEvaluator eval,
-      String columnName, Set<Object> values, boolean mustKeepOnePartition) throws HiveException {
+      String columnName, Set<Object> values) throws HiveException {
 
     Object[] row = new Object[1];
 
@@ -298,7 +297,7 @@ public class DynamicPartitionPruner {
         LOG.debug("part key expr applied: " + partValue);
       }
 
-      if (!values.contains(partValue) && (!mustKeepOnePartition || work.getPathToPartitionInfo().size() > 1)) {
+      if (!values.contains(partValue)) {
         LOG.info("Pruning path: " + p);
         it.remove();
         // work.removePathToPartitionInfo(p);
@@ -329,7 +328,6 @@ public class DynamicPartitionPruner {
     public AtomicBoolean skipPruning = new AtomicBoolean();
     public final String columnName;
     public final String columnType;
-    private boolean mustKeepOnePartition;
 
     @VisibleForTesting // Only used for testing.
     SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, String columnType, JobConf jobConf, Object forTesting) {
@@ -351,7 +349,6 @@ public class DynamicPartitionPruner {
 
       this.columnName = columnName;
       this.columnType = columnType;
-      this.mustKeepOnePartition = jobConf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false);
 
       deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
       deserializer.initialize(jobConf, table.getProperties());
