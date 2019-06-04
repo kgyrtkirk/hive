@@ -18,14 +18,10 @@
 
 package org.apache.hadoop.hive.ql.optimizer.signature;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.externalize.RelWriterImpl;
-import org.apache.calcite.sql.SqlExplainLevel;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
-
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -36,30 +32,25 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class RelTreeSignature {
 
-  @JsonProperty
-  private int hashCode;
+  //  @JsonProperty
+  //  private int hashCode;
   @JsonProperty
   private String sig;
   @JsonProperty
-  private ArrayList<RelTreeSignature> childSig;
+  private ArrayList<RelTreeSignature> parentSig;
 
   // need this for Jackson to work
   @SuppressWarnings("unused")
   private RelTreeSignature() {
   }
 
-  public RelTreeSignature(RelNode node) {
-    node.copy(node.getTraitSet(), new ArrayList<RelNode>());
-    sig = node.getDigest();
-    String s2 = HiveRelOptUtil.toString(node);
-    childSig = new ArrayList<RelTreeSignature>();
-    for (RelNode relNode : node.getInputs()) {
-      childSig.add(RelTreeSignature.of(relNode));
-    }
+  public RelTreeSignature(String string) {
+    sig = string;
   }
 
   public static RelTreeSignature of(RelNode node) {
-    return new RelTreeSignature(node);
+    // FIXME: implement properly
+    return new RelTreeSignature(RelOptUtil.toString(node));
   }
 
   @Override
@@ -69,21 +60,11 @@ public final class RelTreeSignature {
       return false;
     }
     RelTreeSignature other = (RelTreeSignature) obj;
-    return sig.equals(other.sig) && childSig.equals(other.childSig);
+    return sig.equals(other.sig);
   }
 
   @Override
   public int hashCode() {
-    return hashCode;
-  }
-  
-  static class NonRecursiveRelWriterImpl extends RelWriterImpl{
-
-    public NonRecursiveRelWriterImpl(PrintWriter pw, SqlExplainLevel detailLevel, boolean withIdPrefix) {
-      super(pw, detailLevel, withIdPrefix);
-    }
-    
-//    inputs
-    
+    return sig.hashCode();
   }
 }
