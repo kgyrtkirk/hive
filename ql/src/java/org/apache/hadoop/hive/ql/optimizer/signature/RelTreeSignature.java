@@ -19,16 +19,23 @@
 package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.externalize.RelWriterImpl;
 import org.apache.calcite.sql.SqlExplainLevel;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelJsonImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelWriterImplCopy;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+import avro.shaded.com.google.common.base.Objects;
 
 /**
  * Operator tree signature.
@@ -49,13 +56,12 @@ public final class RelTreeSignature {
   }
 
   public RelTreeSignature(RelNode node) {
-    node.copy(node.getTraitSet(), new ArrayList<RelNode>());
-    sig = node.getDigest();
-    String s2 = HiveRelOptUtil.toString(node);
+    sig = relSignature(node);
     childSig = new ArrayList<RelTreeSignature>();
     for (RelNode relNode : node.getInputs()) {
       childSig.add(RelTreeSignature.of(relNode));
     }
+    hashCode = Objects.hashCode(sig, childSig);
   }
 
   public static RelTreeSignature of(RelNode node) {
@@ -76,14 +82,28 @@ public final class RelTreeSignature {
   public int hashCode() {
     return hashCode;
   }
-  
-  static class NonRecursiveRelWriterImpl extends RelWriterImpl{
+
+  private String relSignature(RelNode rel) {
+    if (rel == null) {
+      return null;
+    }
+    final StringWriter sw = new StringWriter();
+    final RelWriter planWriter =
+        new NonRecursiveRelWriterImpl(
+            new PrintWriter(sw), SqlExplainLevel.EXPPLAN_ATTRIBUTES, false);
+    rel.explain(planWriter);
+    return sw.toString();
+  }
+
+  static class NonRecursiveRelWriterImpl extends RelWriterImplCopy {
 
     public NonRecursiveRelWriterImpl(PrintWriter pw, SqlExplainLevel detailLevel, boolean withIdPrefix) {
       super(pw, detailLevel, withIdPrefix);
     }
-    
-//    inputs
-    
+
+    @Override
+    protected void explainInputs(List<RelNode> inputs) {
+      // no-op
+    }
   }
 }
