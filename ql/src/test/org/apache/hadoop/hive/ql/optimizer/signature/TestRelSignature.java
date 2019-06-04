@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.signature;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
@@ -113,97 +111,26 @@ public class TestRelSignature {
     RelNode r7b = builder.scan("t").filter(eq("f1", 7)).build();
 
     checkEquals(r7, r7b);
-    //    checkNotEquals(r7, r8);
-
-
-//    Operator<? extends OperatorDesc> op7 = getFilterOp(7);
-//    Operator<? extends OperatorDesc> op8 = getFilterOp(8);
-//    Operator<? extends OperatorDesc> op7b = getFilterOp(7);
-//
+    checkNotEquals(r7, r8);
   }
 
-  //  @Test
-  //  public void testTree1() {
-  //    Operator<?> tr37 = getFilTsOp(3, 7);
-  //    Operator<?> tr37a = getFilTsOp(3, 7);
-  //    Operator<?> tr17 = getFilTsOp(1, 7);
-  //    Operator<?> tr31 = getFilTsOp(3, 1);
-  //
-  //    checkEquals(tr37, tr37a);
-  //
-  //    checkTreeNotEquals(tr37, tr17);
-  //    checkTreeEquals(tr37, tr37a);
-  //    checkTreeNotEquals(tr37, tr31);
-  //  }
-
-  //  private Operator<?> getFilTsOp(int i, int j) {
-  //    Operator<TableScanDesc> ts = getTsOp(i);
-  //    Operator<? extends OperatorDesc> fil = getFilterOp(j);
-  //
-  //    connectOperators(ts, fil);
-  //
-  //    return fil;
-  //  }
-  //
-  //  private void connectOperators(Operator<?> parent, Operator<?> child) {
-  //    parent.getChildOperators().add(child);
-  //    child.getParentOperators().add(parent);
-  //  }
-  //
-  //  @Test
-  //  public void testTableScand() {
-  //    Operator<TableScanDesc> t1 = getTsOp(3);
-  //    Operator<TableScanDesc> t1a = getTsOp(3);
-  //    Operator<TableScanDesc> t2 = getTsOp(4);
-  //
-  //    checkEquals(t1, t1a);
-  //    checkNotEquals(t1, t2);
-  //  }
-  //
   public static void checkEquals(RelNode r7, RelNode r7b) {
-    
-    //    assertTrue(r7.equals(r7b));
+
     RelTreeSignature s1 = RelTreeSignature.of(r7);
     RelTreeSignature s2 = RelTreeSignature.of(r7b);
 
-    // FIXME?
-    //    s1.proveEquals(s2);
-    //    assertTrue("sigCmp", s1.signatureCompare(s2));
     assertEquals(s1.hashCode(), s2.hashCode());
     assertEquals(s1, s2);
   }
 
-  public static void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
-    assertFalse(o1.logicalEquals(o2));
-    OpSignature s1 = OpSignature.of(o1);
-    OpSignature s2 = OpSignature.of(o2);
+  public static void checkNotEquals(RelNode r7, RelNode r8) {
+    RelTreeSignature s1 = RelTreeSignature.of(r7);
+    RelTreeSignature s2 = RelTreeSignature.of(r8);
 
-    assertFalse(s1.signatureCompare(s2));
-    // this might be a little bit too much...but in most cases this should be true
     assertNotEquals(s1.hashCode(), s2.hashCode());
     assertNotEquals(s1, s2);
   }
 
-  //
-  //  public static void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
-  //    OpTreeSignature ts1 = OpTreeSignature.of(o1);
-  //    OpTreeSignature ts2 = OpTreeSignature.of(o2);
-  //
-  //    assertEquals(ts1.hashCode(), ts2.hashCode());
-  //    assertEquals(ts1, ts2);
-  //  }
-  //
-  //  public static void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
-  //
-  //    OpTreeSignature ts1 = OpTreeSignature.of(o1);
-  //    OpTreeSignature ts2 = OpTreeSignature.of(o2);
-  //
-  //    assertNotEquals(ts1.hashCode(), ts2.hashCode());
-  //    ts1.equals(ts2);
-  //    assertNotEquals(ts1, ts2);
-  //  }
-  //
-  //
   private Operator<? extends OperatorDesc> getFilterOp(int constVal) {
 
     ExprNodeDesc pred = new ExprNodeConstantDesc(constVal);
@@ -211,17 +138,4 @@ public class TestRelSignature {
     Operator<? extends OperatorDesc> op = OperatorFactory.get(cCtx, fd);
     return op;
   }
-  //
-  //  private Operator<TableScanDesc> getTsOp(int i) {
-  //    Table tblMetadata = new Table("db", "table");
-  //    TableScanDesc desc = new TableScanDesc("alias_" + cCtx.nextOperatorId(), tblMetadata);
-  //    List<ExprNodeDesc> as =
-  //        Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
-  //            new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
-  //    ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udf, as);
-  //    desc.setFilterExpr(f1);
-  //    Operator<TableScanDesc> ts = OperatorFactory.get(cCtx, desc);
-  //    return ts;
-  //  }
-
 }
