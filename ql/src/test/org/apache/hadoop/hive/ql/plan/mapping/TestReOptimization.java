@@ -248,8 +248,6 @@ public class TestReOptimization {
 
   @Test
   public void testReOptimizationCanSendBackStatsToCBO() throws Exception {
-    disablePPD();
-
     IDriver driver = createDriver("overlay,reoptimize");
     // @formatter:off
     String query="select assert_true_oom(${hiveconf:zzz} > sum(u*v*w)) from tu\n" +
@@ -287,15 +285,6 @@ public class TestReOptimization {
       }
     }
     assertEquals(3, checkedOperators);
-
-  }
-
-  @Deprecated
-  private void disablePPD() {
-    // these things should be able to work with ppd on
-    HiveConf conf = env_setup.getTestCtx().hiveConf;
-    //    conf.set("hive.optimize.ppd", "false");
-    conf.set("hive.ppd.remove.duplicatefilters", "false");
 
   }
 

@@ -127,22 +127,6 @@ public class HiveRelFactories {
     public RelNode createFilter(RelNode child, RexNode condition) {
       RelOptCluster cluster = child.getCluster();
       HiveFilter filter = new HiveFilter(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
-
-      Context context = cluster.getPlanner().getContext();
-      if (context instanceof HivePlannerContext) {
-        StatsSource ss = ((HivePlannerContext) context).unwrap(StatsSource.class);
-
-        if (ss.canProvideStatsFor(HiveFilter.class)) {
-          Optional<OperatorStats> os = ss.lookup(RelTreeSignature.of(filter));
-          if (os.isPresent()) {
-            long outputRecords = os.get().getOutputRecords();
-            HiveFilter.StatEnhancedHiveFilter newFilter = new HiveFilter.StatEnhancedHiveFilter(cluster,
-                TraitsUtil.getDefaultTraitSet(cluster), child, condition, outputRecords);
-
-            return newFilter;
-          }
-        }
-      }
       return filter;
     }
   }
