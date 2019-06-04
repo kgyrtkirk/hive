@@ -24,6 +24,7 @@ import org.apache.calcite.avatica.util.Spacer;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.externalize.RelWriterImpl;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.util.Pair;
@@ -32,6 +33,9 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Implementation of {@link org.apache.calcite.rel.RelWriter}.
+ *
+ * @deprecated FIXME this class should be removed when {@link RelWriterImpl#explainInputs(List)}
+ * is not protected anymore
  */
 @Deprecated
 public class RelWriterImplCopy implements RelWriter {
