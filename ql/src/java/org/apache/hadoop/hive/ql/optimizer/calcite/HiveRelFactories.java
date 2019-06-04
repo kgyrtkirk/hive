@@ -130,7 +130,7 @@ public class HiveRelFactories {
 
       Context context = cluster.getPlanner().getContext();
       if (context instanceof HivePlannerContext) {
-        StatsSource ss = ((HivePlannerContext) context).getStatsSource();
+        StatsSource ss = ((HivePlannerContext) context).unwrap(StatsSource.class);
 
         if (ss.canProvideStatsFor(HiveFilter.class)) {
           Optional<OperatorStats> os = ss.lookup(RelTreeSignature.of(filter));

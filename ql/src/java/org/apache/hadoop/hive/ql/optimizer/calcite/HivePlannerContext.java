@@ -66,10 +66,9 @@ public class HivePlannerContext implements Context {
     if(clazz.isInstance(isCorrelatedColumns)) {
       return clazz.cast(isCorrelatedColumns);
     }
+    if (clazz.isInstance(statsSource)) {
+      return clazz.cast(statsSource);
+    }
     return null;
-  }
-
-  public StatsSource getStatsSource() {
-    return statsSource;
   }
 }
