@@ -34,6 +34,9 @@ import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+/**
+ * This signature is used to establish related parts to connect pre/post PPD optimizations.
+ */
 public final class AuxOpTreeSignature {
   private OpTreeSignature sig;
 
@@ -69,12 +72,15 @@ public final class AuxOpTreeSignature {
         throws SemanticException {
       Operator<?> op = (Operator<?>) nd;
       AuxOpTreeSignature treeSig = pm.getAuxSignatureOf(op);
-      pm.link(op, treeSig, true);
+      pm.merge(op, treeSig);
       return nd;
     }
 
   }
 
+  /**
+   * Links a full tree
+   */
   private static void linkAuxSignatures(ParseContext pctx, ArrayList<Node> topNodes) throws SemanticException {
 
     PlanMapper pm = pctx.getContext().getPlanMapper();

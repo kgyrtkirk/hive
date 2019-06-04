@@ -182,16 +182,24 @@ public class PlanMapper {
     }
   }
 
-  public void link(Object o1, Object o2) {
-    link(o1, o2, false);
-  }
   /**
    * States that the two objects are representing the same.
    *
    * For example if during an optimization Operator_A is replaced by a specialized Operator_A1;
    * then those two can be linked.
    */
-  public void link(Object o1, Object o2, boolean mayMerge) {
+  public void link(Object o1, Object o2) {
+    link(o1, o2, false);
+  }
+
+  /**
+   * Links and optionally merges the groups identified by the two objects.
+   */
+  public void merge(Object o1, Object o2) {
+    link(o1, o2, true);
+  }
+
+  private void link(Object o1, Object o2, boolean mayMerge) {
 
     Set<Object> keySet = Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
     keySet.add(o1);
