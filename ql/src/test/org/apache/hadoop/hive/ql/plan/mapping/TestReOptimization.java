@@ -287,7 +287,8 @@ public class TestReOptimization {
 
         long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
         if (fo.getStatistics() != null) {
-          //          assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
+          // in case the join order is changed the subTree-s are not matching anymore because an RS is present in the condition
+          // assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
         }
         assertEquals(os.getOutputRecords(), cntFilter);
 
