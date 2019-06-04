@@ -1009,6 +1009,8 @@ public class TezCompiler extends TaskCompiler {
         }
       }
       if (nd instanceof TableScanOperator) {
+        // If the tablescan operator is making use of filtering capabilities of readers then
+        // we will not see the actual incoming rowcount which was processed - so we may not use it for relNodes
         TableScanOperator ts = (TableScanOperator) nd;
         if (ts.getConf().getPredicateString() != null) {
           planMapper.link(ts, new OperatorStats.MayNotUseForRelNodes());

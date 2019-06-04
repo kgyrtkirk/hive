@@ -49,6 +49,7 @@ public final class RelTreeSignature {
   }
 
   public static RelTreeSignature of(RelNode node) {
+    // FIXME: implement properly
     return new RelTreeSignature(RelOptUtil.toString(node));
   }
 
