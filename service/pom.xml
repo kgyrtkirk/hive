@@ -300,12 +300,6 @@
       <version>${apache-directory-server.version}</version>
       <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.directory.shared</groupId>
-      <artifactId>shared-ldap</artifactId>
-      <version>0.9.19</version>
-    </dependency>
   </dependencies>
 
   <build>
