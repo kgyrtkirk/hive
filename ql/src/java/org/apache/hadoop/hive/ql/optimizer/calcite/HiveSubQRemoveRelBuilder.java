@@ -50,7 +50,6 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.server.CalciteServerStatement;
-import org.apache.calcite.sql.SemiJoinType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -120,6 +119,7 @@ import java.util.TreeSet;
 public class HiveSubQRemoveRelBuilder {
   private static final Function<RexNode, String> FN_TYPE =
       new Function<RexNode, String>() {
+        @Override
         public String apply(RexNode input) {
           return input + ": " + input.getType();
         }
@@ -184,6 +184,7 @@ public class HiveSubQRemoveRelBuilder {
     final RelOptSchema[] relOptSchemas = {null};
     Frameworks.withPrepare(
         new Frameworks.PrepareAction<Void>(config) {
+          @Override
           public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
                             SchemaPlus rootSchema, CalciteServerStatement statement) {
             clusters[0] = cluster;
@@ -643,6 +644,7 @@ public class HiveSubQRemoveRelBuilder {
     final List<ImmutableList<RexNode>> nodeLists =
         Lists.transform(groupSets,
             new Function<ImmutableBitSet, ImmutableList<RexNode>>() {
+              @Override
               public ImmutableList<RexNode> apply(ImmutableBitSet input) {
                 return fields(ImmutableIntList.of(input.toArray()));
               }
@@ -1141,10 +1143,10 @@ public class HiveSubQRemoveRelBuilder {
       }
       if(createSemiJoin) {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-            requiredColumns, SemiJoinType.SEMI);
+            requiredColumns, JoinRelType.SEMI);
       } else {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
-            requiredColumns, SemiJoinType.of(joinType));
+            requiredColumns, joinType);
 
       }
     } else {
@@ -1247,10 +1249,12 @@ public class HiveSubQRemoveRelBuilder {
           fieldName.e != null ? fieldName.e : "expr$" + fieldName.i;
       final RelDataType type = cluster.getTypeFactory().leastRestrictive(
           new AbstractList<RelDataType>() {
+            @Override
             public RelDataType get(int index) {
               return tupleList.get(index).get(fieldName.i).getType();
             }
 
+            @Override
             public int size() {
               return rowCount;
             }
@@ -1534,6 +1538,7 @@ public class HiveSubQRemoveRelBuilder {
     return aggregate(groupKey,
         Lists.transform(
             aggregateCalls, new Function<AggregateCall, AggCall>() {
+              @Override
               public AggCall apply(AggregateCall input) {
                 return new AggCallImpl2(input);
               }
@@ -1589,6 +1594,7 @@ public class HiveSubQRemoveRelBuilder {
       return alias == null ? nodes.toString() : nodes + " as " + alias;
     }
 
+    @Override
     public GroupKey alias(String alias) {
       return Objects.equals(this.alias, alias)
           ? this
@@ -1631,6 +1637,7 @@ public class HiveSubQRemoveRelBuilder {
   private static final class Frame {
     static final Function<Pair<String, RelDataType>, List<RelDataTypeField>> FN =
         new Function<Pair<String, RelDataType>, List<RelDataTypeField>>() {
+          @Override
           public List<RelDataTypeField> apply(Pair<String, RelDataType> input) {
             return input.right.getFieldList();
           }
@@ -1677,6 +1684,7 @@ public class HiveSubQRemoveRelBuilder {
       this.right = right;
     }
 
+    @Override
     public RexNode visitInputRef(RexInputRef inputRef) {
       final RelDataType leftRowType = left.getRowType();
       final RexBuilder rexBuilder = getRexBuilder();
