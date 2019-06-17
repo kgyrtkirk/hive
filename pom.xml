@@ -127,7 +127,7 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.19.0</calcite.version>
+    <calcite.version>1.20.0-x201</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -234,6 +234,10 @@
         <checksumPolicy>warn</checksumPolicy>
       </releases>
     </repository>
+     <repository>
+       <id>calcite-aux-repo</id>
+       <url>https://www.rxd.hu/misc/calcite-aux/</url>
+     </repository>
     <repository>
        <id>druid-apache-rc-testing</id>
        <url>https://repository.apache.org/content/repositories/orgapachedruid-1001/</url>
