@@ -108,6 +108,7 @@ import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
+import org.apache.calcite.sql2rel.RelDecorrelator;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -205,7 +206,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectOverIntersec
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectSortTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
@@ -1816,7 +1816,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       }
-      calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
+      calciteGenPlan = RelDecorrelator.decorrelateQuery(calciteGenPlan);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
       }
@@ -2374,7 +2374,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
-        final double factorSelectivity = (double) HiveConf.getFloatVar(
+        final double factorSelectivity = HiveConf.getFloatVar(
           conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
         RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
         if (costOriginalPlan.isLe(costRebuildPlan)) {
