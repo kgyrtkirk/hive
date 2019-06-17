@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
-import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
@@ -55,10 +53,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
-import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
-import org.apache.hadoop.hive.ql.stats.OperatorStats;
-
 import com.google.common.collect.ImmutableList;
 
 public class HiveRelFactories {
@@ -197,13 +191,9 @@ public class HiveRelFactories {
 
   private static class HiveAggregateFactoryImpl implements AggregateFactory {
     @Override
-    public RelNode createAggregate(RelNode child, boolean indicator,
+    public RelNode createAggregate(RelNode child,
             ImmutableBitSet groupSet, ImmutableList<ImmutableBitSet> groupSets,
             List<AggregateCall> aggCalls) {
-        if (indicator) {
-          throw new IllegalStateException("Hive does not support indicator columns but Calcite "
-                  + "created an Aggregate operator containing them");
-        }
         return new HiveAggregate(child.getCluster(), child.getTraitSet(), child,
                 groupSet, groupSets, aggCalls);
     }
