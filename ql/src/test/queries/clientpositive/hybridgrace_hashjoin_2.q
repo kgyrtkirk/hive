@@ -7,7 +7,7 @@ set hive.explain.user=false;
 -- Test n-way join
 SELECT 1;
 
-set hive.auto.convert.join=true;
+-- set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 set hive.cbo.enable=false;
