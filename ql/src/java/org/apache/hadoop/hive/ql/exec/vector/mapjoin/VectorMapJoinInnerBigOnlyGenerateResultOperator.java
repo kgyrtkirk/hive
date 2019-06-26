@@ -258,6 +258,10 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
           bigTableRetainedVectorCopy.copyByValue(batch, batchIndex,
                                                  overflowBatch, overflowBatch.size);
         }
+        if (nonOuterSmallTableKeyVectorCopy != null) {
+          nonOuterSmallTableKeyVectorCopy.copyByValue(batch, batchIndex,
+              overflowBatch, overflowBatch.size);
+        }
 
         overflowBatch.size++;
         if (overflowBatch.size == overflowBatch.DEFAULT_SIZE) {
