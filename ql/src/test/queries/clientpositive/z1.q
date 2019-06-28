@@ -14,4 +14,6 @@ create table t as select * from t2 join t3 join t5  join t10;
 
 explain analyze select count(*) from t where d2=1 and (d3=1 or (d3=2 and d10=1));
 
+explain analyze select count(*) from t where  (d3=1 or (d3=2 and d10=1)) and d2=1;
+
 explain analyze select count(*) from t where (d2=1 and d3=1) or (d2=1 and d3=2 and d10=1);
