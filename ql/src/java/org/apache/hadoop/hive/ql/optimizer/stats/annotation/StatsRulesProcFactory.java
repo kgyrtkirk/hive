@@ -317,9 +317,14 @@ public class StatsRulesProcFactory {
     static class Xlong {
 
       private long nr;
+      private Statistics stat;
 
       public Xlong(long n) {
         this.nr = n;
+      }
+
+      public Xlong(Statistics newStat) {
+        stat = newStat;
       }
 
       public long getNumRows() {
@@ -327,11 +332,28 @@ public class StatsRulesProcFactory {
       }
 
       public static Xlong singleRow(Statistics stats) {
-        return new Xlong(1);
+        return forDeprecated(stats, 1);
       }
 
       public static Xlong forDeprecated(Statistics stats, long n) {
-        return new Xlong(n);
+        Statistics newStat = stats.clone();
+        newStat.setNumRows(n);
+        return new Xlong(newStat);
+      }
+
+      public static Xlong scaleColumn(Statistics stats, String colName, int i) {
+        ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
+        long cd = cs.getCountDistint();
+        Statistics newStat = stats.clone();
+        // FIXME... i>ndv / other cases
+        newStat.getColumnStatisticsFromColName(colName).setCountDistint(i);
+long dvs = cd;
+long numRows = stats.getNumRows();
+        long newNumRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
+        newStat.scaleToRowCount(newNumRows, true);
+
+        
+        return new Xlong(newStat);
       }
 
     }
@@ -363,8 +385,9 @@ public class StatsRulesProcFactory {
           long evaluatedRowCount = currNumRows;
           for (ExprNodeDesc child : genFunc.getChildren()) {
             aspCtx.clearAffectedColumns();
+            //FIXME 
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
-                aspCtx, neededCols, op, evaluatedRowCount);
+                aspCtx, neededCols, op, evaluatedRowCount).getNumRows();
             newNumRows = evaluatedRowCount;
             if (satisfyPrecondition(aspCtx.getAndExprStats())) {
               // Assumption is that columns are uncorrelated.
@@ -378,9 +401,12 @@ public class StatsRulesProcFactory {
           }
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
+
           for (ExprNodeDesc child : genFunc.getChildren()) {
+
+            //FIXME 
             newNumRows = StatsUtils.safeAdd(
-                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
+                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows).getNumRows(),
                 newNumRows);
           }
           // We have to clear the affected columns
@@ -401,7 +427,7 @@ public class StatsRulesProcFactory {
           return Xlong.forDeprecated(stats, evaluateNotNullExpr(stats, aspCtx, genFunc, currNumRows));
         } else {
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows);
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows).getNumRows();
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -809,7 +835,7 @@ public class StatsRulesProcFactory {
             long newNumRows = 0;
             for (ExprNodeDesc child : genFunc.getChildren()) {
               newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols,
-                  op, numRows);
+                  op, numRows).getNumRows();
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -1127,7 +1153,7 @@ public class StatsRulesProcFactory {
       return numRows / 3;
     }
 
-    private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
+    private Xlong evaluateChildExpr(Statistics stats, ExprNodeDesc child,
         AnnotateStatsProcCtx aspCtx, List<String> neededCols,
         Operator<?> op, long currNumRows) throws SemanticException {
 
@@ -1153,9 +1179,9 @@ public class StatsRulesProcFactory {
                 // special case: if both constants are not equal then return 0
                 if (prevConst != null &&
                     !prevConst.equals(((ExprNodeConstantDesc) leaf).getValue())) {
-                  return 0;
+                  return Xlong.forDeprecated(stats, numRows);
                 }
-                return numRows;
+                return Xlong.forDeprecated(stats, numRows);
               }
 
               // if the first argument is const then just set the flag and continue
@@ -1169,14 +1195,14 @@ public class StatsRulesProcFactory {
               // is a partition column. We do not need to evaluate partition columns
               // in filter expression since it will be taken care by partitio pruner
               if (neededCols != null && !neededCols.contains(colName)) {
-                return numRows;
+                return Xlong.forDeprecated(stats, numRows);
               }
 
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
               if (cs != null) {
                 long dvs = cs.getCountDistint();
                 numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
-                return numRows;
+                return Xlong.scaleColumn(stats, colName, 1);
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
@@ -1190,49 +1216,49 @@ public class StatsRulesProcFactory {
                 // is a partition column. We do not need to evaluate partition columns
                 // in filter expression since it will be taken care by partitio pruner
                 if (neededCols != null && neededCols.indexOf(colName) == -1) {
-                  return numRows;
+                  return Xlong.forDeprecated(stats, numRows);
                 }
 
                 ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
                 if (cs != null) {
                   long dvs = cs.getCountDistint();
                   numRows = dvs == 0 ? numRows / 2 : Math.round((double) numRows / dvs);
-                  return numRows;
+                  return Xlong.scaleColumn(stats, colName, 1);
                 }
               }
             }
           }
         } else if (udf instanceof GenericUDFOPNotEqual) {
-          return numRows;
+          return Xlong.forDeprecated(stats, numRows);
         } else if (udf instanceof GenericUDFOPEqualOrGreaterThan
             || udf instanceof GenericUDFOPEqualOrLessThan
             || udf instanceof GenericUDFOPGreaterThan
             || udf instanceof GenericUDFOPLessThan) {
-          return evaluateComparator(stats, aspCtx, genFunc, numRows);
+          return Xlong.forDeprecated(stats, evaluateComparator(stats, aspCtx, genFunc, numRows));
         } else if (udf instanceof GenericUDFOPNotNull) {
-          return evaluateNotNullExpr(stats, aspCtx, genFunc, numRows);
+          return Xlong.forDeprecated(stats, evaluateNotNullExpr(stats, aspCtx, genFunc, numRows));
         } else if (udf instanceof GenericUDFOPNull) {
-          return evaluateColEqualsNullExpr(stats, aspCtx, genFunc, numRows);
+          return Xlong.forDeprecated(stats, evaluateColEqualsNullExpr(stats, aspCtx, genFunc, numRows));
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
             || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
             || udf instanceof GenericUDFOPNot) {
-          return evaluateExpression(stats, genFunc, aspCtx, neededCols, op, numRows).getNumRows();
+          return evaluateExpression(stats, genFunc, aspCtx, neededCols, op, numRows);
         } else if (udf instanceof GenericUDFInBloomFilter) {
           if (genFunc.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
             // Synthetic predicates from semijoin opt should not affect stats.
-            return numRows;
+            return Xlong.forDeprecated(stats, numRows);
           }
         }
       } else if (child instanceof ExprNodeConstantDesc) {
         if (Boolean.FALSE.equals(((ExprNodeConstantDesc) child).getValue())) {
-          return 0;
+          return Xlong.forDeprecated(stats, 0);
         } else {
-          return numRows;
+          return Xlong.forDeprecated(stats, numRows);
         }
       }
 
       // worst case
-      return numRows / 2;
+      return Xlong.forDeprecated(stats, numRows / 2);
     }
 
   }
