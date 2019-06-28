@@ -1,0 +1,219 @@
+PREHOOK: query: create table t2 (d2 integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (d2 integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: create table t3 (d3 integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 (d3 integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: create table t5 (d5 integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: create table t5 (d5 integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+PREHOOK: query: create table t10 (d10 integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t10
+POSTHOOK: query: create table t10 (d10 integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t10
+PREHOOK: query: insert into t2  values (1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2  values (1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.d2 SCRIPT []
+PREHOOK: query: insert into t3  values (1),(2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: insert into t3  values (1),(2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.d3 SCRIPT []
+PREHOOK: query: insert into t5  values (1),(2),(3),(4),(5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t5
+POSTHOOK: query: insert into t5  values (1),(2),(3),(4),(5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t5
+POSTHOOK: Lineage: t5.d5 SCRIPT []
+PREHOOK: query: insert into t10 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t10
+POSTHOOK: query: insert into t10 values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t10
+POSTHOOK: Lineage: t10.d10 SCRIPT []
+Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Stage-3:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: create table t as select * from t2 join t3 join t5  join t10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t10
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t as select * from t2 join t3 join t5  join t10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t10
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.d10 SIMPLE [(t10)t10.FieldSchema(name:d10, type:int, comment:null), ]
+POSTHOOK: Lineage: t.d2 SIMPLE [(t2)t2.FieldSchema(name:d2, type:int, comment:null), ]
+POSTHOOK: Lineage: t.d3 SIMPLE [(t3)t3.FieldSchema(name:d3, type:int, comment:null), ]
+POSTHOOK: Lineage: t.d5 SIMPLE [(t5)t5.FieldSchema(name:d5, type:int, comment:null), ]
+PREHOOK: query: select count(*) from t where d2=1 and (d3=1 or (d3=2 and d10=1))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from t where d2=1 and (d3=1 or (d3=2 and d10=1))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select count(*) from t where d2=1 and (d3=1 or (d3=2 and d10=1))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select count(*) from t where d2=1 and (d3=1 or (d3=2 and d10=1))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t
+            filterExpr: ((d2 = 1) and ((d3 = 1) or ((d3 = 2) and (d10 = 1)))) (type: boolean)
+            Statistics: Num rows: 300/300 Data size: 3600 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((d2 = 1) and ((d3 = 1) or ((d3 = 2) and (d10 = 1)))) (type: boolean)
+              Statistics: Num rows: 55/55 Data size: 660 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                Statistics: Num rows: 55/55 Data size: 660 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from t where (d2=1 and d3=1) or (d2=1 and d3=2 and d10=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from t where (d2=1 and d3=1) or (d2=1 and d3=2 and d10=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze select count(*) from t where (d2=1 and d3=1) or (d2=1 and d3=2 and d10=1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze select count(*) from t where (d2=1 and d3=1) or (d2=1 and d3=2 and d10=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t
+            filterExpr: ((d2 = 1) and ((d3 = 1) or ((d3 = 2) and (d10 = 1)))) (type: boolean)
+            Statistics: Num rows: 300/300 Data size: 3600 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((d2 = 1) and ((d3 = 1) or ((d3 = 2) and (d10 = 1)))) (type: boolean)
+              Statistics: Num rows: 55/55 Data size: 660 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                Statistics: Num rows: 55/55 Data size: 660 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1/1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
