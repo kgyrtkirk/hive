@@ -1699,63 +1699,11 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (key < 'zzzzzzzz') (type: boolean)
                     Statistics: Num rows: 666 Data size: 57942 Basic stats: COMPLETE Column stats: COMPLETE
-<<<<<<< HEAD
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 666 Data size: 57942 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 key (type: string)
-                        outputColumnNames: _col1
-                        input vertices:
-                          1 Map 4
-                        Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: string)
-                            1 value (type: string)
-                          outputColumnNames: _col1
-                          input vertices:
-                            1 Map 5
-                          Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col1 (type: string)
-                              1 value (type: string)
-                            input vertices:
-                              1 Map 6
-                            Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
->>>>>>> asf/master
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 8 
@@ -1800,12 +1748,12 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 4 Data size: 700 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 4 Data size: 700 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -1817,12 +1765,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 key (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1833,12 +1781,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1848,10 +1796,10 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
-                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.75
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2010,63 +1958,11 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (key < 'zzzzzzzz') (type: boolean)
                     Statistics: Num rows: 666 Data size: 57942 Basic stats: COMPLETE Column stats: COMPLETE
-<<<<<<< HEAD
                     Reduce Output Operator
                       key expressions: key (type: string)
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 666 Data size: 57942 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                      outputColumnNames: _col0, _col1
-                      input vertices:
-                        0 Map 1
-                      Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 key (type: string)
-                        outputColumnNames: _col1
-                        input vertices:
-                          1 Map 4
-                        Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
-                        Map Join Operator
-                          condition map:
-                               Inner Join 0 to 1
-                          keys:
-                            0 _col1 (type: string)
-                            1 value (type: string)
-                          outputColumnNames: _col1
-                          input vertices:
-                            1 Map 5
-                          Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
-                          Map Join Operator
-                            condition map:
-                                 Inner Join 0 to 1
-                            keys:
-                              0 _col1 (type: string)
-                              1 value (type: string)
-                            input vertices:
-                              1 Map 6
-                            Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
-                            Group By Operator
-                              aggregations: count()
-                              minReductionHashAggr: 0.99
-                              mode: hash
-                              outputColumnNames: _col0
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              Reduce Output Operator
-                                sort order: 
-                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                                value expressions: _col0 (type: bigint)
->>>>>>> asf/master
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 8 
@@ -2111,12 +2007,12 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 4 Data size: 700 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 4 Data size: 700 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -2128,12 +2024,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 key (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2144,12 +2040,12 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 value (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 4 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2159,10 +2055,10 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 value (type: string)
-                Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.75
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
