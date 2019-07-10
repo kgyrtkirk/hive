@@ -218,15 +218,6 @@ public class TestParseDriver {
         "AS test_comp_exp");
   }
 
-  @Test(timeout = 10000)
-  public void test() throws Exception {
-
-    String f = "/tmp/a.sql";
-    String q = Files.toString(new File(f), Charset.defaultCharset());
-    parseDriver.parse(q);
-
-  }
-
   static class ExoticQueryBuilder {
     StringBuilder sb = new StringBuilder();
 
@@ -282,7 +273,7 @@ public class TestParseDriver {
   }
 
   @Test(timeout = 10000)
-  public void test23() throws Exception {
+  public void testExoticSJSSubQuery() throws Exception {
     ExoticQueryBuilder eqb = new ExoticQueryBuilder();
     eqb.recursiveSJS(10);
     String q = eqb.getQuery();
