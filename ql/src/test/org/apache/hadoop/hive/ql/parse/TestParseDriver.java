@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
