@@ -101,7 +101,7 @@ atomjoinSource
     |
     virtualTableSource (lateralView^)*
     |
-    (subQuerySource) => subQuerySource (lateralView^)*
+    (LPAREN) => subQuerySource (lateralView^)*
     |
     partitionedTableFunction (lateralView^)*
     |
