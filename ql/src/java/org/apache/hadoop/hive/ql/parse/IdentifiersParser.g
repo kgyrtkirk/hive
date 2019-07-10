@@ -518,12 +518,7 @@ precedenceConcatenateOperator
 
 precedenceConcatenateExpression
     :
-    (precedencePlusExpression -> precedencePlusExpression)
-        (
-        precedenceConcatenateOperator plus=precedencePlusExpression
-        -> ^(TOK_FUNCTION {adaptor.create(Identifier, "concat")} {$precedenceConcatenateExpression.tree} $plus)
-        )*
-    -> {$precedenceConcatenateExpression.tree}
+    precedencePlusExpression (precedenceConcatenateOperator^ precedencePlusExpression)*
     ;
 
 precedenceAmpersandOperator
@@ -533,7 +528,9 @@ precedenceAmpersandOperator
 
 precedenceAmpersandExpression
     :
-    precedenceConcatenateExpression (precedenceAmpersandOperator^ precedenceConcatenateExpression)*
+     precedencePlusExpression (precedenceAmpersandOperator^ precedencePlusExpression)*
+
+//    precedenceConcatenateExpression (precedenceAmpersandOperator^ precedenceConcatenateExpression)*
     ;
 
 
