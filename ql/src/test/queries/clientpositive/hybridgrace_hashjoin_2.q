@@ -6,7 +6,7 @@ set hive.explain.user=false;
 -- Hybrid Grace Hash Join
 SELECT 'Test n-way join';
 
--- set hive.auto.convert.join=true;
+set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 set hive.cbo.enable=false;
