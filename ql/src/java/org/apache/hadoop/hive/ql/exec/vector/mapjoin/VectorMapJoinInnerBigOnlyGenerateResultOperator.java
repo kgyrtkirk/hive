@@ -252,7 +252,7 @@ public abstract class VectorMapJoinInnerBigOnlyGenerateResultOperator
 
       for (long l = 0; l < count; l++) {
 
-        // Copy the BigTable values into the overflow batch. Since the overflow batch may
+        // Copy the values into the overflow batch. Since the overflow batch may
         // not get flushed here, we must copy by value.
         if (bigTableRetainedVectorCopy != null) {
           bigTableRetainedVectorCopy.copyByValue(batch, batchIndex,
