@@ -282,9 +282,21 @@ public class TestParseDriver {
   }
 
   @Test
-  public void testSetop() throws Exception {
+  public void testJoinResulInBraces() throws Exception {
     String q =
-        "explain select a.key, b.value from ( (select key from src)a join (select value from src)b on a.key=b.value)";
+        "explain select a.key, b.value from"
+            + "( (select key from src)a join (select value from src)b on a.key=b.value)";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q);
+    System.out.println(root.dump());
+
+  }
+
+  @Test
+  public void testFromSubqueryIsSetop() throws Exception {
+    String q =
+        "explain select key from ((select key from src) union (select key from src))subq ";
     System.out.println(q);
 
     ASTNode root = parseDriver.parse(q);

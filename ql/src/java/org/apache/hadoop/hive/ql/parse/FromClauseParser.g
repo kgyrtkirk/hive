@@ -98,16 +98,19 @@ atomjoinSource
 @after { gParent.popMsg(state); }
     :
     tableSource (lateralView^)*
-    |
-    virtualTableSource (lateralView^)*
-    |
-    (LPAREN (KW_WITH|KW_SELECT|KW_MAP|KW_REDUCE|KW_FROM)) => subQuerySource (lateralView^)*
-    |
-    partitionedTableFunction (lateralView^)*
-    |
-    LPAREN! joinSource RPAREN!
+    |  virtualTableSource (lateralView^)*
+    |  (LPAREN (KW_WITH|KW_SELECT|KW_MAP|KW_REDUCE|KW_FROM)) =>     subQuerySource (lateralView^)*
+    |  (LPAREN LPAREN selectStatement RPAREN setOperator ) => subQuerySource (lateralView^)*
+//    |   (LPAREN LPAREN (KW_WITH|KW_SELECT|KW_MAP|KW_REDUCE|KW_FROM)) => subQuerySource (lateralView^)*
+    |  partitionedTableFunction (lateralView^)*
+    | LPAREN! joinSource RPAREN!
     ;
-
+/*
+correctlyFormedBraces
+    :   (LPAREN) => (LPAREN correctlyFormedBraces+ RPAREN)
+    |   constant
+    ;
+*/
 joinSource
     :
     atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}? | KW_USING! columnParenthesesList {$joinToken.start.getType() != COMMA}?)?)*
@@ -237,6 +240,8 @@ subQuerySource
 @after { gParent.popMsg(state); }
     :
     LPAREN queryStatementExpression RPAREN KW_AS? identifier -> ^(TOK_SUBQUERY queryStatementExpression identifier)
+//    |
+  //  LPAREN! joinSource RPAREN!
     ;
 
 //---------------------- Rules for parsing PTF clauses -----------------------------
