@@ -284,7 +284,6 @@ public class TestParseDriver {
   @Test
   public void testSetop() throws Exception {
     String q =
-        //        "explain select a.key, b.value from x";
         "explain select a.key, b.value from ( (select key from src)a join (select value from src)b on a.key=b.value)";
     System.out.println(q);
 
