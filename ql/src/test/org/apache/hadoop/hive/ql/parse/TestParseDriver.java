@@ -281,4 +281,16 @@ public class TestParseDriver {
     parseDriver.parse(q);
   }
 
+  @Test
+  public void testSetop() throws Exception {
+    String q =
+        //        "explain select a.key, b.value from x";
+        "explain select a.key, b.value from ( (select key from src)a join (select value from src)b on a.key=b.value)";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q);
+    System.out.println(root.dump());
+
+  }
+
 }
