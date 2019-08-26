@@ -273,7 +273,7 @@ whereClause
 @init { gParent.pushMsg("where clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_WHERE searchCondition -> ^(TOK_WHERE searchCondition)
+    KW_WHERE searchCondition -> ^(TOK_WHERE ^(TOK_FUNCTION TOK_BOOLEAN searchCondition))
     ;
 
 searchCondition
