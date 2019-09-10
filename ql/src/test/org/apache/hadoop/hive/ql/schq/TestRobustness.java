@@ -80,7 +80,27 @@ public class TestRobustness {
   @Test
   public void testSimpleCreate() throws ParseException, Exception {
     for (int i = 0; i < 1000; i++) {
+
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      System.out.println("TRY# " + i);
+      boolean ex1 = (i > 3);
+      if (ex1) {
+        ProxyLocalFileSystem.track();
+      }
+      try (PrintStream fos = new PrintStream("/tmp/stack/idx")) {
+        RuntimeException ex = new RuntimeException("c");
+        fos.println(i);
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+
       doOneSelect();
+      if (ex1) {
+        ProxyLocalFileSystem.boom();
+      }
     }
   }
 
