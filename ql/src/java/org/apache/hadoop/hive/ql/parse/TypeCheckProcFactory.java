@@ -721,10 +721,26 @@ public class TypeCheckProcFactory {
           }
         } else {
           // It's a column.
-          return toExprNodeDesc(colInfo);
+          ExprNodeDesc e = toExprNodeDesc(colInfo);
+          if (!isBooleanType(e.getTypeInfo())
+              && (stack.size() <= 1 || isBooleanOperator(stack.get(stack.size() - 2)))) {
+            return ParseUtils.createConversionCast(e, TypeInfoFactory.booleanTypeInfo);
+          } else {
+            return e;
+          }
         }
       }
 
+    }
+
+    private boolean isBooleanType(TypeInfo typeInfo) {
+      return "boolean".equals(typeInfo.getTypeName());
+    }
+
+    private boolean isBooleanOperator(Node node) {
+      String funcName = TypeCheckProcFactory.DefaultExprProcessor.getFunctionText((ASTNode)node, false);
+      return "and".equals(funcName) || "or".equals(funcName);
+//      FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcName);
     }
 
   }

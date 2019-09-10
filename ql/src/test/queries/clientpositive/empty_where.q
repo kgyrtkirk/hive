@@ -2,7 +2,15 @@
 set hive.vectorized.execution.enabled=false;
 set hive.fetch.task.conversion=none;
 
--- HIVE-
+explain
+select count (distinct cint) from alltypesorc where cstring1 and cint;
+
+--explain
+-- select count (distinct cint) from alltypesorc where 'x1';
+
+-- select count (distinct cint) from alltypesorc where 'x1';
+
+
 explain
 select count (distinct cint) from alltypesorc where cstring1;
 
