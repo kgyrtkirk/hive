@@ -722,7 +722,7 @@ public class TypeCheckProcFactory {
         } else {
           // It's a column.
           ExprNodeDesc e = toExprNodeDesc(colInfo);
-          if (!isBooleanType(e.getTypeInfo())
+          if (!isBooleanType(e.getTypeInfo()) && ctx.isFilterExpr()
               && (stack.size() <= 1 || isBooleanOperator(stack.get(stack.size() - 2)))) {
             return ParseUtils.createConversionCast(e, TypeInfoFactory.booleanTypeInfo);
           } else {

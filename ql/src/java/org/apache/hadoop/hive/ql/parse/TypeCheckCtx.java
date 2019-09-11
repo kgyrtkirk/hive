@@ -55,6 +55,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private final boolean foldExpr;
 
+  private boolean isFilterExpr = false;
+
   /**
    * Receives translations which will need to be applied during unparse.
    */
@@ -268,4 +270,13 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   public boolean isCBOExecuted() {
     return foldExpr;
   }
+
+  public boolean isFilterExpr() {
+    return isFilterExpr;
+  }
+
+  public void setFilterExpr(boolean isFilterExpr) {
+    this.isFilterExpr = isFilterExpr;
+  }
+
 }
