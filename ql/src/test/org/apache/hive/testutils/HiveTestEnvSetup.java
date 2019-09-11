@@ -203,7 +203,7 @@ public class HiveTestEnvSetup extends ExternalResource {
 
     @Override
     public void afterMethod(HiveTestEnvContext ctx) throws Exception {
-      //.zooKeeper.close();
+      zooKeeper.close();
       ZooKeeperHiveLockManager.releaseAllLocks(ctx.hiveConf);
     }
 
