@@ -19,11 +19,14 @@ package org.apache.hadoop.hive.ql.schq;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.io.ProxyLocalFileSystem;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -79,7 +82,7 @@ public class TestRobustness {
 
   @Test
   public void testSimpleCreate() throws ParseException, Exception {
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 5; i++) {
 
       System.out.println("TRY# " + i);
       System.out.println("TRY# " + i);
