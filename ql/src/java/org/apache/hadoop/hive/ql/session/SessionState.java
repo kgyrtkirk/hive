@@ -906,7 +906,9 @@ public class SessionState {
       LOG.error("Failed to delete path at {} on fs with scheme {}", path,
           (fs == null ? "Unknown-null" : fs.getScheme()), e);
     } finally {
-      IOUtils.closeQuietly(fs);
+      if (localFs) {
+        IOUtils.closeQuietly(fs);
+      }
     }
   }
 
