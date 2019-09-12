@@ -273,8 +273,7 @@ whereClause
 @init { gParent.pushMsg("where clause", state); }
 @after { gParent.popMsg(state); }
     :
-    // an AND is inserted here  to ensure that all 
-    KW_WHERE searchCondition -> ^(TOK_WHERE ^(Identifier["and"] Identifier["true"] searchCondition))
+    KW_WHERE searchCondition -> ^(TOK_WHERE searchCondition)
     ;
 
 searchCondition
