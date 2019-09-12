@@ -999,7 +999,9 @@
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                   <include>com.google.re2j:re2j</include>
-                  <include>com.codahale.metrics:metrics-core</include>
+                  <include>io.dropwizard.metrics:metrics-core</include>
+                  <include>io.dropwizard.metrics:metrics-jvm</include>
+                  <include>io.dropwizard.metrics:metrics-json</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -1014,6 +1016,10 @@
                 <relocation>
                   <pattern>com.fasterxml.jackson</pattern>
                   <shadedPattern>org.apache.hive.com.fasterxml.jackson</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.codahale.metrics</pattern>
+                  <shadedPattern>org.apache.hive.com.codahale.metrics</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
