@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.nio.charset.Charset;
 
+import org.antlr.runtime.tree.Tree;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -301,6 +302,20 @@ public class TestParseDriver {
 
     ASTNode root = parseDriver.parse(q);
     System.out.println(root.dump());
+
+  }
+
+  @Test
+  public void testFromSubqueryIsSeto2p() throws Exception {
+    String q =
+        "explain select key from t where key and c and true";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q);
+    ASTNode w = (ASTNode) (root.getChild(0).getChild(0).getChild(1).getChild(2));
+
+    System.out.println(root.dump());
+    System.out.println(w.dump());
 
   }
 
