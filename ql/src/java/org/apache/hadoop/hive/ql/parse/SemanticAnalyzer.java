@@ -13076,11 +13076,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input,
                                       RowResolver outerRR, Map<ASTNode, RelNode> subqueryToRelNode,
-                                      boolean useCaching) throws SemanticException {
+                                      boolean useCaching,
+                                      boolean filterExpr) throws SemanticException {
 
     TypeCheckCtx tcCtx = new TypeCheckCtx(input, useCaching, false);
     tcCtx.setOuterRR(outerRR);
     tcCtx.setSubqueryToRelNode(subqueryToRelNode);
+    tcCtx.setFilterExpr(filterExpr);
     return genExprNodeDesc(expr, input, tcCtx);
   }
 

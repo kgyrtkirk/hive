@@ -19,37 +19,37 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            filterExpr: (UDFToBoolean(cint) and UDFToBoolean(cstring1)) (type: boolean)
-            Statistics: Num rows: 12288 Data size: 2194900 Basic stats: COMPLETE Column stats: NONE
+            filterExpr: (UDFToBoolean(cstring1) and UDFToBoolean(cint)) (type: boolean)
+            Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToBoolean(cint) and UDFToBoolean(cstring1)) (type: boolean)
-              Statistics: Num rows: 3072 Data size: 548725 Basic stats: COMPLETE Column stats: NONE
+              predicate: (UDFToBoolean(cstring1) and UDFToBoolean(cint)) (type: boolean)
+              Statistics: Num rows: 3072 Data size: 224812 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: UDFToBoolean(cint) (type: boolean)
-                outputColumnNames: _col0
-                Statistics: Num rows: 3072 Data size: 548725 Basic stats: COMPLETE Column stats: NONE
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 3072 Data size: 224812 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: _col0 (type: boolean)
+                  keys: cint (type: int)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 3072 Data size: 548725 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1536 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: boolean)
+                    key expressions: _col0 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: boolean)
-                    Statistics: Num rows: 3072 Data size: 548725 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1536 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: boolean)
+          keys: KEY._col0 (type: int)
           mode: partial2
           outputColumnNames: _col0
-          Statistics: Num rows: 3072 Data size: 548725 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1536 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(_col0)
             mode: partial2
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -63,17 +63,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -107,36 +107,36 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             filterExpr: UDFToBoolean(cstring1) (type: boolean)
-            Statistics: Num rows: 12288 Data size: 2194900 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: UDFToBoolean(cstring1) (type: boolean)
-              Statistics: Num rows: 6144 Data size: 1097450 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: UDFToBoolean(cint) (type: boolean)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6144 Data size: 1097450 Basic stats: COMPLETE Column stats: NONE
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: _col0 (type: boolean)
+                  keys: cint (type: int)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 6144 Data size: 1097450 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: boolean)
+                    key expressions: _col0 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1097450 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: boolean)
+          keys: KEY._col0 (type: int)
           mode: partial2
           outputColumnNames: _col0
-          Statistics: Num rows: 6144 Data size: 1097450 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(_col0)
             mode: partial2
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -150,17 +150,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -180,7 +180,7 @@ POSTHOOK: query: select count (distinct cint) from alltypesorc where cstring1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1
+6041
 PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where cint
 PREHOOK: type: QUERY
@@ -203,36 +203,32 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             filterExpr: UDFToBoolean(cint) (type: boolean)
-            Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: UDFToBoolean(cint) (type: boolean)
-              Statistics: Num rows: 6144 Data size: 23350 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: UDFToBoolean(cint) (type: boolean)
+              Statistics: Num rows: 6144 Data size: 18348 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: cint (type: int)
+                minReductionHashAggr: 0.99
+                mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 6144 Data size: 23350 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: boolean)
-                  minReductionHashAggr: 0.99
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 6144 Data size: 23350 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: boolean)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 23350 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: boolean)
+          keys: KEY._col0 (type: int)
           mode: partial2
           outputColumnNames: _col0
-          Statistics: Num rows: 6144 Data size: 23350 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(_col0)
             mode: partial2
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -246,17 +242,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -276,7 +272,7 @@ POSTHOOK: query: select count (distinct cint) from alltypesorc where cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1
+6082
 PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where cfloat
 PREHOOK: type: QUERY
@@ -299,36 +295,36 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             filterExpr: UDFToBoolean(cfloat) (type: boolean)
-            Statistics: Num rows: 12288 Data size: 93400 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: UDFToBoolean(cfloat) (type: boolean)
-              Statistics: Num rows: 6144 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: UDFToBoolean(cint) (type: boolean)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6144 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 6144 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: _col0 (type: boolean)
+                  keys: cint (type: int)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 6144 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: boolean)
+                    key expressions: _col0 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: boolean)
+          keys: KEY._col0 (type: int)
           mode: partial2
           outputColumnNames: _col0
-          Statistics: Num rows: 6144 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(_col0)
             mode: partial2
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -342,17 +338,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -372,7 +368,7 @@ POSTHOOK: query: select count (distinct cint) from alltypesorc where cfloat
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1
+3022
 PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where ctimestamp1
 PREHOOK: type: QUERY
@@ -395,36 +391,36 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             filterExpr: UDFToBoolean(ctimestamp1) (type: boolean)
-            Statistics: Num rows: 12288 Data size: 513700 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 528216 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: UDFToBoolean(ctimestamp1) (type: boolean)
-              Statistics: Num rows: 6144 Data size: 256850 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 264108 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: UDFToBoolean(cint) (type: boolean)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6144 Data size: 256850 Basic stats: COMPLETE Column stats: NONE
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 6144 Data size: 264108 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: _col0 (type: boolean)
+                  keys: cint (type: int)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 6144 Data size: 256850 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: boolean)
+                    key expressions: _col0 (type: int)
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 256850 Basic stats: COMPLETE Column stats: NONE
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: boolean)
+          keys: KEY._col0 (type: int)
           mode: partial2
           outputColumnNames: _col0
-          Statistics: Num rows: 6144 Data size: 256850 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count(_col0)
             mode: partial2
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               table:
@@ -438,17 +434,17 @@ STAGE PLANS:
           TableScan
             Reduce Output Operator
               sort order: 
-              Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -468,4 +464,471 @@ POSTHOOK: query: select count (distinct cint) from alltypesorc where ctimestamp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1
+3022
+PREHOOK: query: explain
+select count (distinct cint) from alltypesorc where cstring1 and cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count (distinct cint) from alltypesorc where cstring1 and cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesorc
+            filterExpr: (UDFToBoolean(cint) and UDFToBoolean(cstring1)) (type: boolean)
+            Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (UDFToBoolean(cint) and UDFToBoolean(cstring1)) (type: boolean)
+              Statistics: Num rows: 3072 Data size: 224812 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 3072 Data size: 224812 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: cint (type: int)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1536 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1536 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: partial2
+          outputColumnNames: _col0
+          Statistics: Num rows: 1536 Data size: 4588 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count(_col0)
+            mode: partial2
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select count (distinct cint) from alltypesorc where cstring1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count (distinct cint) from alltypesorc where cstring1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesorc
+            filterExpr: UDFToBoolean(cstring1) (type: boolean)
+            Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: UDFToBoolean(cstring1) (type: boolean)
+              Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: cint (type: int)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: partial2
+          outputColumnNames: _col0
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count(_col0)
+            mode: partial2
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (distinct cint) from alltypesorc where cstring1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct cint) from alltypesorc where cstring1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+6041
+PREHOOK: query: explain
+select count (distinct cint) from alltypesorc where cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count (distinct cint) from alltypesorc where cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesorc
+            filterExpr: UDFToBoolean(cint) (type: boolean)
+            Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: UDFToBoolean(cint) (type: boolean)
+              Statistics: Num rows: 6144 Data size: 18348 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                keys: cint (type: int)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: partial2
+          outputColumnNames: _col0
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count(_col0)
+            mode: partial2
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (distinct cint) from alltypesorc where cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct cint) from alltypesorc where cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+6082
+PREHOOK: query: explain
+select count (distinct cint) from alltypesorc where cfloat
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count (distinct cint) from alltypesorc where cfloat
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesorc
+            filterExpr: UDFToBoolean(cfloat) (type: boolean)
+            Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: UDFToBoolean(cfloat) (type: boolean)
+              Statistics: Num rows: 6144 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 6144 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: cint (type: int)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: partial2
+          outputColumnNames: _col0
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count(_col0)
+            mode: partial2
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (distinct cint) from alltypesorc where cfloat
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct cint) from alltypesorc where cfloat
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3022
+PREHOOK: query: explain
+select count (distinct cint) from alltypesorc where ctimestamp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count (distinct cint) from alltypesorc where ctimestamp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesorc
+            filterExpr: UDFToBoolean(ctimestamp1) (type: boolean)
+            Statistics: Num rows: 12288 Data size: 528216 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: UDFToBoolean(ctimestamp1) (type: boolean)
+              Statistics: Num rows: 6144 Data size: 264108 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: cint (type: int)
+                outputColumnNames: cint
+                Statistics: Num rows: 6144 Data size: 264108 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: cint (type: int)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: partial2
+          outputColumnNames: _col0
+          Statistics: Num rows: 3072 Data size: 9176 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count(_col0)
+            mode: partial2
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count (distinct cint) from alltypesorc where ctimestamp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct cint) from alltypesorc where ctimestamp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3022
