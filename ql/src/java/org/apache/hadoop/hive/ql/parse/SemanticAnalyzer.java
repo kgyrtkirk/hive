@@ -3470,7 +3470,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
 
-    ExprNodeDesc filterCond = genExprNodeDesc(condn, inputRR, useCaching, isCBOExecuted(), true);
+    ExprNodeDesc filterCond = genExprNodeDesc(condn, inputRR, useCaching, isCBOExecuted());
     if (filterCond instanceof ExprNodeConstantDesc) {
       ExprNodeConstantDesc c = (ExprNodeConstantDesc) filterCond;
       if (Boolean.TRUE.equals(c.getValue())) {
@@ -13076,13 +13076,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input,
                                       RowResolver outerRR, Map<ASTNode, RelNode> subqueryToRelNode,
-                                      boolean useCaching,
-                                      boolean filterExpr) throws SemanticException {
+                                      boolean useCaching) throws SemanticException {
 
     TypeCheckCtx tcCtx = new TypeCheckCtx(input, useCaching, false);
     tcCtx.setOuterRR(outerRR);
     tcCtx.setSubqueryToRelNode(subqueryToRelNode);
-    tcCtx.setFilterExpr(filterExpr);
     return genExprNodeDesc(expr, input, tcCtx);
   }
 
@@ -13093,15 +13091,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input, boolean useCaching,
-      boolean foldExpr, boolean filterExpr) throws SemanticException {
+                                      boolean foldExpr) throws SemanticException {
     TypeCheckCtx tcCtx = new TypeCheckCtx(input, useCaching, foldExpr);
-    tcCtx.setFilterExpr(filterExpr);
     return genExprNodeDesc(expr, input, tcCtx);
-  }
-
-  public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input, boolean useCaching,
-      boolean foldExpr) throws SemanticException {
-    return genExprNodeDesc(expr, input, useCaching, foldExpr, false);
   }
 
   /**

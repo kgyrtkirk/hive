@@ -3178,7 +3178,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
             boolean useCaching) throws SemanticException {
       ExprNodeDesc filterCondn = genExprNodeDesc(filterExpr, relToHiveRR.get(srcRel),
-          outerRR, null, useCaching, true);
+              outerRR, null, useCaching);
       if (filterCondn instanceof ExprNodeConstantDesc
           && !filterCondn.getTypeString().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         // queries like select * from t1 where 'foo';
@@ -3424,7 +3424,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                                                 subQueryToRelNode);
       if(isSubQuery) {
         ExprNodeDesc subQueryExpr = genExprNodeDesc(searchCond, relToHiveRR.get(srcRel),
-            outerRR, subQueryToRelNode, forHavingClause, true);
+                outerRR, subQueryToRelNode, forHavingClause);
 
         ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
                 .get(srcRel);
@@ -4614,7 +4614,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 subQueryToRelNode);
         if(isSubQuery) {
           ExprNodeDesc subQueryExpr = genExprNodeDesc(expr, relToHiveRR.get(srcRel),
-              outerRR, subQueryToRelNode, true, false);
+                  outerRR, subQueryToRelNode, true);
           col_list.add(subQueryExpr);
 
           ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
