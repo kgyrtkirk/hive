@@ -70,8 +70,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
+import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -1257,6 +1259,7 @@ public class TypeCheckProcFactory {
               childrenList.add(child);
             }
           }
+          processBooleanOperands(childrenList);
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               childrenList);
         } else if (genericUDF instanceof GenericUDFOPAnd) {
@@ -1273,6 +1276,7 @@ public class TypeCheckProcFactory {
               childrenList.add(child);
             }
           }
+          processBooleanOperands(childrenList);
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               childrenList);
         } else if (ctx.isFoldExpr() && canConvertIntoCoalesce(genericUDF, children)) {
@@ -1283,6 +1287,11 @@ public class TypeCheckProcFactory {
             desc = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNot(),
                     Lists.newArrayList(desc));
           }
+        } else if (genericUDF instanceof GenericUDFOPNot) {
+          List<ExprNodeDesc> childrenList = new ArrayList<>(children);
+          processBooleanOperands(childrenList);
+          desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
+              children);
         } else {
           desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText,
               children);
@@ -1309,6 +1318,22 @@ public class TypeCheckProcFactory {
       }
       assert (desc != null);
       return desc;
+    }
+
+    private void processBooleanOperands(List<ExprNodeDesc> childrenList) throws UDFArgumentException {
+      for (int i = 0; i < childrenList.size(); i++) {
+        ExprNodeDesc e = childrenList.get(i);
+        if (!isBooleanType(e.getTypeInfo())) {
+          GenericUDFBridge toBooleanUDF = new GenericUDFBridge("UDFToBoolean", false, UDFToBoolean.class.getName());
+
+          ExprNodeGenericFuncDesc casted = ExprNodeGenericFuncDesc.newInstance(toBooleanUDF, Lists.newArrayList(e));
+          childrenList.set(i, casted);
+        }
+      }
+    }
+
+    private boolean isBooleanType(TypeInfo typeInfo) {
+      return "boolean".equals(typeInfo.getTypeName());
     }
 
     /**
