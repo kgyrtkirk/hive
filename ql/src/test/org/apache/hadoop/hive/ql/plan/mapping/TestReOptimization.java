@@ -288,46 +288,6 @@ public class TestReOptimization {
 
   }
 
-  @Test
-  public void testReOptimizationCanSendBackStatsToCBO1() throws Exception {
-    IDriver driver = createDriver("overlay,reoptimize");
-    // @formatter:off
-    String query="select 1 from tu\n" +
-    "        where u>1 and cast(u as boolean) and u";
-    // @formatter:on
-    PlanMapper pm = getMapperForQuery(driver, query);
-
-    Iterator<EquivGroup> itG = pm.iterateGroups();
-    int checkedOperators = 0;
-    while (itG.hasNext()) {
-      EquivGroup g = itG.next();
-      List<FilterOperator> fos = g.getAll(FilterOperator.class);
-      List<OperatorStats> oss = g.getAll(OperatorStats.class);
-      List<HiveFilter> hfs = g.getAll(HiveFilter.class);
-
-      if (fos.size() > 0 && oss.size() > 0 && hfs.size() > 0) {
-        fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
-
-        HiveFilter hf = hfs.get(0);
-        FilterOperator fo = fos.get(0);
-        OperatorStats os = oss.get(0);
-
-        Optional<OperatorStats> prevOs = driver.getContext().getStatsSource().lookup(RelTreeSignature.of(hf));
-
-        long cntFilter = RelMetadataQuery.instance().getRowCount(hf).longValue();
-        if (fo.getStatistics() != null) {
-          // in case the join order is changed the subTree-s are not matching anymore because an RS is present in the condition
-          // assertEquals(os.getOutputRecords(), fo.getStatistics().getNumRows());
-        }
-        assertEquals(os.getOutputRecords(), cntFilter);
-
-        checkedOperators++;
-      }
-    }
-    assertEquals(3, checkedOperators);
-
-  }
-
   private static IDriver createDriver(String strategies) {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
