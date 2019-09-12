@@ -51,11 +51,6 @@
           <artifactId>druid-server</artifactId>
           <version>${druid.version}</version>
           <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-
             <exclusion>
               <artifactId>jersey-server</artifactId>
               <groupId>com.sun.jersey</groupId>

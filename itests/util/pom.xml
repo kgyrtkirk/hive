@@ -56,18 +56,17 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-accumulo-handler</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-accumulo-handler</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-common</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -78,12 +77,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-beeline</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -116,10 +109,6 @@
           <artifactId>guice</artifactId>
           <groupId>com.google.inject</groupId>
         </exclusion>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -138,24 +127,12 @@
       <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -194,12 +171,6 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -215,22 +186,12 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp</artifactId>
           </exclusion>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
         </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-mapreduce</artifactId>
       <version>${hbase.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.kudu</groupId>
@@ -281,24 +242,12 @@
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
       <classifier>tests</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-mapreduce</artifactId>
       <version>${hbase.version}</version>
       <classifier>tests</classifier>
-      <exclusions>
-        <exclusion>
-          <groupId>io.dropwizard.metrics</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
