@@ -1,0 +1,517 @@
+PREHOOK: query: drop table if exists  u_table_4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists  u_table_4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table u_table_4(smallint_col_22 smallint, int_col_5 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@u_table_4
+POSTHOOK: query: create table u_table_4(smallint_col_22 smallint, int_col_5 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@u_table_4
+PREHOOK: query: insert into u_table_4 values(238,922)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@u_table_4
+POSTHOOK: query: insert into u_table_4 values(238,922)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@u_table_4
+POSTHOOK: Lineage: u_table_4.int_col_5 SCRIPT []
+POSTHOOK: Lineage: u_table_4.smallint_col_22 SCRIPT []
+PREHOOK: query: drop table u_table_7
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table u_table_7
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table u_table_7 ( bigint_col_3 bigint, int_col_10 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@u_table_7
+POSTHOOK: query: create table u_table_7 ( bigint_col_3 bigint, int_col_10 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@u_table_7
+PREHOOK: query: insert into u_table_7 values (571,198)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@u_table_7
+POSTHOOK: query: insert into u_table_7 values (571,198)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@u_table_7
+POSTHOOK: Lineage: u_table_7.bigint_col_3 SCRIPT []
+POSTHOOK: Lineage: u_table_7.int_col_10 SCRIPT []
+PREHOOK: query: drop table u_table_19
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table u_table_19
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table u_table_19 (bigint_col_18 bigint ,int_col_19 int, STRING_COL_7 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@u_table_19
+POSTHOOK: query: create table u_table_19 (bigint_col_18 bigint ,int_col_19 int, STRING_COL_7 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@u_table_19
+PREHOOK: query: insert into u_table_19 values (922,5,'500')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@u_table_19
+POSTHOOK: query: insert into u_table_19 values (922,5,'500')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@u_table_19
+POSTHOOK: Lineage: u_table_19.bigint_col_18 SCRIPT []
+POSTHOOK: Lineage: u_table_19.int_col_19 SCRIPT []
+POSTHOOK: Lineage: u_table_19.string_col_7 SCRIPT []
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+PREHOOK: query: explain
+ SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@u_table_19
+PREHOOK: Input: default@u_table_4
+PREHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+ SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@u_table_19
+POSTHOOK: Input: default@u_table_4
+POSTHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a1
+                  filterExpr: (string_col_7 = '500') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (string_col_7 = '500') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: bigint_col_18 (type: bigint), int_col_19 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join 0 to 1
+                        keys:
+                          0 _col0 (type: bigint)
+                          1 _col3 (type: bigint)
+                        outputColumnNames: _col1, _col2, _col3, _col4
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Filter Operator
+                          predicate: ((_col1 = 5) or (_col4 = 10) or (UDFToLong(_col4) = 571L)) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: _col2 (type: int), _col3 (type: smallint), _col4 (type: int)
+                            outputColumnNames: _col0, _col1, _col2
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Map Join Operator
+                              condition map:
+                                   Inner Join 0 to 1
+                              keys:
+                                0 
+                                1 
+                              outputColumnNames: _col0, _col1, _col2
+                              input vertices:
+                                1 Map 4
+                              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                              Select Operator
+                                expressions: _col0 (type: int), CASE WHEN (_col0 is not null) THEN (_col0) ELSE (UDFToInteger(_col1)) END (type: int), _col2 (type: int)
+                                outputColumnNames: _col0, _col1, _col2
+                                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                                Reduce Output Operator
+                                  key expressions: _col0 (type: int)
+                                  sort order: -
+                                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                                  TopN Hash Memory Usage: 0.1
+                                  value expressions: _col1 (type: int), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: a2
+                  filterExpr: UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: int_col_5 (type: int), smallint_col_22 (type: smallint), CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END (type: int), UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col3 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col3 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: a3
+                  filterExpr: (bigint_col_3 = 571L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (bigint_col_3 = 571L) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int), 922 (type: int), _col1 (type: int), _col2 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+PREHOOK: query: explain
+ SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@u_table_19
+PREHOOK: Input: default@u_table_4
+PREHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+ SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@u_table_19
+POSTHOOK: Input: default@u_table_4
+POSTHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_48]
+        Select Operator [SEL_47] (rows=1 width=16)
+          Output:["_col0","_col1","_col2","_col3"]
+          Limit [LIM_46] (rows=1 width=12)
+            Number of rows:100
+            Select Operator [SEL_45] (rows=1 width=12)
+              Output:["_col0","_col1","_col2"]
+            <-Map 1 [SIMPLE_EDGE] vectorized, llap
+              SHUFFLE [RS_44]
+                Select Operator [SEL_43] (rows=1 width=12)
+                  Output:["_col0","_col1","_col2"]
+                  Map Join Operator [MAPJOIN_42] (rows=1 width=12)
+                    Conds:(Inner),Output:["_col0","_col1","_col2"]
+                  <-Map 4 [BROADCAST_EDGE] vectorized, llap
+                    BROADCAST [RS_36]
+                      Select Operator [SEL_35] (rows=1 width=8)
+                        Filter Operator [FIL_34] (rows=1 width=8)
+                          predicate:(bigint_col_3 = 571L)
+                          TableScan [TS_11] (rows=1 width=8)
+                            default@u_table_7,a3,Tbl:COMPLETE,Col:COMPLETE,Output:["bigint_col_3"]
+                  <-Select Operator [SEL_41] (rows=1 width=12)
+                      Output:["_col0","_col1","_col2"]
+                      Filter Operator [FIL_40] (rows=1 width=16)
+                        predicate:((_col1 = 5) or (_col4 = 10) or (UDFToLong(_col4) = 571L))
+                        Map Join Operator [MAPJOIN_39] (rows=1 width=16)
+                          Conds:SEL_38._col0=RS_33._col3(Left Outer),Output:["_col1","_col2","_col3","_col4"]
+                        <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                          BROADCAST [RS_33]
+                            PartitionCols:_col3
+                            Select Operator [SEL_32] (rows=1 width=20)
+                              Output:["_col0","_col1","_col2","_col3"]
+                              Filter Operator [FIL_31] (rows=1 width=8)
+                                predicate:UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) is not null
+                                TableScan [TS_3] (rows=1 width=8)
+                                  default@u_table_4,a2,Tbl:COMPLETE,Col:COMPLETE,Output:["smallint_col_22","int_col_5"]
+                        <-Select Operator [SEL_38] (rows=1 width=12)
+                            Output:["_col0","_col1"]
+                            Filter Operator [FIL_37] (rows=1 width=99)
+                              predicate:(string_col_7 = '500')
+                              TableScan [TS_0] (rows=1 width=99)
+                                default@u_table_19,a1,Tbl:COMPLETE,Col:COMPLETE,Output:["bigint_col_18","int_col_19","string_col_7"]
+
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+PREHOOK: query: explain formatted
+ SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@u_table_19
+PREHOOK: Input: default@u_table_4
+PREHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+POSTHOOK: query: explain formatted
+ SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@u_table_19
+POSTHOOK: Input: default@u_table_4
+POSTHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+PREHOOK: query: SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@u_table_19
+PREHOOK: Input: default@u_table_4
+PREHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT        
+ 	a5.int_col,
+  922 as expected,
+  COALESCE(a5.int_col, a5.aa) as expected2,
+  a5.int_col_3 as reality
+FROM            u_table_19 a1 
+FULL OUTER JOIN 
+                ( 
+                       SELECT a2.int_col_5 AS int_col, 
+                    				  a2.smallint_col_22 as aa,
+                              COALESCE(a2.int_col_5, a2.smallint_col_22) AS int_col_3 
+                       FROM   u_table_4 a2
+				) a5 
+ON              ( 
+                                a1.bigint_col_18) = (a5.int_col_3) 
+INNER JOIN 
+                ( 
+                         SELECT   a3.bigint_col_3                                                                                               AS int_col,
+                                  Cast (COALESCE(a3.bigint_col_3, a3.bigint_col_3, a3.int_col_10) AS BIGINT) * Cast (a3.bigint_col_3 AS BIGINT) AS int_col_3
+                         FROM     u_table_7 a3 
+                         WHERE    bigint_col_3=571 
+                ) a4
+ON              (a1.int_col_19=5) 
+OR              ((a5.int_col_3) IN (a4.int_col, 10)) 
+where
+  a1.STRING_COL_7='500'
+ORDER BY        int_col DESC nulls last limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@u_table_19
+POSTHOOK: Input: default@u_table_4
+POSTHOOK: Input: default@u_table_7
+#### A masked pattern was here ####
+922	922	922	1
