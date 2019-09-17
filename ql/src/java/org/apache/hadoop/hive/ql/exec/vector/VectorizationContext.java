@@ -2126,7 +2126,9 @@ import com.google.common.annotations.VisibleForTesting;
     }
 
     for (VectorExpression ve : children) {
-      ocm.freeOutputColumn(ve.getOutputColumnNum());
+      if (!(ve instanceof IdentityExpression)) {
+        ocm.freeOutputColumn(ve.getOutputColumnNum());
+      }
     }
 
     return vectorExpression;

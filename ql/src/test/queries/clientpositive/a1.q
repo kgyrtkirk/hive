@@ -50,7 +50,6 @@ ORDER BY        int_col DESC nulls last limit 100
 ;
 
 
-set hive.explain.user=true;
 explain
  SELECT        
  	a5.int_col,
@@ -82,7 +81,7 @@ ORDER BY        int_col DESC nulls last limit 100
 ;
 
 
-explain formatted
+explain vectorization detail
  SELECT        
  	a5.int_col,
   922 as expected,
