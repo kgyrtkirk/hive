@@ -627,8 +627,8 @@ STAGE PLANS:
                                 Select Vectorization:
                                     className: VectorSelectOperator
                                     native: true
-                                    projectedOutputColumnNums: [4, 7, 6]
-                                    selectExpressions: IfExprColumnCondExpr(col 6:boolean, col 4:intcol 5:smallint)(children: IsNotNull(col 4:int) -> 6:boolean, col 4:int, col 5:smallint) -> 7:int
+                                    projectedOutputColumnNums: [4, 8, 6]
+                                    selectExpressions: IfExprColumnCondExpr(col 7:boolean, col 4:intcol 5:smallint)(children: IsNotNull(col 4:int) -> 7:boolean, col 4:int, col 5:smallint) -> 8:int
                                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   key expressions: _col0 (type: int)
@@ -638,7 +638,7 @@ STAGE PLANS:
                                       keyColumns: 4:int
                                       native: true
                                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                      valueColumns: 7:int, 6:int
+                                      valueColumns: 8:int, 6:int
                                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                                   TopN Hash Memory Usage: 0.1
                                   value expressions: _col1 (type: int), _col2 (type: int)
@@ -658,7 +658,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: bigint_col_18:bigint, int_col_19:int, string_col_7:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -880,4 +880,4 @@ POSTHOOK: Input: default@u_table_19
 POSTHOOK: Input: default@u_table_4
 POSTHOOK: Input: default@u_table_7
 #### A masked pattern was here ####
-922	922	922	1
+922	922	922	922
