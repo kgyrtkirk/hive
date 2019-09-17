@@ -20,7 +20,7 @@ set hive.vectorized.execution.enabled=true;
 set hive.vectorized.reuse.scratch.columns=true;
 
 explain vectorization detail
- SELECT        
+SELECT
  	a5.int_col,
   922 as expected,
   COALESCE(a5.int_col, a5.aa) as expected2,
@@ -50,7 +50,7 @@ ORDER BY        int_col DESC nulls last limit 100
 ;
 
 
- SELECT        
+SELECT
  	a5.int_col,
   922 as expected,
   COALESCE(a5.int_col, a5.aa) as expected2,

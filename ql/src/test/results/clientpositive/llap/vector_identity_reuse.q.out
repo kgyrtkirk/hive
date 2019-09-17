@@ -67,7 +67,7 @@ POSTHOOK: Lineage: u_table_19.int_col_19 SCRIPT []
 POSTHOOK: Lineage: u_table_19.string_col_7 SCRIPT []
 Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain vectorization detail
- SELECT        
+SELECT
  	a5.int_col,
   922 as expected,
   COALESCE(a5.int_col, a5.aa) as expected2,
@@ -100,7 +100,7 @@ PREHOOK: Input: default@u_table_4
 PREHOOK: Input: default@u_table_7
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization detail
- SELECT        
+SELECT
  	a5.int_col,
   922 as expected,
   COALESCE(a5.int_col, a5.aa) as expected2,
@@ -422,7 +422,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
-PREHOOK: query: SELECT        
+PREHOOK: query: SELECT
  	a5.int_col,
   922 as expected,
   COALESCE(a5.int_col, a5.aa) as expected2,
@@ -454,7 +454,7 @@ PREHOOK: Input: default@u_table_19
 PREHOOK: Input: default@u_table_4
 PREHOOK: Input: default@u_table_7
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT        
+POSTHOOK: query: SELECT
  	a5.int_col,
   922 as expected,
   COALESCE(a5.int_col, a5.aa) as expected2,
