@@ -399,7 +399,7 @@ public class MapWork extends BaseWork {
     return llapIoDesc.cached;
   }
 
- public void setNameToSplitSample(HashMap<String, SplitSample> nameToSplitSample) {
+ public void setNameToSplitSample(Map<String, SplitSample> nameToSplitSample) {
     this.nameToSplitSample = nameToSplitSample;
   }
 
@@ -828,7 +828,7 @@ public class MapWork extends BaseWork {
     return vectorPartitionDescList;
   }
 
-  public void setVectorizationEnabledConditionsMet(ArrayList<String> vectorizationEnabledConditionsMet) {
+  public void setVectorizationEnabledConditionsMet(Collection<String> vectorizationEnabledConditionsMet) {
     this.vectorizationEnabledConditionsMet = vectorizationEnabledConditionsMet == null ? null : VectorizationCondition.addBooleans(
             vectorizationEnabledConditionsMet, true);
   }
@@ -837,7 +837,7 @@ public class MapWork extends BaseWork {
     return vectorizationEnabledConditionsMet;
   }
 
-  public void setVectorizationEnabledConditionsNotMet(List<String> vectorizationEnabledConditionsNotMet) {
+  public void setVectorizationEnabledConditionsNotMet(Collection<String> vectorizationEnabledConditionsNotMet) {
     this.vectorizationEnabledConditionsNotMet = vectorizationEnabledConditionsNotMet == null ? null : VectorizationCondition.addBooleans(
             vectorizationEnabledConditionsNotMet, false);
   }

@@ -1736,7 +1736,7 @@ public class HiveConf extends Configuration {
         "Only works on Tez and Spark, because memory-optimized hashtable cannot be serialized."),
     HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT("hive.mapjoin.optimized.hashtable.probe.percent",
         (float) 0.5, "Probing space percentage of the optimized hashtable"),
-    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", true, "Whether to use hybrid" +
+    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", false, "Whether to use hybrid" +
         "grace hash join as the join method for mapjoin. Tez only."),
     HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ("hive.mapjoin.hybridgrace.memcheckfrequency", 1024, "For " +
         "hybrid grace hash join, how often (how many rows apart) we check if memory is full. " +
@@ -2582,7 +2582,13 @@ public class HiveConf extends Configuration {
         "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
         "read MM tables with original files will fail. The default in Hive 3.0 is false."),
 
-     // Zookeeper related configs
+    // Zookeeper related configs
+    HIVE_SECURITY_ZOOKEEPER_AUTHENTICATION("hive.security.zookeeper.authentication",
+        "DEFAULT", new StringSet("DEFAULT", "SIMPLE"),
+        "Whether the authentication type for Zookeeper is different from the cluster wide\n" +
+        "`hadoop.security.authentication` configuration. This could be useful when cluster\n" +
+        "is kerberized, but Zookeeper is not."),
+
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
         "List of ZooKeeper servers to talk to. This is needed for: \n" +
         "1. Read/write locks - when hive.lock.manager is set to \n" +
