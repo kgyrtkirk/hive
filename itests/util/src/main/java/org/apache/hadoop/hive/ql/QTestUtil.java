@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
+import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -114,8 +115,10 @@ public class QTestUtil {
   private final QOutProcessor qOutProcessor;
   private static QTestResultProcessor qTestResultProcessor = new QTestResultProcessor();
   protected QTestDatasetHandler datasetHandler;
+  protected QTestReplaceHandler replaceHandler;
   private final String initScript;
   private final String cleanupScript;
+  QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
 
   private boolean isSessionStateStarted = false;
 
@@ -181,7 +184,7 @@ public class QTestUtil {
     this.outDir = testArgs.getOutDir();
     this.logDir = testArgs.getLogDir();
     this.srcUDFs = getSrcUDFs();
-    this.qOutProcessor = new QOutProcessor(fsType);
+    this.qOutProcessor = new QOutProcessor(fsType, replaceHandler);
 
     // HIVE-14443 move this fall-back logic to CliConfigs
     if (testArgs.getConfDir() != null && !testArgs.getConfDir().isEmpty()) {
@@ -203,6 +206,9 @@ public class QTestUtil {
     datasetHandler = new QTestDatasetHandler(conf);
     testFiles = datasetHandler.getDataDir(conf);
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
+    replaceHandler = new QTestReplaceHandler();
+    dispatcher.register("dataset", datasetHandler);
+    dispatcher.register("replace", replaceHandler);
 
     String scriptsDir = getScriptsDir();
 
@@ -542,8 +548,6 @@ public class QTestUtil {
   public String cliInit(File file) throws Exception {
     String fileName = file.getName();
 
-    QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
-    dispatcher.register("dataset", datasetHandler);
     dispatcher.process(file);
     dispatcher.beforeTest(this);
 
