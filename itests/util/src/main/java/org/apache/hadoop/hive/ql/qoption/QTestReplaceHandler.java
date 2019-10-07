@@ -10,6 +10,22 @@ import org.apache.hadoop.hive.ql.QTestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * QTest replacement directive handler
+ *
+ * Examples:
+ *
+ * --! qt:replace:/there/joe/
+ * select 'hello there!
+ * ===q.out
+ * hello joe!
+ *
+ * standard java regex; placeholders also work:
+ * --! qt:replace:/Hello (.*)!/$1 was here!/
+ *
+ * first char of regex pattern is used as separator; you may choose anything else than '/'
+ * --! qt:replace:#this#that#
+ */
 public class QTestReplaceHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestReplaceHandler.class.getName());
 
