@@ -135,7 +135,7 @@ public class QOutProcessor {
       "^latestOffsets.*",
       "^minimumLag.*"
   });
-  
+
   private final QTestReplaceHandler replaceHandler;
 
   public QOutProcessor(FsType fsType, QTestReplaceHandler replaceHandler) {
@@ -255,9 +255,9 @@ public class QOutProcessor {
         result.line = pattern.matcher(result.line).replaceAll(MASK_PATTERN);
       }
     }
-    
+
     result.line = replaceHandler.processLine(result.line);
-    
+
     return result;
   }
 
