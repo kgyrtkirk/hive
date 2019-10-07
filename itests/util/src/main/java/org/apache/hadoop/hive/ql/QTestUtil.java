@@ -184,6 +184,7 @@ public class QTestUtil {
     this.outDir = testArgs.getOutDir();
     this.logDir = testArgs.getLogDir();
     this.srcUDFs = getSrcUDFs();
+    this.replaceHandler = new QTestReplaceHandler();
     this.qOutProcessor = new QOutProcessor(fsType, replaceHandler);
 
     // HIVE-14443 move this fall-back logic to CliConfigs
@@ -206,7 +207,6 @@ public class QTestUtil {
     datasetHandler = new QTestDatasetHandler(conf);
     testFiles = datasetHandler.getDataDir(conf);
     conf.set("test.data.dir", datasetHandler.getDataDir(conf));
-    replaceHandler = new QTestReplaceHandler();
     dispatcher.register("dataset", datasetHandler);
     dispatcher.register("replace", replaceHandler);
 
@@ -414,6 +414,7 @@ public class QTestUtil {
     StatsSources.clearGlobalStats();
     TxnDbUtil.cleanDb(conf);
     TxnDbUtil.prepDb(conf);
+    dispatcher.afterTest(this);
   }
 
   protected void initConfFromSetup() throws Exception {

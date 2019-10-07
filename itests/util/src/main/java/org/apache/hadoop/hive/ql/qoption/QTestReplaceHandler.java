@@ -17,12 +17,13 @@ public class QTestReplaceHandler implements QTestOptionHandler {
 
   @Override
   public void processArguments(String arguments) {
+    arguments=arguments.trim();
     if (arguments.length() < 2) {
       throw new RuntimeException("illegal replacement expr: " + arguments + " ; expected something like /this/that/");
     }
     String sep = arguments.substring(0, 1);
     String[] parts = arguments.split(sep);
-    if (parts.length != 4) {
+    if (parts.length != 3) {
       throw new RuntimeException(
           "unexpected replacement expr: " + arguments + " ; expected something like /this/that/");
     }
@@ -42,7 +43,7 @@ public class QTestReplaceHandler implements QTestOptionHandler {
   public String processLine(String line) {
     for (Entry<Pattern, String> r : replacements.entrySet()) {
       Matcher m = r.getKey().matcher(line);
-      if(m.matches()) {
+      if(m.find()) {
         line = m.replaceAll(r.getValue());
       }
     }
