@@ -215,14 +215,15 @@ public final class CorrelationUtilities {
   }
 
   protected static <T extends Operator<?>> T findPossibleParent(Operator<?> start, Class<T> target,
-      boolean trustScript) throws SemanticException {
-    T[] parents = findPossibleParents(start, target, trustScript);
-    return parents != null && parents.length == 1 ? parents[0] : null;
-  }
-
-  protected static <T extends Operator<?>> T findPossibleParent(Operator<?> start, Class<T> target,
       ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException {
-    return findPossibleParent(start, target, dedupCtx.trustScript());
+    if(dedupCtx.isMapAggr()) {
+      Operator<?> parent = getSingleParent(start);
+      if (parent instanceof GroupByOperator) {
+        start = parent;
+      }
+    }
+    T[] parents = findPossibleParents(start, target, dedupCtx.trustScript());
+    return parents != null && parents.length == 1 ? parents[0] : null;
   }
 
   @SuppressWarnings("unchecked")
@@ -246,7 +247,6 @@ public final class CorrelationUtilities {
           || cursor instanceof FilterOperator
           || cursor instanceof ForwardOperator
           || cursor instanceof ScriptOperator
-          || cursor instanceof GroupByOperator
           || cursor instanceof ReduceSinkOperator)) {
         return null;
       }
