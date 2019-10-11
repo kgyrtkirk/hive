@@ -220,6 +220,11 @@ public final class CorrelationUtilities {
     return parents != null && parents.length == 1 ? parents[0] : null;
   }
 
+  protected static <T extends Operator<?>> T findPossibleParent(Operator<?> start, Class<T> target,
+      ReduceSinkDeduplicateProcCtx dedupCtx) throws SemanticException {
+    return findPossibleParent(start, target, dedupCtx.trustScript());
+  }
+
   @SuppressWarnings("unchecked")
   protected static <T extends Operator<?>> T[] findPossibleParents(
       Operator<?> start, Class<T> target,
@@ -522,4 +527,5 @@ public final class CorrelationUtilities {
     target.setChildOperators(null);
     target.setParentOperators(null);
   }
+
 }

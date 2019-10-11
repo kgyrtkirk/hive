@@ -183,13 +183,13 @@ public class ReduceSinkDeDuplication extends Transform {
         throws SemanticException {
       GroupByOperator pGBY =
           CorrelationUtilities.findPossibleParent(
-              cRS, GroupByOperator.class, dedupCtx.trustScript());
+              cRS, GroupByOperator.class, dedupCtx);
       if (pGBY == null) {
         return false;
       }
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
-              pGBY, ReduceSinkOperator.class, dedupCtx.trustScript());
+              pGBY, ReduceSinkOperator.class, dedupCtx);
       if (pRS != null && ReduceSinkDeDuplicationUtils.merge(cRS, pRS, dedupCtx.minReducer())) {
         CorrelationUtilities.replaceReduceSinkWithSelectOperator(
             cRS, dedupCtx.getPctx(), dedupCtx);
@@ -207,7 +207,7 @@ public class ReduceSinkDeDuplication extends Transform {
       Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       GroupByOperator pGBY =
           CorrelationUtilities.findPossibleParent(
-              start, GroupByOperator.class, dedupCtx.trustScript());
+              start, GroupByOperator.class, dedupCtx);
       if (pGBY == null) {
         return false;
       }
@@ -230,14 +230,14 @@ public class ReduceSinkDeDuplication extends Transform {
     public Object process(ReduceSinkOperator cRS, ReduceSinkDeduplicateProcCtx dedupCtx)
         throws SemanticException {
       JoinOperator pJoin =
-          CorrelationUtilities.findPossibleParent(cRS, JoinOperator.class, dedupCtx.trustScript());
+          CorrelationUtilities.findPossibleParent(cRS, JoinOperator.class, dedupCtx);
       if (pJoin != null && ReduceSinkDeDuplicationUtils.merge(cRS, pJoin, dedupCtx.minReducer())) {
         pJoin.getConf().setFixedAsSorted(true);
         CorrelationUtilities.replaceReduceSinkWithSelectOperator(
             cRS, dedupCtx.getPctx(), dedupCtx);
         ReduceSinkOperator pRS =
             CorrelationUtilities.findPossibleParent(
-                pJoin, ReduceSinkOperator.class, dedupCtx.trustScript());
+                pJoin, ReduceSinkOperator.class, dedupCtx);
         if (pRS != null) {
           pRS.getConf().setDeduplicated(true);
         }
@@ -254,14 +254,14 @@ public class ReduceSinkDeDuplication extends Transform {
       Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       JoinOperator pJoin =
           CorrelationUtilities.findPossibleParent(
-              start, JoinOperator.class, dedupCtx.trustScript());
+              start, JoinOperator.class, dedupCtx);
       if (pJoin != null && ReduceSinkDeDuplicationUtils.merge(cRS, pJoin, dedupCtx.minReducer())) {
         pJoin.getConf().setFixedAsSorted(true);
         CorrelationUtilities.removeReduceSinkForGroupBy(
             cRS, cGBY, dedupCtx.getPctx(), dedupCtx);
         ReduceSinkOperator pRS =
             CorrelationUtilities.findPossibleParent(
-                pJoin, ReduceSinkOperator.class, dedupCtx.trustScript());
+                pJoin, ReduceSinkOperator.class, dedupCtx);
         if (pRS != null) {
           pRS.getConf().setDeduplicated(true);
         }
@@ -279,7 +279,7 @@ public class ReduceSinkDeDuplication extends Transform {
         throws SemanticException {
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
-              cRS, ReduceSinkOperator.class, dedupCtx.trustScript());
+              cRS, ReduceSinkOperator.class, dedupCtx);
       if (pRS != null) {
         // Try extended deduplication
         if (ReduceSinkDeDuplicationUtils.aggressiveDedup(cRS, pRS, dedupCtx)) {
@@ -304,7 +304,8 @@ public class ReduceSinkDeDuplication extends Transform {
       Operator<?> start = CorrelationUtilities.getStartForGroupBy(cRS, dedupCtx);
       ReduceSinkOperator pRS =
           CorrelationUtilities.findPossibleParent(
-              start, ReduceSinkOperator.class, dedupCtx.trustScript());
+              start, ReduceSinkOperator.class, dedupCtx);
+      Operator<?> p = CorrelationUtilities.getSingleParent(cRS);
       if (pRS != null && ReduceSinkDeDuplicationUtils.merge(cRS, pRS, dedupCtx.minReducer())) {
         if (dedupCtx.getPctx().getConf().getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
           return false;
