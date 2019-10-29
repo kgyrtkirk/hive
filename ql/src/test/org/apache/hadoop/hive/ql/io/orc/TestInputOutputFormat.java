@@ -748,13 +748,13 @@ public class TestInputOutputFormat {
     try {
       MockFileSystem fs = new MockFileSystem(conf);
       MockFileSystem.addGlobalFile(
-        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")));
+        new MockFile("mock:/a/base_0000001/bucket_00000", 1000, new byte[1], new MockBlock("host1")));
       MockFileSystem.addGlobalFile(
-        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
+        new MockFile("mock:/a/base_0000001/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
       MockFileSystem.addGlobalFile(
-        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00002", 1000, new byte[1], new MockBlock("host1")));
+        new MockFile("mock:/a/base_0000001/bucket_00002", 1000, new byte[1], new MockBlock("host1")));
       MockFileSystem.addGlobalFile(
-        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00003", 1000, new byte[1], new MockBlock("host1")));
+        new MockFile("mock:/a/base_0000001/bucket_00003", 1000, new byte[1], new MockBlock("host1")));
       MockFileSystem.addGlobalFile(
         new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")));
       MockFileSystem.addGlobalFile(
@@ -763,6 +763,14 @@ public class TestInputOutputFormat {
         new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00002", 1000, new byte[1], new MockBlock("host1")));
       MockFileSystem.addGlobalFile(
         new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00003", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+          new MockFile("mock:/a/delta_0000003_0000003_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")));
+        MockFileSystem.addGlobalFile(
+          new MockFile("mock:/a/delta_0000003_0000003_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
+        MockFileSystem.addGlobalFile(
+          new MockFile("mock:/a/delta_0000003_0000003_0000/bucket_00002", 1000, new byte[1], new MockBlock("host1")));
+        MockFileSystem.addGlobalFile(
+          new MockFile("mock:/a/delta_0000003_0000003_0000/bucket_00003", 1000, new byte[1], new MockBlock("host1")));
 
       conf.set("bucket_count", "4");
       //set up props for read
@@ -803,7 +811,7 @@ public class TestInputOutputFormat {
       System.out.println("STATS TRACE END - " + testCaseName.getMethodName());
       int delta = readsAfter - readsBefore;
       //HIVE-16812 adds 1 read of the footer of each file (only if delete delta exists)
-      assertEquals(8, delta);
+      assertEquals(12, delta);
     } finally {
       MockFileSystem.clearGlobalFiles();
     }
@@ -1235,6 +1243,11 @@ public class TestInputOutputFormat {
       } catch (URISyntaxException err) {
         throw new IllegalArgumentException("huh?", err);
       }
+    }
+
+    @Override
+    public String getScheme() {
+      return "mock";
     }
 
     // increments file modification time
@@ -2196,8 +2209,8 @@ public class TestInputOutputFormat {
       mapWork.setVectorizedRowBatchCtx(vectorizedRowBatchCtx);
     }
     mapWork.setUseBucketizedHiveInputFormat(false);
-    LinkedHashMap<Path, ArrayList<String>> aliasMap = new LinkedHashMap<>();
-    ArrayList<String> aliases = new ArrayList<String>();
+    Map<Path, List<String>> aliasMap = new LinkedHashMap<>();
+    List<String> aliases = new ArrayList<String>();
     aliases.add(tableName);
     LinkedHashMap<Path, PartitionDesc> partMap = new LinkedHashMap<>();
     for(int p=0; p < partitions; ++p) {
@@ -2655,7 +2668,7 @@ public class TestInputOutputFormat {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("z", PredicateLeaf.Type.LONG, new Long(0))
+            .lessThan("z", PredicateLeaf.Type.LONG, Long.valueOf(0))
             .end()
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));
@@ -2807,7 +2820,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktable
+    // call-1: getAcidState - mock:/mocktable
     // call-2: open - mock:/mocktable/0_0
     // call-3: open - mock:/mocktable/0_1
     assertEquals(3, readOpsDelta);
@@ -2865,7 +2878,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl
+    // call-1: getAcidState - mock:/mocktbl
     // call-2: open - mock:/mocktbl/0_0
     // call-3: open - mock:/mocktbl/0_1
     assertEquals(3, readOpsDelta);
@@ -2885,7 +2898,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl
+    // call-1: getAcidState - mock:/mocktbl
     assertEquals(1, readOpsDelta);
 
     // enable cache and use default strategy
@@ -2904,7 +2917,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl
+    // call-1: getAcidState - mock:/mocktbl
     // call-2: open - mock:/mocktbl/0_0
     // call-3: open - mock:/mocktbl/0_1
     assertEquals(3, readOpsDelta);
@@ -2922,7 +2935,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl
+    // call-1: getAcidState - mock:/mocktbl
     assertEquals(1, readOpsDelta);
 
     // revert back to local fs
@@ -2976,7 +2989,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktable
+    // call-1: getAcidState - mock:/mocktable
     // call-2: open - mock:/mocktbl1/0_0
     // call-3: open - mock:/mocktbl1/0_1
     assertEquals(3, readOpsDelta);
@@ -3015,7 +3028,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktable
+    // call-1: getAcidState - mock:/mocktable
     // call-2: open - mock:/mocktbl1/0_0
     // call-3: open - mock:/mocktbl1/0_1
     assertEquals(3, readOpsDelta);
@@ -3033,7 +3046,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl1
+    // call-1: getAcidState - mock:/mocktbl1
     assertEquals(1, readOpsDelta);
 
     // revert back to local fs
@@ -3088,7 +3101,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl2
+    // call-1: getAcidState - mock:/mocktbl2
     // call-2: open - mock:/mocktbl2/0_0
     // call-3: open - mock:/mocktbl2/0_1
     assertEquals(3, readOpsDelta);
@@ -3110,7 +3123,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl2
+    // call-1: getAcidState - mock:/mocktbl2
     // call-2: open - mock:/mocktbl2/0_1
     assertEquals(2, readOpsDelta);
 
@@ -3131,7 +3144,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl2
+    // call-1: getAcidState - mock:/mocktbl2
     // call-2: open - mock:/mocktbl2/0_0
     assertEquals(2, readOpsDelta);
 
@@ -3148,7 +3161,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: listLocatedStatus - mock:/mocktbl2
+    // call-1: getAcidState - mock:/mocktbl2
     assertEquals(1, readOpsDelta);
 
     // revert back to local fs
@@ -3217,11 +3230,9 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: open to read footer - split 1 => mock:/mocktable1/0_0
-    // call-2: open to read data - split 1 => mock:/mocktable1/0_0
-    // call-3: open to read footer - split 2 => mock:/mocktable1/0_1
-    // call-4: open to read data - split 2 => mock:/mocktable1/0_1
-    assertEquals(4, readOpsDelta);
+    // call-1: open to read - split 1 => mock:/mocktable1/0_0
+    // call-2: open to read - split 2 => mock:/mocktable1/0_1
+    assertEquals(2, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3362,11 +3373,9 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: open to read footer - split 1 => mock:/mocktable3/0_0
-    // call-2: open to read data - split 1 => mock:/mocktable3/0_0
-    // call-3: open to read footer - split 2 => mock:/mocktable3/0_1
-    // call-4: open to read data - split 2 => mock:/mocktable3/0_1
-    assertEquals(4, readOpsDelta);
+    // call-1: open to read - split 1 => mock:/mocktable3/0_0
+    // call-2: open to read - split 2 => mock:/mocktable3/0_1
+    assertEquals(2, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3512,15 +3521,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: open to read footer - split 1 => mock:/mocktable5/0_0
-    // call-2: open to read data - split 1 => mock:/mocktable5/0_0
-    // call-3: getAcidState - split 1 => mock:/mocktable5 (to compute offset for original read)
-    // call-4: open to read footer - split 2 => mock:/mocktable5/0_1
-    // call-5: open to read data - split 2 => mock:/mocktable5/0_1
-    // call-6: getAcidState - split 2 => mock:/mocktable5 (to compute offset for original read)
-    // call-7: open to read footer - split 2 => mock:/mocktable5/0_0 (to get row count)
-    // call-8: file status - split 2 => mock:/mocktable5/0_0
-    assertEquals(8, readOpsDelta);
+    assertEquals(10, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3599,7 +3600,7 @@ public class TestInputOutputFormat {
     // call-4: AcidUtils.getAcidState - split 2 => ls mock:/mocktable6
     // call-5: read footer - split 2 => mock:/mocktable6/0_0 (to get offset since it's original file)
     // call-6: file stat - split 2 => mock:/mocktable6/0_0
-    assertEquals(6, readOpsDelta);
+    assertEquals(10, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3674,7 +3675,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(7, readOpsDelta);
+    assertEquals(10, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3748,7 +3749,7 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    assertEquals(5, readOpsDelta);
+    assertEquals(10, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");

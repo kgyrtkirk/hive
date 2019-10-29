@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Constant is represented as a vector with repeating values.
@@ -439,6 +437,25 @@ public class ConstantVectorExpression extends VectorExpression {
     return intervalDayTimeValue;
   }
 
+  public Object getValue() {
+    switch (type) {
+    case LONG:
+      return getLongValue();
+    case DOUBLE:
+      return getDoubleValue();
+    case BYTES:
+      return getBytesValue();
+    case DECIMAL:
+      return getDecimalValue();
+    case TIMESTAMP:
+      return getTimestampValue();
+    case INTERVAL_DAY_TIME:
+      return getIntervalDayTimeValue();
+    default:
+      throw new RuntimeException("Unexpected column vector type " + type);
+    }
+  }
+
   public void setStructValue(Object structValue) throws HiveException {
     StructTypeInfo structTypeInfo = (StructTypeInfo) outputTypeInfo;
     ArrayList<TypeInfo> fieldTypeInfoList = structTypeInfo.getAllStructFieldTypeInfos();
@@ -504,5 +521,9 @@ public class ConstantVectorExpression extends VectorExpression {
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder()).build();
+  }
+
+  public boolean getIsNullValue() {
+    return isNullValue;
   }
 }

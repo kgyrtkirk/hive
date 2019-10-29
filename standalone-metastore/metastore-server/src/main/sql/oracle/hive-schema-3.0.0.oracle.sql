@@ -1,6 +1,10 @@
 -- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
 -- NOTE: Some versions of SchemaTool do not automatically generate this table.
 -- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+
+-- HIVE-21336 safeguards from failures from indices being too long
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 CREATE TABLE SEQUENCE_TABLE
 (
    SEQUENCE_NAME VARCHAR2(255) NOT NULL,
@@ -82,6 +86,9 @@ CREATE TABLE CTLGS (
     UNIQUE ("NAME")
 );
 
+-- Insert a default value.  The location is TBD.  Hive will fix this when it starts
+INSERT INTO CTLGS VALUES (1, 'hive', 'Default catalog for Hive', 'TBD');
+
 -- Table DBS for classes [org.apache.hadoop.hive.metastore.model.MDatabase]
 CREATE TABLE DBS
 (
@@ -91,7 +98,7 @@ CREATE TABLE DBS
     "NAME" VARCHAR2(128) NULL,
     OWNER_NAME VARCHAR2(128) NULL,
     OWNER_TYPE VARCHAR2(10) NULL,
-    CTLG_NAME VARCHAR2(256)
+    CTLG_NAME VARCHAR2(256) DEFAULT 'hive'
 );
 
 ALTER TABLE DBS ADD CONSTRAINT DBS_PK PRIMARY KEY (DB_ID);

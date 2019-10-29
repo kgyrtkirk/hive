@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
@@ -47,7 +48,7 @@ public interface LowLevelCache {
    *    can be thrown away, the reader will never touch it; but we need code in the reader to
    *    handle such cases to avoid disk reads for these "tails" vs real unmatched ranges.
    *    Some sort of InvalidCacheChunk could be placed to avoid them. TODO
-   * @param base base offset for the ranges (stripe/stream offset in case of ORC).
+   * @param baseOffset base offset for the ranges (stripe/stream offset in case of ORC).
    */
   DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
       DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData);
@@ -58,7 +59,7 @@ public interface LowLevelCache {
    *         the replacement chunks from cache are updated directly in the array.
    */
   long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
-      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag);
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, CacheTag tag);
 
   /** Notifies the cache that a particular buffer should be removed due to eviction. */
   void notifyEvicted(MemoryBuffer buffer);

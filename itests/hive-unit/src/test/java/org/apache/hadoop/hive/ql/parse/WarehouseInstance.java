@@ -27,11 +27,14 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -51,6 +54,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
@@ -121,9 +125,7 @@ public class WarehouseInstance implements Closeable {
   private void initialize(String cmRoot, String externalTableWarehouseRoot, String warehouseRoot,
       Map<String, String> overridesForHiveConf) throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
-    for (Map.Entry<String, String> entry : overridesForHiveConf.entrySet()) {
-      hiveConf.set(entry.getKey(), entry.getValue());
-    }
+
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
     if (metaStoreUri != null) {
       hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
@@ -153,7 +155,11 @@ public class WarehouseInstance implements Closeable {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true);
+    for (Map.Entry<String, String> entry : overridesForHiveConf.entrySet()) {
+      hiveConf.set(entry.getKey(), entry.getValue());
+    }
+
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf, true, true);
 
     // Add the below mentioned dependency in metastore/pom.xml file. For postgres need to copy postgresql-42.2.1.jar to
     // .m2//repository/postgresql/postgresql/9.3-1102.jdbc41/postgresql-9.3-1102.jdbc41.jar.
@@ -222,11 +228,12 @@ public class WarehouseInstance implements Closeable {
   }
 
   public WarehouseInstance run(String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() != null) {
-      throw ret.getException();
+    try {
+      driver.run(command);
+      return this;
+    } catch (CommandProcessorException e) {
+      throw e.getException();
     }
-    return this;
   }
 
   public CommandProcessorResponse runCommand(String command) throws Throwable {
@@ -234,17 +241,43 @@ public class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance runFailure(String command) throws Throwable {
-    CommandProcessorResponse ret = driver.run(command);
-    if (ret.getException() == null) {
+    try {
+      driver.run(command);
       throw new RuntimeException("command execution passed for a invalid command" + command);
+    } catch (CommandProcessorException e) {
+      return this;
     }
-    return this;
+  }
+
+  WarehouseInstance runFailure(String command, int errorCode) throws Throwable {
+    try {
+      driver.run(command);
+      throw new RuntimeException("command execution passed for a invalid command" + command);
+    } catch (CommandProcessorException e) {
+      if (e.getResponseCode() != errorCode) {
+        throw new RuntimeException("Command: " + command + " returned incorrect error code: " +
+            e.getResponseCode() + " instead of " + errorCode);
+      }
+      return this;
+    }
   }
 
   Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
       throws Throwable {
     String dumpCommand =
         "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    if (!withClauseOptions.isEmpty()) {
+      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return dump(dumpCommand);
+  }
+
+  Tuple dump(String replPolicy, String oldReplPolicy, String lastReplicationId, List<String> withClauseOptions)
+          throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + replPolicy
+                    + (oldReplPolicy == null ? "" : " REPLACE " + oldReplPolicy)
+                    + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
     if (!withClauseOptions.isEmpty()) {
       dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
@@ -279,18 +312,16 @@ public class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance loadWithoutExplain(String replicatedDbName, String dumpLocation) throws Throwable {
-    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "' with ('hive.exec.parallel'='true')");
     return this;
   }
 
   WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
-    run("EXPLAIN " + replLoadCmd);
-    printOutput();
     return run(replLoadCmd);
   }
 
@@ -301,24 +332,33 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
     String replStatusCmd = "REPL STATUS " + replicatedDbName;
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return run(replStatusCmd);
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
-    runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    loadFailure(replicatedDbName, dumpLocation, null);
     return this;
   }
 
   WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
           throws Throwable {
     String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
-    if (!withClauseOptions.isEmpty()) {
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
       replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return runFailure(replLoadCmd);
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions,
+                                int errorCode) throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if ((withClauseOptions != null) && !withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd, errorCode);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {
@@ -414,6 +454,23 @@ public class WarehouseInstance implements Closeable {
     }
   }
 
+  // Make sure that every table in the target database is marked as target of the replication.
+  // Stats updater task and partition management task skip processing tables being replicated into.
+  private void verifyReplTargetProperty(Map<String, String> props) {
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+  }
+
+  public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {
+    for (String tblName : tblNames) {
+      verifyReplTargetProperty(getTable(dbName, tblName).getParameters());
+    }
+    return this;
+  }
+
+  public WarehouseInstance verifyReplTargetProperty(String dbName) throws Exception {
+    return verifyReplTargetProperty(dbName, getAllTables(dbName));
+  }
+
   public Database getDatabase(String dbName) throws Exception {
     try {
       return client.getDatabase(dbName);
@@ -441,7 +498,7 @@ public class WarehouseInstance implements Closeable {
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName) throws Exception {
-    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName));
+    return client.getTableColumnStatistics(dbName, tableName, getTableColNames(dbName, tableName), Constants.HIVE_ENGINE);
   }
 
   /**
@@ -460,19 +517,18 @@ public class WarehouseInstance implements Closeable {
    * Get statistics for given set of columns of a given table in the given database
    * @param dbName - the database where the table resides
    * @param tableName - tablename whose statistics are to be retrieved
-   * @param colNames - columns whose statistics is to be retrieved.
    * @return - list of ColumnStatisticsObj objects in the order of the specified columns
    */
   public Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
                                                                     String tableName) throws Exception {
     List<String> colNames = new ArrayList();
     client.getFields(dbName, tableName).forEach(fs -> colNames.add(fs.getName()));
-    return getAllPartitionColumnStatistics(dbName, tableName, colNames);
+    return client.getPartitionColumnStatistics(dbName, tableName,
+            client.listPartitionNames(dbName, tableName, (short) -1), colNames, Constants.HIVE_ENGINE);
   }
 
   /**
-   * Get statistics for given set of columns for all the partitions of a given table in the given
-   * database.
+   * Get statistics for a given partition of the given table in the given database.
    * @param dbName - the database where the table resides
    * @param tableName - name of the partitioned table in the database
    * @param colNames - columns whose statistics is to be retrieved
@@ -480,12 +536,11 @@ public class WarehouseInstance implements Closeable {
    * ordered according to the given list of columns.
    * @throws Exception
    */
-  Map<String, List<ColumnStatisticsObj>> getAllPartitionColumnStatistics(String dbName,
-                                                                         String tableName,
-                                                                         List<String> colNames)
+  List<ColumnStatisticsObj> getPartitionColumnStatistics(String dbName, String tableName,
+                                                         String partName, List<String> colNames)
           throws Exception {
     return client.getPartitionColumnStatistics(dbName, tableName,
-            client.listPartitionNames(dbName, tableName, (short) -1), colNames);
+                                              Collections.singletonList(partName), colNames, Constants.HIVE_ENGINE).get(0);
   }
 
   public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {
@@ -542,7 +597,11 @@ public class WarehouseInstance implements Closeable {
   }
 
   public boolean isAcidEnabled() {
-    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+        hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER).equals("org.apache.hadoop.hive.ql.lockmgr.DbTxnManager")) {
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -550,6 +609,10 @@ public class WarehouseInstance implements Closeable {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
       miniDFSCluster.shutdown();
     }
+  }
+
+  CurrentNotificationEventId getCurrentNotificationEventId() throws Exception {
+    return client.getCurrentNotificationEventId();
   }
 
   List<Path> copyToHDFS(List<URI> localUris) throws IOException, SemanticException {

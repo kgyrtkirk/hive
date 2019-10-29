@@ -81,7 +81,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableComparable;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -464,7 +464,7 @@ public class TestVectorBetweenIn {
 
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
     if (isBetween) {
-      children.add(new ExprNodeConstantDesc(new Boolean(isInvert)));
+      children.add(new ExprNodeConstantDesc(Boolean.valueOf(isInvert)));
     }
     children.add(col1Expr);
     for (Object compareObject : compareList) {
@@ -900,7 +900,7 @@ public class TestVectorBetweenIn {
             (isFilter ?
                 VectorExpressionDescriptor.Mode.FILTER :
                 VectorExpressionDescriptor.Mode.PROJECTION));
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (betweenInTestMode == BetweenInTestMode.VECTOR_EXPRESSION) {
       String vecExprString = vectorExpression.toString();

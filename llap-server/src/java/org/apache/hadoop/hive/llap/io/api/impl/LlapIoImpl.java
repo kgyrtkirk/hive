@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,6 +168,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
             cacheMetrics, cachePolicyWrapper, allocator);
         serdeCache = serdeCacheImpl;
+        serdeCacheImpl.setConf(conf);
       }
 
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
@@ -298,7 +300,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
-        MemoryBuffer[] data, long baseOffset, String tag) {
+        MemoryBuffer[] data, long baseOffset, CacheTag tag) {
       return lowLevelCache.putFileData(
           fileKey, ranges, data, baseOffset, Priority.NORMAL, null, tag);
     }

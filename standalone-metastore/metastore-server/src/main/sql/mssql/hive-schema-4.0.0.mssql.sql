@@ -94,7 +94,8 @@ CREATE TABLE PART_COL_STATS
     PART_ID bigint NULL,
     PARTITION_NAME nvarchar(767) NOT NULL,
     "TABLE_NAME" nvarchar(256) NOT NULL,
-    "CAT_NAME" nvarchar(256) NOT NULL
+    "CAT_NAME" nvarchar(256) NOT NULL,
+    "ENGINE" nvarchar(128) NOT NULL
 );
 
 ALTER TABLE PART_COL_STATS ADD CONSTRAINT PART_COL_STATS_PK PRIMARY KEY (CS_ID);
@@ -242,7 +243,8 @@ CREATE TABLE TAB_COL_STATS
     NUM_TRUES bigint NULL,
     TBL_ID bigint NULL,
     "TABLE_NAME" nvarchar(256) NOT NULL,
-    "CAT_NAME" nvarchar(256) NOT NULL
+    "CAT_NAME" nvarchar(256) NOT NULL,
+    "ENGINE" nvarchar(128) NOT NULL
 );
 
 ALTER TABLE TAB_COL_STATS ADD CONSTRAINT TAB_COL_STATS_PK PRIMARY KEY (CS_ID);
@@ -285,7 +287,7 @@ CREATE TABLE DBS
     "NAME" nvarchar(128) NULL,
     OWNER_NAME nvarchar(128) NULL,
     OWNER_TYPE nvarchar(10) NULL,
-    CTLG_NAME nvarchar(256),
+    CTLG_NAME nvarchar(256) DEFAULT 'hive',
     CREATE_TIME INT
 );
 
@@ -576,7 +578,7 @@ ALTER TABLE INDEX_PARAMS ADD CONSTRAINT INDEX_PARAMS_PK PRIMARY KEY (INDEX_ID,PA
 CREATE TABLE COLUMNS_V2
 (
     CD_ID bigint NOT NULL,
-    COMMENT nvarchar(256) NULL,
+    COMMENT nvarchar(4000) NULL,
     "COLUMN_NAME" nvarchar(767) NOT NULL,
     TYPE_NAME varchar(max) NOT NULL,
     INTEGER_IDX int NOT NULL
@@ -704,6 +706,9 @@ CREATE TABLE CTLGS (
       LOCATION_URI nvarchar(4000) not null,
       CREATE_TIME INT
 );
+
+-- Insert a default value.  The location is TBD.  Hive will fix this when it starts
+INSERT INTO CTLGS VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
 CREATE UNIQUE INDEX UNIQUE_CTLG ON CTLGS ("NAME");
 

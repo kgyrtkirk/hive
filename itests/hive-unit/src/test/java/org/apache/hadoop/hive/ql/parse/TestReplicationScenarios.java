@@ -59,7 +59,8 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.partition.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -67,7 +68,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
@@ -88,7 +89,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -175,6 +175,8 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
+    hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
+    hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -183,6 +185,8 @@ public class TestReplicationScenarios {
     });
 
     MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+    // re set the WAREHOUSE property to the test dir, as the previous command added a random port to it
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp"));
 
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
@@ -351,11 +355,11 @@ public class TestReplicationScenarios {
       if (validate(rootTask)) {
         return true;
       }
-      List<Task<? extends Serializable>> childTasks = rootTask.getChildTasks();
+      List<Task<?>> childTasks = rootTask.getChildTasks();
       if (childTasks == null) {
         return false;
       }
-      for (Task<? extends Serializable> childTask : childTasks) {
+      for (Task<?> childTask : childTasks) {
         if (hasTask(childTask)) {
           return true;
         }
@@ -380,9 +384,7 @@ public class TestReplicationScenarios {
       public boolean validate(Task task) {
         if (task instanceof DDLTask) {
           DDLTask ddlTask = (DDLTask)task;
-          if (ddlTask.getWork().getAddPartitionDesc() != null) {
-            return true;
-          }
+          return ddlTask.getWork().getDDLDesc() instanceof AlterTableAddPartitionDesc;
         }
         return false;
       }
@@ -458,7 +460,6 @@ public class TestReplicationScenarios {
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
     String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
-    String ptn_locn_2_later = new Path(TEST_PATH, name + "_ptn2_later").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
@@ -548,7 +549,6 @@ public class TestReplicationScenarios {
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
     String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
-    String[] empty = new String[]{};
 
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
@@ -693,15 +693,12 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data = new String[]{ "eleven" , "twelve" };
-    String[] empty = new String[]{};
     String ptn_locn = new Path(TEST_PATH, name + "_ptn").toUri().getPath();
 
     createTestDataFile(ptn_locn, ptn_data);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
 
     BehaviourInjection<Table,Table> ptnedTableRenamer = new BehaviourInjection<Table,Table>(){
-      boolean success = false;
-
       @Nullable
       @Override
       public Table apply(@Nullable Table table) {
@@ -716,14 +713,13 @@ public class TestReplicationScenarios {
               LOG.info("Entered new thread");
               IDriver driver2 = DriverFactory.newDriver(hconf);
               SessionState.start(new CliSessionState(hconf));
-              CommandProcessorResponse ret =
-                  driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
-              success = (ret.getException() == null);
-              assertFalse(success);
-              ret = driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
-              success = (ret.getException() == null);
-              assertFalse(success);
-              LOG.info("Exit new thread success - {}", success);
+              try {
+                driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
+                driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
+              } catch (CommandProcessorException e) {
+                throw new RuntimeException(e);
+              }
+              LOG.info("Exit new thread success");
             }
           });
           t.start();
@@ -766,15 +762,12 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data = new String[]{ "eleven" , "twelve" };
-    String[] empty = new String[]{};
     String ptn_locn = new Path(TEST_PATH, name + "_ptn").toUri().getPath();
 
     createTestDataFile(ptn_locn, ptn_data);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
 
     BehaviourInjection<Table,Table> ptnedTableRenamer = new BehaviourInjection<Table,Table>(){
-      boolean success = false;
-
       @Nullable
       @Override
       public Table apply(@Nullable Table table) {
@@ -789,10 +782,12 @@ public class TestReplicationScenarios {
               LOG.info("Entered new thread");
               IDriver driver2 = DriverFactory.newDriver(hconf);
               SessionState.start(new CliSessionState(hconf));
-              CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
-              success = (ret.getException() == null);
-              assertTrue(success);
-              LOG.info("Exit new thread success - {}", success, ret.getException());
+              try {
+                driver2.run("DROP TABLE " + dbName + ".ptned");
+              } catch (CommandProcessorException e) {
+                throw new RuntimeException(e);
+              }
+              LOG.info("Exit new thread success");
             }
           });
           t.start();
@@ -851,20 +846,20 @@ public class TestReplicationScenarios {
     // Now, we load data into the tables, and see if an incremental
     // repl drop/load can duplicate it.
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", true, driver);
     verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
     run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * from " + dbName + ".unptned", driver);
     verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data, driver);
 
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", true, driver);
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", true, driver);
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
 
     run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)", true, driver);
     verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1, driver);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)", true, driver);
     verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
 
     // Perform REPL-DUMP/LOAD
@@ -989,8 +984,12 @@ public class TestReplicationScenarios {
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdSkipper);
     try {
       advanceDumpDir();
-      CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
-      assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+      try {
+        driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
+        assert false;
+      } catch (CommandProcessorException e) {
+        assertTrue(e.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+      }
       eventIdSkipper.assertInjectionsPerformed(true,false);
     } finally {
       InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
@@ -2571,7 +2570,6 @@ public class TestReplicationScenarios {
     // List to maintain the incremental dumps for each operation
     List<Tuple> incrementalDumpList = new ArrayList<Tuple>();
 
-    String[] empty = new String[] {};
     String[] unptn_data = new String[] { "ten" };
     String[] ptn_data_1 = new String[] { "fifteen" };
     String[] ptn_data_2 = new String[] { "seventeen" };
@@ -2681,7 +2679,6 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS ORC", driver);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
-    String[] empty = new String[] {};
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
 
     // Bootstrap dump/load
@@ -2694,7 +2691,7 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     // Replicate all the events happened after bootstrap
-    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
 
     // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
     if (!isMigrationTest) {
@@ -2727,7 +2724,7 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".ptned PARTITION(b=2) CONCATENATE", driver);
 
     // Replicate all the events happened so far
-    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
 
     // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
     if (!isMigrationTest) {
@@ -2783,7 +2780,7 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testStatus() throws IOException {
+  public void testStatus() throws Throwable {
     String name = testName.getMethodName();
     String dbName = createDB(name, driver);
     String replDbName = dbName + "_dupe";
@@ -2793,25 +2790,25 @@ public class TestReplicationScenarios {
     // Bootstrap done, now on to incremental. First, we test db-level REPL LOADs.
     // Both db-level and table-level repl.last.id must be updated.
 
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=11)",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('blah'='foo')",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned_rn", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned RENAME TO  " + dbName + ".ptned_rn",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned_rn", lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned_rn DROP PARTITION (b=11)",
             replDbName);
-    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, null, lastReplDumpId,
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, lastReplDumpId,
         "DROP TABLE " + dbName + ".ptned_rn",
             replDbName);
 
@@ -2819,36 +2816,27 @@ public class TestReplicationScenarios {
     // In each of these cases, the table-level repl.last.id must move forward, but the
     // db-level last.repl.id must not.
 
-    String lastTblReplDumpId = lastReplDumpId;
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b int) STORED AS TEXTFILE",
             replDbName);
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 ADD PARTITION (b=1)",
             replDbName);
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 PARTITION (b=1) RENAME TO PARTITION (b=11)",
             replDbName);
-    lastTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    lastReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 SET TBLPROPERTIES ('blah'='foo')",
             replDbName);
     // Note : Not testing table rename because table rename replication is not supported for table-level repl.
-    String finalTblReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+    verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 DROP PARTITION (b=11)",
             replDbName);
-
-    /*
-    Comparisons using Strings for event Ids is wrong. This should be numbers since lexical string comparison
-    and numeric comparision differ. This requires a broader change where we return the dump Id as long and not string
-    fixing this here for now as it was observed in one of the builds where "1001".compareTo("998") results
-    in failure of the assertion below.
-     */
-    assertTrue(new Long(Long.parseLong(finalTblReplDumpId)).compareTo(Long.parseLong(lastTblReplDumpId)) > 0);
 
     // TODO : currently not testing the following scenarios:
     //   a) Multi-db wh-level REPL LOAD - need to add that
@@ -3264,8 +3252,12 @@ public class TestReplicationScenarios {
     assertTrue(fileCount != 0);
     fs.delete(path);
 
-    CommandProcessorResponse ret = driverMirror.run("REPL LOAD " + dbName + " FROM '" + dumpLocation + "'");
-    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
+    try {
+      driverMirror.run("REPL LOAD " + dbName + " FROM '" + dumpLocation + "'");
+      assert false;
+    } catch (CommandProcessorException e) {
+      assertTrue(e.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
+    }
     run("drop database " + dbName, true, driver);
     fs.create(path, false);
   }
@@ -3276,15 +3268,19 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int)", driver);
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", ""));
+    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
     path = new Path(path, dbName.toLowerCase() + ".db");
     path = new Path(path, "normal");
     FileSystem fs = path.getFileSystem(hconf);
     fs.delete(path);
 
     advanceDumpDir();
-    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    try {
+      driver.run("REPL DUMP " + dbName);
+      assert false;
+    } catch (CommandProcessorException e) {
+      Assert.assertEquals(e.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    }
 
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
@@ -3296,7 +3292,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
     run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir",""));
+    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
     path = new Path(path, dbName.toLowerCase()+".db");
     path = new Path(path, "normal");
     path = new Path(path, "part=124");
@@ -3304,8 +3300,12 @@ public class TestReplicationScenarios {
     fs.delete(path);
 
     advanceDumpDir();
-    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    try {
+      driver.run("REPL DUMP " + dbName);
+      assert false;
+    } catch (CommandProcessorException e) {
+      Assert.assertEquals(e.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+    }
 
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
@@ -3493,27 +3493,29 @@ public class TestReplicationScenarios {
     return event;
   }
 
-  private String verifyAndReturnDbReplStatus(String dbName, String tblName,
+  private String verifyAndReturnDbReplStatus(String dbName,
                                              String prevReplDumpId, String cmd,
                                              String replDbName) throws IOException {
     run(cmd, driver);
     String lastReplDumpId = incrementalLoadAndVerify(dbName, prevReplDumpId, replDbName).lastReplId;
-    if (tblName != null){
-      verifyRun("REPL STATUS " + replDbName + "." + tblName, lastReplDumpId, driverMirror);
-    }
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(prevReplDumpId));
     return lastReplDumpId;
   }
 
-  // Tests that doing a table-level REPL LOAD updates table repl.last.id, but not db-level repl.last.id
+  // Tests that verify table's last repl ID
   private String verifyAndReturnTblReplStatus(
-      String dbName, String tblName, String lastDbReplDumpId, String prevReplDumpId, String cmd,
-      String replDbName) throws IOException {
+      String dbName, String tblName, String lastDbReplDumpId, String cmd,
+      String replDbName) throws IOException, TException {
     run(cmd, driver);
     String lastReplDumpId
-            = incrementalLoadAndVerify(dbName + "." + tblName, prevReplDumpId, replDbName + "." + tblName).lastReplId;
-    verifyRun("REPL STATUS " + replDbName, lastDbReplDumpId, driverMirror);
-    assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(prevReplDumpId));
+            = incrementalLoadAndVerify(dbName, lastDbReplDumpId, replDbName).lastReplId;
+    verifyRun("REPL STATUS " + replDbName, lastReplDumpId, driverMirror);
+    assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(lastDbReplDumpId));
+
+    Table tbl = metaStoreClientMirror.getTable(replDbName, tblName);
+    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    assertTrue(Long.parseLong(tblLastReplId) > Long.parseLong(lastDbReplDumpId));
+    assertTrue(Long.parseLong(tblLastReplId) <= Long.parseLong(lastReplDumpId));
     return lastReplDumpId;
   }
 
@@ -3552,12 +3554,6 @@ public class TestReplicationScenarios {
     return results;
   }
 
-  private void printOutput(IDriver myDriver) throws IOException {
-    for (String s : getOutput(myDriver)){
-      LOG.info(s);
-    }
-  }
-
   private void verifyIfTableNotExist(String dbName, String tableName, HiveMetaStoreClient myClient){
     Exception e = null;
     try {
@@ -3591,20 +3587,10 @@ public class TestReplicationScenarios {
 
   private void verifyIfPartitionExist(String dbName, String tableName, List<String> partValues,
       HiveMetaStoreClient myClient){
-    Exception e = null;
     try {
       Partition ptn = myClient.getPartition(dbName, tableName, partValues);
       assertNotNull(ptn);
     } catch (TException te) {
-      assert(false);
-    }
-  }
-
-  private void verifyIfDirNotExist(FileSystem fs, Path path, PathFilter filter){
-    try {
-      FileStatus[] statuses = fs.listStatus(path, filter);
-      assertEquals(0, statuses.length);
-    } catch (IOException e) {
       assert(false);
     }
   }
@@ -3665,10 +3651,11 @@ public class TestReplicationScenarios {
 
   private static boolean run(String cmd, boolean errorOnFail, IDriver myDriver) throws RuntimeException {
     boolean success = false;
-    CommandProcessorResponse ret = myDriver.run(cmd);
-    success = ((ret.getException() == null) && (ret.getErrorMessage() == null));
-    if (!success) {
-      LOG.warn("Error {} : {} running [{}].", ret.getErrorCode(), ret.getErrorMessage(), cmd);
+    try {
+      myDriver.run(cmd);
+      success = true;
+    } catch (CommandProcessorException e) {
+      LOG.warn("Error {} : {} running [{}].", e.getErrorCode(), e.getErrorMessage(), cmd);
     }
     return success;
   }

@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.conf;
 
 public class Constants {
+  /* Constants for Hive stats */
+  public static final String HIVE_ENGINE = "hive";
+
   /* Constants for LLAP */
   public static final String LLAP_LOGGER_NAME_QUERY_ROUTING = "query-routing";
   public static final String LLAP_LOGGER_NAME_CONSOLE = "console";
@@ -45,6 +48,8 @@ public class Constants {
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
       "org.apache.hive.storage.jdbc.JdbcStorageHandler";
   public static final String JDBC_CONFIG_PREFIX = "hive.sql";
+  public static final String JDBC_CATALOG = JDBC_CONFIG_PREFIX + ".catalog";
+  public static final String JDBC_SCHEMA = JDBC_CONFIG_PREFIX + ".schema";
   public static final String JDBC_TABLE = JDBC_CONFIG_PREFIX + ".table";
   public static final String JDBC_DATABASE_TYPE = JDBC_CONFIG_PREFIX + ".database.type";
   public static final String JDBC_URL = JDBC_CONFIG_PREFIX + ".jdbc.url";
@@ -67,4 +72,6 @@ public class Constants {
   public static final String HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG = "hadoop.security.credential.provider.path";
 
   public static final String MATERIALIZED_VIEW_REWRITING_TIME_WINDOW = "rewriting.time.window";
+  public static final String MATERIALIZED_VIEW_SORT_COLUMNS = "materializedview.sort.columns";
+  public static final String MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS = "materializedview.distribute.columns";
 }

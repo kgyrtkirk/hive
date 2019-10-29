@@ -64,7 +64,7 @@ public class HadoopJobExecHelper {
   static final private org.slf4j.Logger LOG = LoggerFactory.getLogger(HadoopJobExecHelper.class.getName());
 
   protected transient JobConf job;
-  protected Task<? extends Serializable> task;
+  protected Task<?> task;
 
   protected transient int mapProgress = -1;
   protected transient int reduceProgress = -1;
@@ -142,7 +142,7 @@ public class HadoopJobExecHelper {
   }
 
   public HadoopJobExecHelper(JobConf job, LogHelper console,
-      Task<? extends Serializable> task, HadoopJobExecHook hookCallBack) {
+      Task<?> task, HadoopJobExecHook hookCallBack) {
     this.queryId = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID, "unknown-" + System.currentTimeMillis());
     this.job = job;
     this.console = console;
@@ -646,7 +646,7 @@ public class HadoopJobExecHelper {
     Map<String, Double> exctractedCounters = new HashMap<String, Double>();
     for (Counters.Group cg : counters) {
       for (Counter c : cg) {
-        exctractedCounters.put(cg.getName() + "::" + c.getName(), new Double(c.getCounter()));
+        exctractedCounters.put(cg.getName() + "::" + c.getName(), Double.valueOf(c.getCounter()));
       }
     }
     return exctractedCounters;

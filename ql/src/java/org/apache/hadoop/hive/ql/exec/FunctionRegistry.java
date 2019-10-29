@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
 import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
-import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFJson;
@@ -193,6 +192,7 @@ public final class FunctionRegistry {
 
   static {
     system.registerGenericUDF("concat", GenericUDFConcat.class);
+    system.registerUDF("mid", UDFSubstr.class, false);
     system.registerUDF("substr", UDFSubstr.class, false);
     system.registerUDF("substring", UDFSubstr.class, false);
     system.registerGenericUDF("substring_index", GenericUDFSubstringIndex.class);
@@ -303,7 +303,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("hour", UDFHour.class);
     system.registerGenericUDF("minute", UDFMinute.class);
     system.registerGenericUDF("second", UDFSecond.class);
-    system.registerUDF("from_unixtime", UDFFromUnixTime.class, false);
+    system.registerGenericUDF("from_unixtime", GenericUDFFromUnixTime.class);
     system.registerGenericUDF("to_date", GenericUDFDate.class);
     system.registerUDF("weekofyear", UDFWeekOfYear.class, false);
     system.registerGenericUDF("last_day", GenericUDFLastDay.class);
@@ -472,6 +472,8 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
+    system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
+    system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
 
     // Generic UDFs
@@ -498,6 +500,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("in_file", GenericUDFInFile.class);
     system.registerGenericUDF("instr", GenericUDFInstr.class);
     system.registerGenericUDF("locate", GenericUDFLocate.class);
+    system.registerGenericUDF("position", GenericUDFLocate.class);
     system.registerGenericUDF("elt", GenericUDFElt.class);
     system.registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
     system.registerGenericUDF("sort_array", GenericUDFSortArray.class);
@@ -519,11 +522,14 @@ public final class FunctionRegistry {
     system.registerGenericUDF("unix_timestamp", GenericUDFUnixTimeStamp.class);
     system.registerGenericUDF("to_unix_timestamp", GenericUDFToUnixTimeStamp.class);
 
+    system.registerGenericUDF("datetime_legacy_hybrid_calendar", GenericUDFDatetimeLegacyHybridCalendar.class);
+
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
 
     system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);
     system.registerGenericUDF("bucket_number", GenericUDFBucketNumber.class);
     system.registerGenericUDF("tumbling_window", GenericUDFTumbledWindow.class);
+    system.registerGenericUDF("cast_format", GenericUDFCastFormat.class);
 
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
@@ -534,6 +540,8 @@ public final class FunctionRegistry {
     system.registerGenericUDTF("posexplode", GenericUDTFPosExplode.class);
     system.registerGenericUDTF("stack", GenericUDTFStack.class);
     system.registerGenericUDTF("get_splits", GenericUDTFGetSplits.class);
+    system.registerGenericUDTF("get_llap_splits", GenericUDTFGetSplits2.class);
+    system.registerGenericUDTF("get_sql_schema", GenericUDTFGetSQLSchema.class);
 
     //PTF declarations
     system.registerGenericUDF(LEAD_FUNC_NAME, GenericUDFLead.class);
@@ -562,6 +570,8 @@ public final class FunctionRegistry {
     system.registerHiddenBuiltIn(GenericUDFOPDTIPlus.class);
     system.registerHiddenBuiltIn(GenericUDFOPNumericMinus.class);
     system.registerHiddenBuiltIn(GenericUDFOPNumericPlus.class);
+    // No operator for nullsafe not equal, but add as built-in to allow for LLAP.
+    system.registerHiddenBuiltIn(GenericUDFOPNotEqualNS.class);
 
     // mask UDFs
     system.registerGenericUDF(GenericUDFMask.UDF_NAME, GenericUDFMask.class);
@@ -629,7 +639,7 @@ public final class FunctionRegistry {
     Set<String> allFuncs = getFunctionNames();
     String[] subpatterns = funcPatternStr.trim().split("\\|");
     for (String subpattern : subpatterns) {
-      subpattern = "(?i)" + subpattern.replaceAll("\\*", ".*");
+      subpattern = "(?i)" + UDFLike.likePatternToRegExp(subpattern);
       try {
         Pattern patternObj = Pattern.compile(subpattern);
         for (String funcName : allFuncs) {
@@ -725,8 +735,8 @@ public final class FunctionRegistry {
    * return a TypeInfo corresponding to the common PrimitiveCategory, and with type qualifiers
    * (if applicable) that match the 2 TypeInfo types.
    * Examples:
-   *   varchar(10), varchar(20), primitive category varchar => varchar(20)
-   *   date, string, primitive category string => string
+   *   varchar(10), varchar(20), primitive category varchar =&gt; varchar(20)
+   *   date, string, primitive category string =&gt; string
    * @param a  TypeInfo of the first type
    * @param b  TypeInfo of the second type
    * @param typeCategory PrimitiveCategory of the designated common type between a and b
@@ -1381,7 +1391,6 @@ public final class FunctionRegistry {
   /**
    * A shortcut to get the "index" GenericUDF. This is used for getting elements
    * out of array and getting values out of map.
-   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForIndex() {
     try {
@@ -1393,7 +1402,6 @@ public final class FunctionRegistry {
 
   /**
    * A shortcut to get the "and" GenericUDF.
-   * @throws SemanticException
    */
   public static GenericUDF getGenericUDFForAnd() {
     try {
@@ -1653,6 +1661,14 @@ public final class FunctionRegistry {
     return isOpCast(desc);
   }
 
+  public static boolean isOpBetween(ExprNodeDesc desc) {
+    return GenericUDFBetween.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  public static boolean isOpInBloomFilter(ExprNodeDesc desc) {
+    return GenericUDFInBloomFilter.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
   /**
    * Registers the appropriate kind of temporary function based on a class's
    * type.
@@ -1874,5 +1890,13 @@ public final class FunctionRegistry {
       default:
         return null; // helps identify unsupported functions
     }
+  }
+
+  public static boolean supportsWithinGroup(String functionName) throws SemanticException {
+    WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
+    if (windowInfo != null) {
+      return windowInfo.supportsWithinGroup();
+    }
+    return false;
   }
 }

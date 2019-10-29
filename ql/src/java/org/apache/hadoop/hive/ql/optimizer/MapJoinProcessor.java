@@ -30,8 +30,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -147,14 +147,14 @@ public class MapJoinProcessor extends Transform {
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
-      LinkedHashMap<Path, ArrayList<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
+      Map<Path, List<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
 
       // keep record all the input path for this alias
       HashSet<Path> pathSet = new HashSet<>();
       HashSet<Path> emptyPath = new HashSet<>();
-      for (Map.Entry<Path, ArrayList<String>> entry2 : pathToAliases.entrySet()) {
+      for (Map.Entry<Path, List<String>> entry2 : pathToAliases.entrySet()) {
         Path path = entry2.getKey();
-        ArrayList<String> list = entry2.getValue();
+        List<String> list = entry2.getValue();
         if (list.contains(alias)) {
           // add to path set
           pathSet.add(path);
@@ -276,11 +276,8 @@ public class MapJoinProcessor extends Transform {
   /**
    * convert a regular join to a a map-side join.
    *
-   * @param opParseCtxMap
    * @param op
    *          join operator
-   * @param joinTree
-   *          qb join tree
    * @param mapJoinPos
    *          position of the source to be read as part of map-reduce framework. All other sources
    *          are cached in memory
@@ -564,8 +561,6 @@ public class MapJoinProcessor extends Transform {
 
   public static boolean isFullOuterEnabledForDynamicPartitionHashJoin(HiveConf hiveConf, JoinOperator joinOp)
       throws SemanticException {
-    JoinDesc joinDesc = joinOp.getConf();
-
     return true;
   }
 
@@ -624,11 +619,8 @@ public class MapJoinProcessor extends Transform {
   /**
    * convert a sortmerge join to a a map-side join.
    *
-   * @param opParseCtxMap
    * @param smbJoinOp
    *          join operator
-   * @param joinTree
-   *          qb join tree
    * @param bigTablePos
    *          position of the source to be read as part of map-reduce framework. All other sources
    *          are cached in memory
@@ -798,7 +790,6 @@ public class MapJoinProcessor extends Transform {
    * @param mapJoinPos the position of big table as determined by either hints or auto conversion.
    * @param condns the join conditions
    * @return if given mapjoin position is a feasible big table position return same else -1.
-   * @throws SemanticException if given position is not in the big table candidates.
    */
   public static int checkMapJoin(int mapJoinPos, JoinCondDesc[] condns) {
     Set<Integer> bigTableCandidates =
@@ -1237,7 +1228,7 @@ public class MapJoinProcessor extends Transform {
 
   }
 
-  public static ObjectPair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
+  public static Pair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> getKeys(
           boolean leftInputJoin, String[] baseSrc, JoinOperator op) {
 
     // Walk over all the sources (which are guaranteed to be reduce sink
@@ -1271,8 +1262,7 @@ public class MapJoinProcessor extends Transform {
       keyExprMap.put(pos, keyCols);
     }
 
-    return new ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>>(
-            oldReduceSinkParentOps, keyExprMap);
+    return Pair.of(oldReduceSinkParentOps, keyExprMap);
   }
 
   public static MapJoinDesc getMapJoinDesc(HiveConf hconf,
@@ -1294,9 +1284,8 @@ public class MapJoinProcessor extends Transform {
     Map<Byte, List<ExprNodeDesc>> valueExprs = op.getConf().getExprs();
     Map<Byte, List<ExprNodeDesc>> newValueExprs = new HashMap<Byte, List<ExprNodeDesc>>();
 
-    ObjectPair<List<ReduceSinkOperator>, Map<Byte,List<ExprNodeDesc>>> pair =
-            getKeys(leftInputJoin, baseSrc, op);
-    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getFirst();
+    Pair<List<ReduceSinkOperator>, Map<Byte, List<ExprNodeDesc>>> pair = getKeys(leftInputJoin, baseSrc, op);
+    List<ReduceSinkOperator> oldReduceSinkParentOps = pair.getLeft();
     for (Map.Entry<Byte, List<ExprNodeDesc>> entry : valueExprs.entrySet()) {
       byte tag = entry.getKey();
       Operator<?> terminal = oldReduceSinkParentOps.get(tag);
@@ -1325,7 +1314,7 @@ public class MapJoinProcessor extends Transform {
     Map<Byte, int[]> valueIndices = new HashMap<Byte, int[]>();
 
     // get the join keys from old parent ReduceSink operators
-    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getSecond();
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = pair.getRight();
 
     if (!adjustParentsChildren) {
       // Since we did not remove reduce sink parents, keep the original value expressions

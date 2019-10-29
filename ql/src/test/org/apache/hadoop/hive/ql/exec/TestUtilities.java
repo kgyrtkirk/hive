@@ -101,10 +101,6 @@ public class TestUtilities {
         getFileExtension(jc, false, new HiveIgnoreKeyTextOutputFormat()));
     assertEquals("Deflate for uncompressed text format", ".deflate",
         getFileExtension(jc, true, new HiveIgnoreKeyTextOutputFormat()));
-    assertEquals("No extension for uncompressed default format", "",
-        getFileExtension(jc, false));
-    assertEquals("Deflate for uncompressed default format", ".deflate",
-        getFileExtension(jc, true));
 
     String extension = ".myext";
     jc.set("hive.output.file.extension", extension);
@@ -349,7 +345,7 @@ public class TestUtilities {
       String testPartitionName = "p=" + i;
       testPartitionsPaths[i] = new Path(testTablePath, "p=" + i);
       mapWork.getPathToAliases().put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
-      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+      mapWork.getAliasToWork().put(testPartitionName, mock(Operator.class));
       mapWork.getPathToPartitionInfo().put(testPartitionsPaths[i], mockPartitionDesc);
 
     }
@@ -370,7 +366,7 @@ public class TestUtilities {
       assertEquals(mapWork.getPathToPartitionInfo().size(), numPartitions);
       assertEquals(mapWork.getAliasToWork().size(), numPartitions);
 
-      for (Map.Entry<Path, ArrayList<String>> entry : mapWork.getPathToAliases().entrySet()) {
+      for (Map.Entry<Path, List<String>> entry : mapWork.getPathToAliases().entrySet()) {
         assertNotNull(entry.getKey());
         assertNotNull(entry.getValue());
         assertEquals(entry.getValue().size(), 1);
@@ -489,7 +485,7 @@ public class TestUtilities {
     MapWork mapWork = new MapWork();
     Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
 
-    LinkedHashMap<Path, ArrayList<String>> pathToAliasTable = new LinkedHashMap<>();
+    Map<Path, List<String>> pathToAliasTable = new LinkedHashMap<>();
 
     String testTableName = "testTable";
 
@@ -501,7 +497,7 @@ public class TestUtilities {
 
       pathToAliasTable.put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
 
-      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+      mapWork.getAliasToWork().put(testPartitionName, mock(Operator.class));
     }
 
     mapWork.setPathToAliases(pathToAliasTable);
@@ -578,7 +574,7 @@ public class TestUtilities {
     verify(pool).shutdownNow();
   }
 
-  private Task<? extends Serializable> getDependencyCollectionTask(){
+  private Task<?> getDependencyCollectionTask(){
     return TaskFactory.get(new DependencyCollectionWork());
   }
 
@@ -591,7 +587,7 @@ public class TestUtilities {
    *      \            /
    *       ---->DTc----
    */
-  private List<Task<? extends Serializable>> getTestDiamondTaskGraph(Task<? extends Serializable> providedTask){
+  private List<Task<?>> getTestDiamondTaskGraph(Task<?> providedTask){
     // Note: never instantiate a task without TaskFactory.get() if you're not
     // okay with .equals() breaking. Doing it via TaskFactory.get makes sure
     // that an id is generated, and two tasks of the same type don't show
@@ -599,12 +595,12 @@ public class TestUtilities {
     // array. Without this, DTa, DTb, and DTc would show up as one item in
     // the list of children. Thus, we're instantiating via a helper method
     // that instantiates via TaskFactory.get()
-    Task<? extends Serializable> root = getDependencyCollectionTask();
-    Task<? extends Serializable> DTa = getDependencyCollectionTask();
-    Task<? extends Serializable> DTb = getDependencyCollectionTask();
-    Task<? extends Serializable> DTc = getDependencyCollectionTask();
-    Task<? extends Serializable> DTd = getDependencyCollectionTask();
-    Task<? extends Serializable> DTe = getDependencyCollectionTask();
+    Task<?> root = getDependencyCollectionTask();
+    Task<?> DTa = getDependencyCollectionTask();
+    Task<?> DTb = getDependencyCollectionTask();
+    Task<?> DTc = getDependencyCollectionTask();
+    Task<?> DTd = getDependencyCollectionTask();
+    Task<?> DTe = getDependencyCollectionTask();
 
     root.addDependentTask(DTa);
     root.addDependentTask(DTb);
@@ -618,7 +614,7 @@ public class TestUtilities {
 
     providedTask.addDependentTask(DTe);
 
-    List<Task<? extends Serializable>> retVals = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> retVals = new ArrayList<Task<?>>();
     retVals.add(root);
     return retVals;
   }
@@ -630,20 +626,21 @@ public class TestUtilities {
    */
   public class CountingWrappingTask extends DependencyCollectionTask {
     int count;
-    Task<? extends Serializable> wrappedDep = null;
+    Task<?> wrappedDep = null;
 
-    public CountingWrappingTask(Task<? extends Serializable> dep) {
+    public CountingWrappingTask(Task<?> dep) {
       count = 0;
       wrappedDep = dep;
       super.addDependentTask(wrappedDep);
     }
 
-    public boolean addDependentTask(Task<? extends Serializable> dependent) {
+    @Override
+    public boolean addDependentTask(Task<?> dependent) {
       return wrappedDep.addDependentTask(dependent);
     }
 
     @Override
-    public List<Task<? extends Serializable>> getDependentTasks() {
+    public List<Task<?>> getDependentTasks() {
       count++;
       System.err.println("YAH:getDepTasks got called!");
       (new Exception()).printStackTrace(System.err);

@@ -59,8 +59,9 @@ public class HiveRelMdSize extends RelMdSize {
     // Obtain list of col stats, or use default if they are not available
     final ImmutableList.Builder<Double> list = ImmutableList.builder();
     int indxRqdCol = 0;
+    int nNoVirtualColumns = ((RelOptHiveTable) scan.getTable()).getNoOfNonVirtualCols();
     int nFields = scan.getRowType().getFieldCount();
-    for (int i = 0; i < nFields; i++) {
+    for (int i = 0; i < nNoVirtualColumns; i++) {
       if (neededcolsLst.contains(i)) {
         ColStatistics columnStatistic = columnStatistics.get(indxRqdCol);
         indxRqdCol++;
@@ -71,7 +72,15 @@ public class HiveRelMdSize extends RelMdSize {
           list.add(columnStatistic.getAvgColLen());
         }
       } else {
-        list.add(new Double(0));
+        list.add(Double.valueOf(0));
+      }
+    }
+    for (int i = nNoVirtualColumns; i < nFields; i++) {
+      if (neededcolsLst.contains(i)) {
+        RelDataTypeField field = scan.getRowType().getFieldList().get(i);
+        list.add(averageTypeValueSize(field.getType()));
+      } else {
+        list.add(Double.valueOf(0));
       }
     }
 
@@ -121,6 +130,10 @@ public class HiveRelMdSize extends RelMdSize {
   //       supports all types
   @Override
   public Double averageTypeValueSize(RelDataType type) {
+    return averageTypeSize(type);
+  }
+
+  public static Double averageTypeSize(RelDataType type) {
     switch (type.getSqlTypeName()) {
     case BOOLEAN:
     case TINYINT:
@@ -163,7 +176,7 @@ public class HiveRelMdSize extends RelMdSize {
     case ROW:
       Double average = 0.0;
       for (RelDataTypeField field : type.getFieldList()) {
-        average += averageTypeValueSize(field.getType());
+        average += averageTypeSize(field.getType());
       }
       return average;
     default:

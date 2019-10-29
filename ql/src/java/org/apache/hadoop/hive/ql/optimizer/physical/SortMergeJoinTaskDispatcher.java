@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
@@ -77,7 +76,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     Map<String, PartitionDesc> aliasToPartitionInfo = currWork.getAliasToPartnInfo();
     List<Path> removePaths = new ArrayList<>();
 
-    for (Map.Entry<Path, ArrayList<String>> entry : currWork.getPathToAliases().entrySet()) {
+    for (Map.Entry<Path, List<String>> entry : currWork.getPathToAliases().entrySet()) {
       boolean keepPath = false;
       for (String alias : entry.getValue()) {
         if (aliasToPartitionInfo.containsKey(alias)) {
@@ -224,7 +223,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   }
 
   @Override
-  public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
+  public Task<?> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
       throws SemanticException {
     // whether it contains a sort merge join operator
@@ -253,14 +252,14 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
 
     // create conditional work list and task list
     List<Serializable> listWorks = new ArrayList<Serializable>();
-    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> listTasks = new ArrayList<Task<?>>();
 
     // create task to aliases mapping and alias to input file mapping for resolver
     // Must be deterministic order map for consistent q-test output across Java versions
-    HashMap<Task<? extends Serializable>, Set<String>> taskToAliases =
-        new LinkedHashMap<Task<? extends Serializable>, Set<String>>();
+    HashMap<Task<?>, Set<String>> taskToAliases =
+        new LinkedHashMap<Task<?>, Set<String>>();
     // Note that pathToAlias will behave as if the original plan was a join plan
-    HashMap<Path, ArrayList<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
+    Map<Path, List<String>> pathToAliases = currJoinWork.getMapWork().getPathToAliases();
 
     // generate a map join task for the big table
     SMBJoinDesc originalSMBJoinDesc = originalSMBJoinOp.getConf();

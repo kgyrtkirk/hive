@@ -36,10 +36,30 @@ EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat ,
 
 explain extended select count(*) from (select `__time` from druid_table_alltypesorc limit 1) as src ;
 
+
+
+explain
 SELECT `__time`
 FROM druid_table_alltypesorc
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
+
+SELECT `__time`
+FROM druid_table_alltypesorc
+WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
+    OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
+
+
+explain
+SELECT `__time`
+FROM druid_table_alltypesorc
+WHERE ('1968-01-01 00:00:00' <= `__time` AND `__time` <= '1970-01-01 00:00:00')
+    OR ('1968-02-01 00:00:00' <= `__time` AND `__time` <= '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
+
+SELECT `__time`
+FROM druid_table_alltypesorc
+WHERE ('1968-01-01 00:00:00' <= `__time` AND `__time` <= '1970-01-01 00:00:00')
+    OR ('1968-02-01 00:00:00' <= `__time` AND `__time` <= '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
 
 -- COUNT DISTINCT TESTS
 -- AS PART OF https://issues.apache.org/jira/browse/HIVE-19586
@@ -135,8 +155,8 @@ SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `
 FROM `default`.`druid_table_alltypesorc` `druid_table_alias`
 GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE);
 
-explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3;
-SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_alltypesorc  order by date_1, date_2 limit 3;
+explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3;
+SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2, cast(`__time` as date) as orig_date, CAST((cdouble / 1000) AS INT) as offset from druid_table_alltypesorc  order by date_1, date_2 limit 3;
 
   -- Boolean Values
 -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319

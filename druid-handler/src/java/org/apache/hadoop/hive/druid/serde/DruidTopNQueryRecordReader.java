@@ -27,9 +27,9 @@ import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.druid.query.Result;
-import io.druid.query.topn.DimensionAndMetricValueExtractor;
-import io.druid.query.topn.TopNResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.topn.DimensionAndMetricValueExtractor;
+import org.apache.druid.query.topn.TopNResultValue;
 
 /**
  * Record reader for results for Druid TopNQuery.
@@ -53,8 +53,8 @@ public class DruidTopNQueryRecordReader extends DruidQueryRecordReader<Result<To
     if (values.hasNext()) {
       return true;
     }
-    if (queryResultsIterator.hasNext()) {
-      current = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      current = getQueryResultsIterator().next();
       values = current.getValue().getValue().iterator();
       return nextKeyValue();
     }
@@ -90,7 +90,7 @@ public class DruidTopNQueryRecordReader extends DruidQueryRecordReader<Result<To
   }
 
   @Override public float getProgress() {
-    return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

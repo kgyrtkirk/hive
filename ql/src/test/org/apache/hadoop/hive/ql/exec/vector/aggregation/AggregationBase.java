@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class AggregationBase {
 
@@ -242,7 +242,7 @@ public class AggregationBase {
        throw new HiveException("Failed to create " + vecAggrClass.getSimpleName() +
            "(VectorAggregationDesc) object ", e);
     }
-    VectorExpression.doTransientInit(vecAggrExpr.getInputExpression());
+    VectorExpression.doTransientInit(vecAggrExpr.getInputExpression(), hiveConf);
 
     // System.out.println("*VECTOR AGGREGATION EXPRESSION* " + vecAggrExpr.getClass().getSimpleName());
 

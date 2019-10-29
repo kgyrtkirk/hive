@@ -18,8 +18,9 @@
 
 package org.apache.hive.jdbc;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
@@ -37,7 +38,6 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
-import org.apache.hive.service.rpc.thrift.TOperationState;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -1007,10 +1007,27 @@ public class HiveStatement implements java.sql.Statement {
     this.inPlaceUpdateStream = stream;
   }
 
-  @VisibleForTesting
+  /**
+   * Returns the Query ID if it is running.
+   * This method is a public API for usage outside of Hive, although it is not part of the
+   * interface java.sql.Statement.
+   * @return Valid query ID if it is running else returns NULL.
+   * @throws SQLException If any internal failures.
+   */
+  @LimitedPrivate(value={"Hive and closely related projects."})
   public String getQueryId() throws SQLException {
+    // Storing it in temp variable as this method is not thread-safe and concurrent thread can
+    // close this handle and set it to null after checking for null.
+    TOperationHandle stmtHandleTmp = stmtHandle;
+    if (stmtHandleTmp == null) {
+      // If query is not running or already closed.
+      return null;
+    }
     try {
-      return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
+      String queryId = client.GetQueryId(new TGetQueryIdReq(stmtHandleTmp)).getQueryId();
+
+      // queryId can be empty string if query was already closed. Need to return null in such case.
+      return StringUtils.isBlank(queryId) ? null : queryId;
     } catch (TException e) {
       throw new SQLException(e);
     }

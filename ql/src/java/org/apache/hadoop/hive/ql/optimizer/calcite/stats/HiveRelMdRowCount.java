@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter.StatEnhancedHiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 public class HiveRelMdRowCount extends RelMdRowCount {
@@ -72,6 +73,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     super();
   }
 
+  @Override
   public Double getRowCount(Join join, RelMetadataQuery mq) {
     // Try to infer from constraints first
     final Pair<PKFKRelationInfo, RexNode> constraintBasedResult =
@@ -135,14 +137,23 @@ public class HiveRelMdRowCount extends RelMdRowCount {
     if (rowCount != null && rel.fetch != null) {
       final int offset = rel.offset == null ? 0 : RexLiteral.intValue(rel.offset);
       final int limit = RexLiteral.intValue(rel.fetch);
-      final Double offsetLimit = new Double(offset + limit);
+      final int offsetLimit = offset + limit;
       // offsetLimit is smaller than rowCount of the input operator
       // thus, we return the offsetLimit
       if (offsetLimit < rowCount) {
-        return offsetLimit;
+        return Double.valueOf(offsetLimit);
       }
     }
     return rowCount;
+  }
+
+  @Override
+  public Double getRowCount(Filter rel, RelMetadataQuery mq) {
+    if (rel instanceof StatEnhancedHiveFilter) {
+      return rel.getRows();
+    } else {
+      return super.getRowCount(rel, mq);
+    }
   }
 
   static class PKFKRelationInfo {

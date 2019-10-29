@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -60,9 +61,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.creation.ShowCreateTableOperation;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -73,8 +73,8 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -94,6 +94,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -267,10 +268,16 @@ public class CompactorMR {
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, writeIds, false, true);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), true,
+        null, false);
+
+    if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
+      return;
+    }
+
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
-    int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
-    if(parsedDeltas.size() > maxDeltastoHandle) {
+    int maxDeltasToHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
+    if (parsedDeltas.size() > maxDeltasToHandle) {
       /**
        * if here, that means we have very high number of delta files.  This may be sign of a temporary
        * glitch or a real issue.  For example, if transaction batch size or transaction size is set too
@@ -283,16 +290,16 @@ public class CompactorMR {
         + " located at " + sd.getLocation() + "! This is likely a sign of misconfiguration, " +
         "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
         "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.");
-      int numMinorCompactions = parsedDeltas.size() / maxDeltastoHandle;
-      for(int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
+      int numMinorCompactions = parsedDeltas.size() / maxDeltasToHandle;
+      for (int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
         JobConf jobMinorCompact = createBaseJobConf(conf, jobName + "_" + jobSubId, t, sd, writeIds, ci);
         launchCompactionJob(jobMinorCompact,
           null, CompactionType.MINOR, null,
-          parsedDeltas.subList(jobSubId * maxDeltastoHandle, (jobSubId + 1) * maxDeltastoHandle),
-          maxDeltastoHandle, -1, conf, msc, ci.id, jobName);
+            parsedDeltas.subList(jobSubId * maxDeltasToHandle, (jobSubId + 1) * maxDeltasToHandle),
+            maxDeltasToHandle, -1, conf, msc, ci.id, jobName);
       }
       //now recompute state since we've done minor compactions and have different 'best' set of deltas
-      dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, writeIds);
+      dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), false, null, false);
     }
 
     StringableList dirsToSearch = new StringableList();
@@ -320,17 +327,6 @@ public class CompactorMR {
         dirsToSearch.add(baseDir);
       }
     }
-    if (parsedDeltas.size() == 0 && dir.getOriginalFiles().size() == 0) {
-      // Skip compaction if there's no delta files AND there's no original files
-      String minOpenInfo = ".";
-      if(writeIds.getMinOpenWriteId() != null) {
-        minOpenInfo = " with min Open " + JavaUtils.writeIdToString(writeIds.getMinOpenWriteId()) +
-          ".  Compaction cannot compact above this writeId";
-      }
-      LOG.error("No delta files or original files found to compact in " + sd.getLocation() +
-        " for compactionId=" + ci.id + minOpenInfo);
-      return;
-    }
 
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
@@ -346,17 +342,15 @@ public class CompactorMR {
   private void runCrudCompaction(HiveConf hiveConf, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
       CompactionInfo ci) throws IOException {
     AcidUtils.setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(t.getParameters()));
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), hiveConf, writeIds, Ref.from(false), false,
-        t.getParameters());
-    int deltaCount = dir.getCurrentDirectories().size();
-    int origCount = dir.getOriginalFiles().size();
-    if ((deltaCount + (dir.getBaseDirectory() == null ? 0 : 1)) + origCount <= 1) {
-      LOG.debug("Not compacting {}; current base is {} and there are {} deltas and {} originals", sd.getLocation(), dir
-          .getBaseDirectory(), deltaCount, origCount);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), hiveConf, writeIds, Ref.from(
+        false), false, t.getParameters(), false);
+
+    if (!isEnoughToCompact(dir, sd)) {
       return;
     }
+
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
-    SessionState sessionState = DriverUtils.setUpSessionState(hiveConf, user, false);
+    SessionState sessionState = DriverUtils.setUpSessionState(hiveConf, user, true);
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
     conf.set(ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
@@ -412,12 +406,48 @@ public class CompactorMR {
     }
   }
 
+  private static boolean isEnoughToCompact(AcidUtils.Directory dir, StorageDescriptor sd) {
+    return isEnoughToCompact(true, dir, sd);
+  }
+
+  private static boolean isEnoughToCompact(boolean isMajorCompaction, AcidUtils.Directory dir, StorageDescriptor sd) {
+    int deltaCount = dir.getCurrentDirectories().size();
+    int origCount = dir.getOriginalFiles().size();
+
+    StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
+    boolean isEnoughToCompact;
+
+    if (isMajorCompaction) {
+      isEnoughToCompact = (origCount > 0
+          || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
+
+    } else {
+      isEnoughToCompact = (deltaCount > 1);
+
+      if (deltaCount == 2) {
+        Map<String, Long> deltaByType = dir.getCurrentDirectories().stream()
+            .collect(Collectors.groupingBy(delta ->
+                    (delta.isDeleteDelta() ? AcidUtils.DELETE_DELTA_PREFIX : AcidUtils.DELTA_PREFIX),
+                Collectors.counting()));
+
+        isEnoughToCompact = (deltaByType.size() != deltaCount);
+        deltaInfo.append(" ").append(deltaByType);
+      }
+    }
+
+    if (!isEnoughToCompact) {
+      LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}",
+          sd.getLocation(), dir.getBaseDirectory(), deltaInfo, origCount);
+    }
+    return isEnoughToCompact;
+  }
+
   private void runMmCompaction(HiveConf conf, Table t, Partition p,
       StorageDescriptor sd, ValidWriteIdList writeIds, CompactionInfo ci) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table "
         + t.getDbName() + "." + t.getTableName());
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()),
-        conf, writeIds, Ref.from(false), false, t.getParameters());
+    AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false),
+        false, t.getParameters(), false);
     removeFilesForMmTable(conf, dir);
 
     // Then, actually do the compaction.
@@ -427,14 +457,10 @@ public class CompactorMR {
       return;
     }
 
-    int deltaCount = dir.getCurrentDirectories().size();
-    int origCount = dir.getOriginalFiles().size();
-    if ((deltaCount + (dir.getBaseDirectory() == null ? 0 : 1)) + origCount <= 1) {
-      LOG.debug("Not compacting " + sd.getLocation() + "; current base is "
-        + dir.getBaseDirectory() + " and there are " + deltaCount + " deltas and "
-        + origCount + " originals");
+    if (!isEnoughToCompact(dir, sd)) {
       return;
     }
+
     try {
       String tmpLocation = generateTmpPath(sd);
       Path baseLocation = new Path(tmpLocation, "_base");
@@ -446,7 +472,7 @@ public class CompactorMR {
       //thinking it already has a txn opened
 
       String user = UserGroupInformation.getCurrentUser().getShortUserName();
-      SessionState sessionState = DriverUtils.setUpSessionState(driverConf, user, false);
+      SessionState sessionState = DriverUtils.setUpSessionState(driverConf, user, true);
 
       // Note: we could skip creating the table and just add table type stuff directly to the
       //       "insert overwrite directory" command if there were no bucketing or list bucketing.
@@ -547,8 +573,8 @@ public class CompactorMR {
    * {@link org.apache.hadoop.hive.ql.exec.tez.SplitGrouper#getCompactorSplitGroups(InputSplit[], Configuration)},
    * we will end up with one file per bucket.
    */
-  private void commitCrudMajorCompaction(Table t, String from, String tmpTableName, String to, Configuration conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException {
+  private void commitCrudMajorCompaction(Table t, String from, String tmpTableName, String to, HiveConf conf,
+      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
     Path fromPath = new Path(from);
     Path toPath = new Path(to);
     Path tmpTablePath = new Path(fromPath, tmpTableName);
@@ -580,7 +606,7 @@ public class CompactorMR {
         options = new AcidOutputFormat.Options(conf).writingBase(true).isCompressed(false).maximumWriteId(maxTxn)
             .bucket(bucketId).statementId(-1).visibilityTxnId(compactorTxnId);
         Path finalBucketFile = AcidUtils.createFilename(toPath, options);
-        fs.rename(filestatus.getPath(), finalBucketFile);
+        Hive.moveFile(conf, filestatus.getPath(), finalBucketFile, true, false, false);
       }
     }
     fs.delete(fromPath, true);
@@ -608,19 +634,13 @@ public class CompactorMR {
       List<Order> sortCols = t.getSd().getSortCols();
       if (sortCols.size() > 0) {
         query.append("SORTED BY (");
-        List<String> sortKeys = new ArrayList<String>();
         isFirst = true;
         for (Order sortCol : sortCols) {
           if (!isFirst) {
             query.append(", ");
           }
           isFirst = false;
-          query.append(sortCol.getCol()).append(" ");
-          if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC) {
-            query.append("ASC");
-          } else if (sortCol.getOrder() == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_DESC) {
-            query.append("DESC");
-          }
+          query.append(sortCol.getCol()).append(" ").append(DirectionUtils.codeToText(sortCol.getOrder()));
         }
         query.append(") ");
       }
@@ -652,7 +672,7 @@ public class CompactorMR {
     String sh = t.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
     assert sh == null; // Not supposed to be a compactable table.
     if (!serdeParams.isEmpty()) {
-      DDLTask.appendSerdeParams(query, serdeParams);
+      ShowCreateTableOperation.appendSerdeParams(query, serdeParams);
     }
     query.append("STORED AS INPUTFORMAT '").append(
         HiveStringUtils.escapeHiveCommand(sd.getInputFormat())).append("' OUTPUTFORMAT '").append(
@@ -759,6 +779,15 @@ public class CompactorMR {
     job.set(DIRS_TO_SEARCH, dirsToSearch.toString());
     job.setLong(MIN_TXN, minTxn);
     job.setLong(MAX_TXN, maxTxn);
+
+    // Add tokens for all the file system in the input path.
+    ArrayList<Path> dirs = new ArrayList<>();
+    if (baseDir != null) {
+      dirs.add(baseDir);
+    }
+    dirs.addAll(deltaDirs);
+    dirs.addAll(dirsToSearch);
+    TokenCache.obtainTokensForNamenodes(job.getCredentials(), dirs.toArray(new Path[]{}), job);
 
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
       mrJob = job;
@@ -1016,7 +1045,7 @@ public class CompactorMR {
             dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
           boolean sawBase = dir.getName().startsWith(AcidUtils.BASE_PREFIX);
           boolean isRawFormat = !dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)
-            && AcidUtils.MetaDataFile.isRawFormat(dir, fs);//deltes can't be raw format
+            && AcidUtils.MetaDataFile.isRawFormat(dir, fs, null);//deltes can't be raw format
 
           FileStatus[] files = fs.listStatus(dir, isRawFormat ? AcidUtils.originalBucketFilter
             : AcidUtils.bucketFileFilter);

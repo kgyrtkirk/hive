@@ -90,11 +90,6 @@
       <artifactId>commons-cli</artifactId>
       <version>${commons-cli.version}</version>
     </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
-    </dependency>
     <!-- XXX we probably shouldn't be shipping this but the tests depend on it -->
     <dependency>
       <groupId>org.apache.derby</groupId>
@@ -110,11 +105,6 @@
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
       <version>${commons-dbcp.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.jdo</groupId>
-      <artifactId>jdo-api</artifactId>
-      <version>${jdo-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -237,12 +227,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

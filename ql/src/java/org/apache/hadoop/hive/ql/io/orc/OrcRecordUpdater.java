@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -63,8 +64,8 @@ import com.google.common.base.Strings;
 /**
  * A RecordUpdater where the files are stored as ORC.
  * A note on various record structures: the {@code row} coming in (as in {@link #insert(long, Object)}
- * for example), is a struct like <RecordIdentifier, f1, ... fn> but what is written to the file
- * * is <op, owid, writerId, rowid, cwid, <f1, ... fn>> (see {@link #createEventSchema(ObjectInspector)})
+ * for example), is a struct like &lt;RecordIdentifier, f1, ... fn&gt; but what is written to the file
+ * * is &lt;op, owid, writerId, rowid, cwid, &lt;f1, ... fn&gt;&gt; (see {@link #createEventObjectInspector(ObjectInspector)})
  * So there are OIs here to make the translation.
  */
 public class OrcRecordUpdater implements RecordUpdater {
@@ -83,6 +84,20 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int ROW_ID = 3;
   final static int CURRENT_WRITEID = 4;
   public static final int ROW = 5;
+  static final String OPERATION_FIELD_NAME = "operation";
+  static final String ORIGINAL_WRITEID_FIELD_NAME = "originalTransaction";
+  static final String BUCKET_FIELD_NAME = "bucket";
+  static final String ROW_ID_FIELD_NAME = "rowId";
+  static final String CURRENT_WRITEID_FIELD_NAME = "currentTransaction";
+  static final String ROW_FIELD_NAME = "row";
+  public static final Collection ALL_ACID_ROW_NAMES = Arrays.asList(
+      OrcRecordUpdater.BUCKET_FIELD_NAME,
+      OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+      OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
+      OrcRecordUpdater.OPERATION_FIELD_NAME,
+      OrcRecordUpdater.ROW_FIELD_NAME,
+      OrcRecordUpdater.ROW_ID_FIELD_NAME);
+
   /**
    * total number of fields (above)
    */
@@ -190,17 +205,17 @@ public class OrcRecordUpdater implements RecordUpdater {
    */
   static StructObjectInspector createEventObjectInspector(ObjectInspector rowInspector) {
     List<StructField> fields = new ArrayList<StructField>();
-    fields.add(new OrcStruct.Field("operation",
+    fields.add(new OrcStruct.Field(OPERATION_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, OPERATION));
-    fields.add(new OrcStruct.Field("originalTransaction",
+    fields.add(new OrcStruct.Field(ORIGINAL_WRITEID_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, ORIGINAL_WRITEID));
-    fields.add(new OrcStruct.Field("bucket",
+    fields.add(new OrcStruct.Field(BUCKET_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, BUCKET));
-    fields.add(new OrcStruct.Field("rowId",
+    fields.add(new OrcStruct.Field(ROW_ID_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, ROW_ID));
-    fields.add(new OrcStruct.Field("currentTransaction",
+    fields.add(new OrcStruct.Field(CURRENT_WRITEID_FIELD_NAME,
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, CURRENT_WRITEID));
-    fields.add(new OrcStruct.Field("row", rowInspector, ROW));
+    fields.add(new OrcStruct.Field(ROW_FIELD_NAME, rowInspector, ROW));
     return new OrcStruct.OrcStructInspector(fields);
   }
 
@@ -340,8 +355,8 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions.bufferSize(baseBufferSizeValue / ratio);
       writerOptions.stripeSize(baseStripeSizeValue / ratio);
       writerOptions.blockPadding(false);
-      if (optionsCloneForDelta.getConfiguration().getBoolean(
-        HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED.varname, false)) {
+      if (HiveConf.getBoolVar(optionsCloneForDelta.getConfiguration(),
+              HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED) || options.isTemporary()) {
         writerOptions.encodingStrategy(org.apache.orc.OrcFile.EncodingStrategy.SPEED);
         writerOptions.rowIndexStride(0);
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
@@ -558,10 +573,18 @@ public class OrcRecordUpdater implements RecordUpdater {
             writer.close(); // normal close, when there are inserts.
           }
         } else {
-          if (LOG.isDebugEnabled()) {
+          if (options.isWritingBase()) {
+            // With insert overwrite we need the empty file to delete the previous content of the table
+            LOG.debug("Empty file has been created for overwrite: {}", path);
+
+            OrcFile.WriterOptions wo = OrcFile.writerOptions(this.options.getConfiguration())
+                .inspector(rowInspector)
+                .callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
+            OrcFile.createWriter(path, wo).close();
+          } else {
             LOG.debug("No insert events in path: {}.. Deleting..", path);
+            fs.delete(path, false);
           }
-          fs.delete(path, false);
         }
       } else {
         //so that we create empty bucket files when needed (but see HIVE-17138)

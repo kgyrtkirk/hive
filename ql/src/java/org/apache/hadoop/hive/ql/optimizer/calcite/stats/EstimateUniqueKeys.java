@@ -95,26 +95,25 @@ public final class EstimateUniqueKeys {
 
     RelMetadataQuery mq = rel.getCluster().getMetadataQuery();
     double numRows = mq.getRowCount(tScan);
-    List<ColStatistics> colStats = tScan.getColStat(BitSets
-                                                        .toList(projectedCols));
+    List<ColStatistics> colStats = tScan.getColStat(BitSets.toList(projectedCols));
     Set<ImmutableBitSet> keys = new HashSet<ImmutableBitSet>();
 
     colStatsPos = 0;
     for (ColStatistics cStat : colStats) {
       boolean isKey = false;
-      if (cStat.getCountDistint() >= numRows) {
-        isKey = true;
-      }
-      if (!isKey && cStat.getRange() != null &&
-          cStat.getRange().maxValue != null &&
-          cStat.getRange().minValue != null) {
-        double r = cStat.getRange().maxValue.doubleValue() -
-            cStat.getRange().minValue.doubleValue() + 1;
-        isKey = (Math.abs(numRows - r) < RelOptUtil.EPSILON);
-      }
-      if (isKey) {
-        ImmutableBitSet key = ImmutableBitSet.of(posMap.get(colStatsPos));
-        keys.add(key);
+      if (!cStat.isEstimated()) {
+        if (cStat.getCountDistint() >= numRows) {
+          isKey = true;
+        }
+        if (!isKey && cStat.getRange() != null && cStat.getRange().maxValue != null
+            && cStat.getRange().minValue != null) {
+          double r = cStat.getRange().maxValue.doubleValue() - cStat.getRange().minValue.doubleValue() + 1;
+          isKey = (Math.abs(numRows - r) < RelOptUtil.EPSILON);
+        }
+        if (isKey) {
+          ImmutableBitSet key = ImmutableBitSet.of(posMap.get(colStatsPos));
+          keys.add(key);
+        }
       }
       colStatsPos++;
     }

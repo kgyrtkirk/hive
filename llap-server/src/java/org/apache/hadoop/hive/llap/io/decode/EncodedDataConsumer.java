@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
@@ -56,17 +57,15 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
     this.downstreamConsumer = consumer;
     this.ioMetrics = ioMetrics;
     this.mxBean = LlapUtil.initThreadMxBean();
-    cvbPool = new FixedSizedObjectPool<ColumnVectorBatch>(CVB_POOL_SIZE,
-        new Pool.PoolObjectHelper<ColumnVectorBatch>() {
-          @Override
-          public ColumnVectorBatch create() {
-            return new ColumnVectorBatch(colCount);
-          }
-          @Override
-          public void resetBeforeOffer(ColumnVectorBatch t) {
-            // Don't reset anything, we are reusing column vectors.
-          }
-        });
+    cvbPool = new FixedSizedObjectPool<>(CVB_POOL_SIZE, new Pool.PoolObjectHelper<ColumnVectorBatch>() {
+      @Override public ColumnVectorBatch create() {
+        return new ColumnVectorBatch(colCount);
+      }
+
+      @Override public void resetBeforeOffer(ColumnVectorBatch t) {
+        // Don't reset anything, we are reusing column vectors.
+      }
+    });
     this.counters = counters;
   }
 
@@ -80,6 +79,9 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
 
     @Override
     public Void call() throws Exception {
+      if (mxBean == null) {
+        return readCallable.call();
+      }
       long cpuTime = mxBean.getCurrentThreadCpuTime(),
           userTime = mxBean.getCurrentThreadUserTime();
       try {
@@ -144,6 +146,7 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
   @Override
   public void setDone() throws InterruptedException {
     downstreamConsumer.setDone();
+    cvbPool.clear();
   }
 
   @Override
@@ -153,6 +156,12 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
 
   @Override
   public void returnData(ColumnVectorBatch data) {
+    //In case a writer has a lock on any of the vectors we don't return it to the pool.
+    for (ColumnVector cv : data.cols) {
+      if (cv != null && cv.getRef() > 0) {
+        return;
+      }
+    }
     cvbPool.offer(data);
   }
 

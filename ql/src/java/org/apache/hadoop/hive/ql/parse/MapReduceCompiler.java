@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,25 +93,25 @@ public class MapReduceCompiler extends TaskCompiler {
 
   // loop over all the tasks recursively
   @Override
-  protected void setInputFormat(Task<? extends Serializable> task) {
+  protected void setInputFormat(Task<?> task) {
     if (task instanceof ExecDriver) {
       MapWork work = ((MapredWork) task.getWork()).getMapWork();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           setInputFormat(work, op);
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks
+      List<Task<?>> listTasks
         = ((ConditionalTask) task).getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setInputFormat(tsk);
       }
     }
 
     if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+      for (Task<?> childTask : task.getChildTasks()) {
         setInputFormat(childTask);
       }
     }
@@ -138,20 +137,20 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   // loop over all the tasks recursively
-  private void breakTaskTree(Task<? extends Serializable> task) {
+  private void breakTaskTree(Task<?> task) {
 
     if (task instanceof ExecDriver) {
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
-          .getWork()).getMapWork().getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap =
+          ((MapredWork) task.getWork()).getMapWork().getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           breakOperatorTree(op);
         }
       }
     } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
+      List<Task<?>> listTasks = ((ConditionalTask) task)
           .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         breakTaskTree(tsk);
       }
     }
@@ -160,7 +159,7 @@ public class MapReduceCompiler extends TaskCompiler {
       return;
     }
 
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+    for (Task<?> childTask : task.getChildTasks()) {
       breakTaskTree(childTask);
     }
   }
@@ -192,7 +191,7 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
+  protected void decideExecMode(List<Task<?>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx)
       throws SemanticException {
 
@@ -272,13 +271,13 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeTaskPlan(List<Task<? extends Serializable>> rootTasks,
+  protected void optimizeTaskPlan(List<Task<?>> rootTasks,
       ParseContext pCtx, Context ctx) throws SemanticException {
     // reduce sink does not have any kids - since the plan by now has been
     // broken up into multiple
     // tasks, iterate over all tasks.
     // For each task, go over all operators recursively
-    for (Task<? extends Serializable> rootTask : rootTasks) {
+    for (Task<?> rootTask : rootTasks) {
       breakTaskTree(rootTask);
     }
 
@@ -292,7 +291,7 @@ public class MapReduceCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
+  protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
 
     // generate map reduce plans
@@ -300,7 +299,7 @@ public class MapReduceCompiler extends TaskCompiler {
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
         // Must be deterministic order map for consistent q-test output across Java versions
-        new LinkedHashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),
+        new LinkedHashMap<Operator<? extends OperatorDesc>, Task<?>>(),
         tempParseContext, mvTask, rootTasks,
         new LinkedHashMap<Operator<? extends OperatorDesc>, GenMapRedCtx>(),
         inputs, outputs);

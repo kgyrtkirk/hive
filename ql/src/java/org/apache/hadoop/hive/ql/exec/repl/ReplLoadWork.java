@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
@@ -41,14 +43,17 @@ import static org.apache.hadoop.hive.ql.exec.repl.ExternalTableCopyTaskBuilder.D
     Explain.Level.EXTENDED })
 public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
-  final String tableNameToLoadIn;
+  final ReplScope currentReplScope;
   final String dumpDirectory;
+  final String bootstrapDumpToCleanTables;
+  boolean needCleanTablesFromBootstrap;
+
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
   private final transient BootstrapEventsIterator bootstrapIterator;
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
-  private transient Task<? extends Serializable> rootTask;
+  private transient Task<?> rootTask;
   private final transient Iterator<DirCopyWork> pathsToCopyIterator;
 
   /*
@@ -58,17 +63,25 @@ public class ReplLoadWork implements Serializable {
   */
   final LineageState sessionStateLineageState;
 
-  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
-      String tableNameToLoadIn, LineageState lineageState, boolean isIncrementalDump, Long eventTo,
-      List<DirCopyWork> pathsToCopyIterator) throws IOException {
-    this.tableNameToLoadIn = tableNameToLoadIn;
+  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory,
+                      String dbNameToLoadIn, ReplScope currentReplScope,
+                      LineageState lineageState, boolean isIncrementalDump, Long eventTo,
+                      List<DirCopyWork> pathsToCopyIterator) throws IOException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
+    this.currentReplScope = currentReplScope;
+
+    // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
+    if ((currentReplScope != null) && StringUtils.isNotBlank(dbNameToLoadIn)) {
+      currentReplScope.setDbName(dbNameToLoadIn);
+    }
+    this.bootstrapDumpToCleanTables = hiveConf.get(ReplUtils.REPL_CLEAN_TABLES_FROM_BOOTSTRAP_CONFIG);
+    this.needCleanTablesFromBootstrap = StringUtils.isNotBlank(this.bootstrapDumpToCleanTables);
+
     rootTask = null;
     if (isIncrementalDump) {
-      incrementalLoadTasksBuilder =
-          new IncrementalLoadTasksBuilder(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
+      incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
                   new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo);
 
       /*
@@ -78,14 +91,15 @@ public class ReplLoadWork implements Serializable {
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
       FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
       if (fs.exists(incBootstrapDir)) {
-        this.bootstrapIterator = new BootstrapEventsIterator(incBootstrapDir.toString(), dbNameToLoadIn, hiveConf);
+        this.bootstrapIterator = new BootstrapEventsIterator(incBootstrapDir.toString(), dbNameToLoadIn,
+                true, hiveConf);
         this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       } else {
         this.bootstrapIterator = null;
         this.constraintsIterator = null;
       }
     } else {
-      this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
+      this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, true, hiveConf);
       this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
       incrementalLoadTasksBuilder = null;
     }
@@ -129,11 +143,11 @@ public class ReplLoadWork implements Serializable {
     return incrementalLoadTasksBuilder;
   }
 
-  public Task<? extends Serializable> getRootTask() {
+  public Task<?> getRootTask() {
     return rootTask;
   }
 
-  public void setRootTask(Task<? extends Serializable> rootTask) {
+  public void setRootTask(Task<?> rootTask) {
     this.rootTask = rootTask;
   }
 

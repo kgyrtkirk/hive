@@ -38,7 +38,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,6 +46,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -78,7 +78,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.Retry;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -99,6 +98,8 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class TestCompactor {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
@@ -140,7 +141,6 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.cleanDb(hiveConf);
@@ -408,7 +408,7 @@ public class TestCompactor {
 
     //now make sure we get the stats we expect for partition we are going to add data to later
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(ci.dbname,
-      ci.tableName, Arrays.asList(ci.partName), colNames);
+      ci.tableName, Arrays.asList(ci.partName), colNames, Constants.HIVE_ENGINE);
     List<ColumnStatisticsObj> colStats = stats.get(ci.partName);
     assertNotNull("No stats found for partition " + ci.partName, colStats);
     Assert.assertEquals("Expected column 'a' at index 0", "a", colStats.get(0).getColName());
@@ -426,7 +426,7 @@ public class TestCompactor {
 
     //now save stats for partition we won't modify
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname,
-      ciPart2.tableName, Arrays.asList(ciPart2.partName), colNames);
+      ciPart2.tableName, Arrays.asList(ciPart2.partName), colNames, Constants.HIVE_ENGINE);
     colStats = stats.get(ciPart2.partName);
     LongColumnStatsData colAStatsPart2 = colStats.get(0).getStatsData().getLongStats();
     StringColumnStatsData colBStatsPart2 = colStats.get(1).getStatsData().getStringStats();
@@ -498,7 +498,7 @@ public class TestCompactor {
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
     stats = msClient.getPartitionColumnStatistics(ci.dbname, ci.tableName,
-      Arrays.asList(ci.partName), colNames);
+      Arrays.asList(ci.partName), colNames, Constants.HIVE_ENGINE);
     colStats = stats.get(ci.partName);
     assertNotNull("No stats found for partition " + ci.partName, colStats);
     Assert.assertEquals("Expected column 'a' at index 0", "a", colStats.get(0).getColName());
@@ -517,7 +517,7 @@ public class TestCompactor {
 
     //now check that stats for partition we didn't modify did not change
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname, ciPart2.tableName,
-      Arrays.asList(ciPart2.partName), colNames);
+      Arrays.asList(ciPart2.partName), colNames, Constants.HIVE_ENGINE);
     colStats = stats.get(ciPart2.partName);
     Assert.assertEquals("Expected stats for " + ciPart2.partName + " to stay the same",
       colAStatsPart2, colStats.get(0).getStatsData().getLongStats());
@@ -1536,6 +1536,62 @@ public class TestCompactor {
     Assert.assertEquals("The hash codes must be equal", compactionInfo.hashCode(), compactionInfo1.hashCode());
   }
 
+  @Test
+  public void testDisableCompactionDuringReplLoad() throws Exception {
+    String tblName = "discomp";
+    String database = "discomp_db";
+    executeStatementOnDriver("drop database if exists " + database + " cascade", driver);
+    executeStatementOnDriver("create database " + database, driver);
+    executeStatementOnDriver("CREATE TABLE " + database + "." + tblName + "(a INT, b STRING) " +
+            " PARTITIONED BY(ds string)" +
+            " CLUSTERED BY(a) INTO 2 BUCKETS" + //currently ACID requires table to be bucketed
+            " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + database + "." + tblName + " partition (ds) values (1, 'fred', " +
+            "'today'), (2, 'wilma', 'yesterday')", driver);
+
+    executeStatementOnDriver("ALTER TABLE " + database + "." + tblName +
+            " SET TBLPROPERTIES ( 'hive.repl.first.inc.pending' = 'true')", driver);
+    List<ShowCompactResponseElement> compacts = getCompactionList();
+    Assert.assertEquals(0, compacts.size());
+
+    executeStatementOnDriver("alter database " + database +
+            " set dbproperties ('hive.repl.first.inc.pending' = 'true')", driver);
+    executeStatementOnDriver("ALTER TABLE " + database + "." + tblName +
+            " SET TBLPROPERTIES ( 'hive.repl.first.inc.pending' = 'false')", driver);
+    compacts = getCompactionList();
+    Assert.assertEquals(0, compacts.size());
+
+    executeStatementOnDriver("alter database " + database +
+            " set dbproperties ('hive.repl.first.inc.pending' = 'false')", driver);
+    executeStatementOnDriver("ALTER TABLE " + database + "." + tblName +
+            " SET TBLPROPERTIES ( 'hive.repl.first.inc.pending' = 'false')", driver);
+    compacts = getCompactionList();
+    Assert.assertEquals(2, compacts.size());
+    List<String> partNames = new ArrayList<String>();
+    for (int i = 0; i < compacts.size(); i++) {
+      Assert.assertEquals(database, compacts.get(i).getDbname());
+      Assert.assertEquals(tblName, compacts.get(i).getTablename());
+      Assert.assertEquals("initiated", compacts.get(i).getState());
+      partNames.add(compacts.get(i).getPartitionname());
+    }
+    Assert.assertEquals("ds=today", partNames.get(1));
+    Assert.assertEquals("ds=yesterday", partNames.get(0));
+    executeStatementOnDriver("drop database if exists " + database + " cascade", driver);
+
+    // Finish the scheduled compaction for ttp2
+    runWorker(conf);
+    runCleaner(conf);
+  }
+
+  private List<ShowCompactResponseElement> getCompactionList() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    runInitiator(conf);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    return rsp.getCompacts();
+  }
+
   private void writeBatch(org.apache.hive.hcatalog.streaming.StreamingConnection connection,
     DelimitedInputWriter writer,
     boolean closeEarly) throws InterruptedException, org.apache.hive.hcatalog.streaming.StreamingException {
@@ -1694,10 +1750,7 @@ public class TestCompactor {
    */
   static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
-    CommandProcessorResponse cpr = driver.run(cmd);
-    if (cpr.getResponseCode() != 0) {
-      throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + cpr);
-    }
+    driver.run(cmd);
   }
 
   static void createTestDataFile(String filename, String[] lines) throws IOException {

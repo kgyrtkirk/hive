@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -104,6 +103,7 @@ public class Table implements Serializable {
   private Path path;
 
   private transient HiveStorageHandler storageHandler;
+  private transient StorageHandlerInfo storageHandlerInfo;
 
   private transient TableSpec tableSpec;
 
@@ -112,6 +112,14 @@ public class Table implements Serializable {
   /** Note: This is set only for describe table purposes, it cannot be used to verify whether
    * a materialization is up-to-date or not. */
   private transient Boolean outdatedForRewritingMaterializedView;
+
+  /** Constraint related objects */
+  private transient PrimaryKeyInfo pki;
+  private transient ForeignKeyInfo fki;
+  private transient UniqueConstraint uki;
+  private transient NotNullConstraint nnc;
+  private transient DefaultConstraint dc;
+  private transient CheckConstraint cc;
 
   /**
    * Used only for serialization.
@@ -314,6 +322,14 @@ public class Table implements Serializable {
       throw new RuntimeException(e);
     }
     return storageHandler;
+  }
+
+  public StorageHandlerInfo getStorageHandlerInfo() {
+    return storageHandlerInfo;
+  }
+
+  public void setStorageHandlerInfo(StorageHandlerInfo storageHandlerInfo) {
+    this.storageHandlerInfo = storageHandlerInfo;
   }
 
   final public Class<? extends InputFormat> getInputFormatClass() {
@@ -681,7 +697,7 @@ public class Table implements Serializable {
    * Returns a list of all the columns of the table (data columns + partition
    * columns in that order.
    *
-   * @return List<FieldSchema>
+   * @return List&lt;FieldSchema&gt;
    */
   public List<FieldSchema> getAllCols() {
     ArrayList<FieldSchema> f_list = new ArrayList<FieldSchema>();
@@ -919,7 +935,7 @@ public class Table implements Serializable {
   }
 
   /**
-   * Creates a partition name -> value spec map object
+   * Creates a partition name -&gt; value spec map object
    *
    * @param tp
    *          Use the information from this partition.
@@ -1110,6 +1126,56 @@ public class Table implements Serializable {
     return outdatedForRewritingMaterializedView;
   }
 
+  /* These are only populated during optimization and describing */
+  public PrimaryKeyInfo getPrimaryKeyInfo() {
+    return pki;
+  }
+
+  public void setPrimaryKeyInfo(PrimaryKeyInfo pki) {
+    this.pki = pki;
+  }
+
+  public ForeignKeyInfo getForeignKeyInfo() {
+    return fki;
+  }
+
+  public void setForeignKeyInfo(ForeignKeyInfo fki) {
+    this.fki = fki;
+  }
+
+  public UniqueConstraint getUniqueKeyInfo() {
+    return uki;
+  }
+
+  public void setUniqueKeyInfo(UniqueConstraint uki) {
+    this.uki = uki;
+  }
+
+  public NotNullConstraint getNotNullConstraint() {
+    return nnc;
+  }
+
+  public void setNotNullConstraint(NotNullConstraint nnc) {
+    this.nnc = nnc;
+  }
+
+  public DefaultConstraint getDefaultConstraint() {
+    return dc;
+  }
+
+  public void setDefaultConstraint(DefaultConstraint dc) {
+    this.dc = dc;
+  }
+
+  public CheckConstraint getCheckConstraint() {
+    return cc;
+  }
+
+  public void setCheckConstraint(CheckConstraint cc) {
+    this.cc = cc;
+  }
+
+
   public ColumnStatistics getColStats() {
     return tTable.isSetColStats() ? tTable.getColStats() : null;
   }
@@ -1119,12 +1185,6 @@ public class Table implements Serializable {
    * table or during replication.
    */
   public void setStatsStateLikeNewTable() {
-    // We do not replicate statistics for
-    // an ACID Table right now, so don't touch them right now.
-    if (AcidUtils.isTransactionalTable(this)) {
-      return;
-    }
-
     if (isPartitioned()) {
       StatsSetupConst.setStatsStateForCreateTable(getParameters(), null,
               StatsSetupConst.FALSE);

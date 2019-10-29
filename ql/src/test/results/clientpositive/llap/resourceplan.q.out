@@ -1646,6 +1646,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1671,7 +1672,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"TAB_COL_STATS\""
 )
@@ -1698,6 +1700,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_TAB_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1723,7 +1726,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"TAB_COL_STATS\""
 )
@@ -1751,6 +1755,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1777,7 +1782,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"PART_COL_STATS\""
 )
@@ -1805,6 +1811,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `NUM_TRUES` bigint,
  `NUM_FALSES` bigint,
  `LAST_ANALYZED` bigint,
+ `ENGINE` string,
   CONSTRAINT `SYS_PK_PART_COL_STATS` PRIMARY KEY (`CS_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -1831,7 +1838,8 @@ TBLPROPERTIES (
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
  \"NUM_FALSES\",
- \"LAST_ANALYZED\"
+ \"LAST_ANALYZED\",
+ \"ENGINE\"
 FROM
   \"PART_COL_STATS\""
 )
@@ -2383,6 +2391,282 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
+  `CQ_ID` bigint,
+  `CQ_DATABASE` string,
+  `CQ_TABLE` string,
+  `CQ_PARTITION` string,
+  `CQ_STATE` string,
+  `CQ_TYPE` string,
+  `CQ_TBLPROPERTIES` string,
+  `CQ_WORKER_ID` string,
+  `CQ_START` bigint,
+  `CQ_RUN_AS` string,
+  `CQ_HIGHEST_WRITE_ID` bigint,
+  `CQ_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPACTION_QUEUE\".\"CQ_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_DATABASE\",
+  \"COMPACTION_QUEUE\".\"CQ_TABLE\",
+  \"COMPACTION_QUEUE\".\"CQ_PARTITION\",
+  \"COMPACTION_QUEUE\".\"CQ_STATE\",
+  \"COMPACTION_QUEUE\".\"CQ_TYPE\",
+  \"COMPACTION_QUEUE\".\"CQ_TBLPROPERTIES\",
+  \"COMPACTION_QUEUE\".\"CQ_WORKER_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_START\",
+  \"COMPACTION_QUEUE\".\"CQ_RUN_AS\",
+  \"COMPACTION_QUEUE\".\"CQ_HIGHEST_WRITE_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_HADOOP_JOB_ID\"
+FROM \"COMPACTION_QUEUE\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COMPACTION_QUEUE
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
+  `CQ_ID` bigint,
+  `CQ_DATABASE` string,
+  `CQ_TABLE` string,
+  `CQ_PARTITION` string,
+  `CQ_STATE` string,
+  `CQ_TYPE` string,
+  `CQ_TBLPROPERTIES` string,
+  `CQ_WORKER_ID` string,
+  `CQ_START` bigint,
+  `CQ_RUN_AS` string,
+  `CQ_HIGHEST_WRITE_ID` bigint,
+  `CQ_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPACTION_QUEUE\".\"CQ_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_DATABASE\",
+  \"COMPACTION_QUEUE\".\"CQ_TABLE\",
+  \"COMPACTION_QUEUE\".\"CQ_PARTITION\",
+  \"COMPACTION_QUEUE\".\"CQ_STATE\",
+  \"COMPACTION_QUEUE\".\"CQ_TYPE\",
+  \"COMPACTION_QUEUE\".\"CQ_TBLPROPERTIES\",
+  \"COMPACTION_QUEUE\".\"CQ_WORKER_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_START\",
+  \"COMPACTION_QUEUE\".\"CQ_RUN_AS\",
+  \"COMPACTION_QUEUE\".\"CQ_HIGHEST_WRITE_ID\",
+  \"COMPACTION_QUEUE\".\"CQ_HADOOP_JOB_ID\"
+FROM \"COMPACTION_QUEUE\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COMPACTION_QUEUE
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
+  `CC_ID` bigint,
+  `CC_DATABASE` string,
+  `CC_TABLE` string,
+  `CC_PARTITION` string,
+  `CC_STATE` string,
+  `CC_TYPE` string,
+  `CC_TBLPROPERTIES` string,
+  `CC_WORKER_ID` string,
+  `CC_START` bigint,
+  `CC_END` bigint,
+  `CC_RUN_AS` string,
+  `CC_HIGHEST_WRITE_ID` bigint,
+  `CC_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPLETED_COMPACTIONS\".\"CC_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_DATABASE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TABLE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_PARTITION\",
+  \"COMPLETED_COMPACTIONS\".\"CC_STATE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TYPE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TBLPROPERTIES\",
+  \"COMPLETED_COMPACTIONS\".\"CC_WORKER_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_START\",
+  \"COMPLETED_COMPACTIONS\".\"CC_END\",
+  \"COMPLETED_COMPACTIONS\".\"CC_RUN_AS\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HIGHEST_WRITE_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HADOOP_JOB_ID\"
+FROM \"COMPLETED_COMPACTIONS\"
+"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@COMPLETED_COMPACTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COMPLETED_COMPACTIONS` (
+  `CC_ID` bigint,
+  `CC_DATABASE` string,
+  `CC_TABLE` string,
+  `CC_PARTITION` string,
+  `CC_STATE` string,
+  `CC_TYPE` string,
+  `CC_TBLPROPERTIES` string,
+  `CC_WORKER_ID` string,
+  `CC_START` bigint,
+  `CC_END` bigint,
+  `CC_RUN_AS` string,
+  `CC_HIGHEST_WRITE_ID` bigint,
+  `CC_HADOOP_JOB_ID` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"COMPLETED_COMPACTIONS\".\"CC_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_DATABASE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TABLE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_PARTITION\",
+  \"COMPLETED_COMPACTIONS\".\"CC_STATE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TYPE\",
+  \"COMPLETED_COMPACTIONS\".\"CC_TBLPROPERTIES\",
+  \"COMPLETED_COMPACTIONS\".\"CC_WORKER_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_START\",
+  \"COMPLETED_COMPACTIONS\".\"CC_END\",
+  \"COMPLETED_COMPACTIONS\".\"CC_RUN_AS\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HIGHEST_WRITE_ID\",
+  \"COMPLETED_COMPACTIONS\".\"CC_HADOOP_JOB_ID\"
+FROM \"COMPLETED_COMPACTIONS\"
+"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@COMPLETED_COMPACTIONS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT
+  CC_ID,
+  'default',
+  CC_DATABASE,
+  CC_TABLE,
+  CC_PARTITION,
+  CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
+  CC_START,
+  CASE WHEN CC_END IS NULL THEN cast (null as string) ELSE CC_END-CC_START END,
+  CC_HADOOP_JOB_ID,
+  CC_RUN_AS,
+  CC_HIGHEST_WRITE_ID
+FROM COMPLETED_COMPACTIONS
+UNION ALL
+SELECT
+  CQ_ID,
+  'default',
+  CQ_DATABASE,
+  CQ_TABLE,
+  CQ_PARTITION,
+  CASE WHEN CQ_TYPE = 'i' THEN 'minor' WHEN CQ_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_STATE = 'i' THEN 'initiated' WHEN CQ_STATE = 'w' THEN 'working' WHEN CQ_STATE = 'r' THEN 'ready for cleaning' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[0] END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[1] END,
+  CQ_START,
+  cast (null as string),
+  CQ_HADOOP_JOB_ID,
+  CQ_RUN_AS,
+  CQ_HIGHEST_WRITE_ID
+FROM COMPACTION_QUEUE
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Output: SYS@COMPACTIONS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT
+  CC_ID,
+  'default',
+  CC_DATABASE,
+  CC_TABLE,
+  CC_PARTITION,
+  CASE WHEN CC_TYPE = 'i' THEN 'minor' WHEN CC_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_STATE = 'f' THEN 'failed' WHEN CC_STATE = 's' THEN 'succeeded' WHEN CC_STATE = 'a' THEN 'attempted' ELSE 'UNKNOWN' END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[0] END,
+  CASE WHEN CC_WORKER_ID IS NULL THEN cast (null as string) ELSE split(CC_WORKER_ID,"-")[1] END,
+  CC_START,
+  CASE WHEN CC_END IS NULL THEN cast (null as string) ELSE CC_END-CC_START END,
+  CC_HADOOP_JOB_ID,
+  CC_RUN_AS,
+  CC_HIGHEST_WRITE_ID
+FROM COMPLETED_COMPACTIONS
+UNION ALL
+SELECT
+  CQ_ID,
+  'default',
+  CQ_DATABASE,
+  CQ_TABLE,
+  CQ_PARTITION,
+  CASE WHEN CQ_TYPE = 'i' THEN 'minor' WHEN CQ_TYPE = 'a' THEN 'major' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_STATE = 'i' THEN 'initiated' WHEN CQ_STATE = 'w' THEN 'working' WHEN CQ_STATE = 'r' THEN 'ready for cleaning' ELSE 'UNKNOWN' END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[0] END,
+  CASE WHEN CQ_WORKER_ID IS NULL THEN NULL ELSE split(CQ_WORKER_ID,"-")[1] END,
+  CQ_START,
+  cast (null as string),
+  CQ_HADOOP_JOB_ID,
+  CQ_RUN_AS,
+  CQ_HIGHEST_WRITE_ID
+FROM COMPACTION_QUEUE
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Output: SYS@COMPACTIONS
+POSTHOOK: Output: database:sys
+POSTHOOK: Lineage: COMPACTIONS.c_catalog EXPRESSION []
+POSTHOOK: Lineage: COMPACTIONS.c_database EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_database, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_database, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_duration EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_end, type:bigint, comment:from deserializer), (completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: COMPACTIONS.c_highest_write_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_highest_write_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_highest_write_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_hostname EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_partition EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_partition, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_partition, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_run_as EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_run_as, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_run_as, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_start EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_start, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_state, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_state, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
@@ -3177,6 +3461,120 @@ POSTHOOK: Lineage: VIEWS.table_catalog SIMPLE []
 POSTHOOK: Lineage: VIEWS.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: VIEWS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: VIEWS.view_definition SIMPLE [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT DISTINCT
+  C_ID,
+  C_CATALOG,
+  C_DATABASE,
+  C_TABLE,
+  C_PARTITION,
+  C_TYPE,
+  C_STATE,
+  C_HOSTNAME,
+  C_WORKER_ID,
+  C_START,
+  C_DURATION,
+  C_HADOOP_JOB_ID,
+  C_RUN_AS,
+  C_HIGHEST_WRITE_ID
+FROM
+  `sys`.`COMPACTIONS` C JOIN `sys`.`TBLS` T ON (C.`C_TABLE` = T.`TBL_NAME`)
+                        JOIN `sys`.`DBS` D ON (C.`C_DATABASE` = D.`NAME`)
+                        LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+  (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@compactions
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: INFORMATION_SCHEMA@COMPACTIONS
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: CREATE OR REPLACE VIEW `COMPACTIONS`
+(
+  `C_ID`,
+  `C_CATALOG`,
+  `C_DATABASE`,
+  `C_TABLE`,
+  `C_PARTITION`,
+  `C_TYPE`,
+  `C_STATE`,
+  `C_HOSTNAME`,
+  `C_WORKER_ID`,
+  `C_START`,
+  `C_DURATION`,
+  `C_HADOOP_JOB_ID`,
+  `C_RUN_AS`,
+  `C_HIGHEST_WRITE_ID`
+) AS
+SELECT DISTINCT
+  C_ID,
+  C_CATALOG,
+  C_DATABASE,
+  C_TABLE,
+  C_PARTITION,
+  C_TYPE,
+  C_STATE,
+  C_HOSTNAME,
+  C_WORKER_ID,
+  C_START,
+  C_DURATION,
+  C_HADOOP_JOB_ID,
+  C_RUN_AS,
+  C_HIGHEST_WRITE_ID
+FROM
+  `sys`.`COMPACTIONS` C JOIN `sys`.`TBLS` T ON (C.`C_TABLE` = T.`TBL_NAME`)
+                        JOIN `sys`.`DBS` D ON (C.`C_DATABASE` = D.`NAME`)
+                        LEFT JOIN `sys`.`TBL_PRIVS` P ON (T.`TBL_ID` = P.`TBL_ID`)
+WHERE
+  (NOT restrict_information_schema() OR P.`TBL_ID` IS NOT NULL
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer())
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@compactions
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: INFORMATION_SCHEMA@COMPACTIONS
+POSTHOOK: Output: database:information_schema
+POSTHOOK: Lineage: COMPACTIONS.c_catalog EXPRESSION []
+POSTHOOK: Lineage: COMPACTIONS.c_database EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_database, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_database, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_duration EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_end, type:bigint, comment:from deserializer), (completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: COMPACTIONS.c_highest_write_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_highest_write_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_highest_write_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_hostname EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_id, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_partition EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_partition, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_partition, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_run_as EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_run_as, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_run_as, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_start EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_start, type:bigint, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_start, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_state EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_state, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_state, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_table EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_table, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_table, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_type EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_type, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_type, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COMPACTIONS.c_worker_id EXPRESSION [(completed_compactions)completed_compactions.FieldSchema(name:cc_worker_id, type:string, comment:from deserializer), (compaction_queue)compaction_queue.FieldSchema(name:cq_worker_id, type:string, comment:from deserializer), ]
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3190,17 +3588,69 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+Activate a resource plan to enable workload management!
+PREHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+
+STAGE PLANS:
+Activate a resource plan to enable workload management!
+PREHOOK: query: ENABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ENABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: query: EXPLAIN SHOW RESOURCE PLANS
+PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN SHOW RESOURCE PLANS
+POSTHOOK: type: SHOW RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Resource plans
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1	DISABLED	 
+PREHOOK: query: EXPLAIN SHOW RESOURCE PLAN plan_1
+PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN SHOW RESOURCE PLAN plan_1
+POSTHOOK: type: SHOW RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Resource plans
+      Resource plan name: plan_1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SHOW RESOURCE PLAN plan_1
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3218,11 +3668,39 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	DISABLED	NULL	default
+PREHOOK: query: EXPLAIN CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
+PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
+POSTHOOK: type: CREATE RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Resource plan
+      Query parallelism: 5
+      Resource plan name: plan_2
+
 PREHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 POSTHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Resource plan Set
+      Query parallelism: 10
+      Resource plan name: plan_2
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3256,7 +3734,7 @@ plan_2	default	DISABLED	10	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_2
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Resource plan plan_2 already exists
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Resource plan plan_2 already exists
 PREHOOK: query: CREATE RESOURCE PLAN IF NOT EXISTS plan_2
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3266,7 +3744,7 @@ FAILED: SemanticException Invalid create arguments (tok_create_rp plan_3 (tok_qu
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_2
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Resource plan name should be unique: )
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. AlreadyExistsException(message:Resource plan name should be unique: )
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3322,10 +3800,25 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Resource plan Set
+      Default pool: default1
+      Query parallelism: 30
+      Resource plan name: plan_3
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default1)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. NoSuchObjectException(message:Cannot find pool: default1)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3336,19 +3829,47 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 ENABLE
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 ENABLE
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Enable Resource plan
+      Resource plan name: plan_3
+      Enable: true
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Rename Resource plan
+      New resource plan name: plan_4
+      Resource plan name: plan_3
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3367,7 +3888,7 @@ plan_3	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is disabled and should be enabled before activation (or in the same command))
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan plan_3 is disabled and should be enabled before activation (or in the same command))
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3441,7 +3962,7 @@ plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3455,7 +3976,7 @@ plan_3	default	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3466,6 +3987,18 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+PREHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Disable Resource plan
+
 PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3561,10 +4094,23 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ACTIVE	10	default
 plan_3	default	DISABLED	NULL	default
+PREHOOK: query: EXPLAIN DROP RESOURCE PLAN plan_2
+PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DROP RESOURCE PLAN plan_2
+POSTHOOK: type: DROP RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Resource plan
+      Resource plan name: plan_2
+
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Cannot drop an active resource plan)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Cannot drop an active resource plan)
 PREHOOK: query: DROP RESOURCE PLAN plan_3
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3582,7 +4128,7 @@ plan_2	default	ACTIVE	10	default
 PREHOOK: query: DROP RESOURCE PLAN plan_99999
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Resource plan plan_99999 does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Resource plan plan_99999 does not exist
 PREHOOK: query: DROP RESOURCE PLAN IF EXISTS plan_99999
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3645,6 +4191,22 @@ PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: query: EXPLAIN CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
+POSTHOOK: type: CREATE TRIGGER
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create WM Trigger
+      Action expression: KILL
+      Resource plan name: plan_1
+      Trigger expression: BYTES_READ > '10kb'
+      Trigger name: trigger_1
+
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3662,13 +4224,25 @@ plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN ELAPSED_TIME > 300 DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Trigger already exists, use alter: )
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. AlreadyExistsException(message:Trigger already exists, use alter: )
 FAILED: ParseException line 4:60 mismatched input 'AND' expecting DO near ''30sec'' in create trigger statement
 FAILED: ParseException line 2:63 mismatched input 'OR' expecting DO near ''30second'' in create trigger statement
 FAILED: ParseException line 2:50 mismatched input '>=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '=' expecting > near 'ELAPSED_TIME' in comparisionOperator
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '10k' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Invalid size unit k
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '10 millis' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Invalid time unit millis
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > '-1000' DO KILL
+PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.IllegalArgumentException: Illegal value for counter limit. Expected a positive long value.
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3684,10 +4258,26 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_1	BYTES_READ > '10kb'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
+PREHOOK: query: EXPLAIN ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
+POSTHOOK: query: EXPLAIN ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
+POSTHOOK: type: ALTER TRIGGER
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter WM Trigger
+      Action expression: KILL
+      Resource plan name: plan_1
+      Trigger expression: BYTES_READ > '1GB'
+      Trigger name: trigger_1
+
+PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
+PREHOOK: type: ALTER TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1GB' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -3697,8 +4287,22 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	default	trigger_1	BYTES_READ > '1min'	KILL
+plan_1	default	trigger_1	BYTES_READ > '1GB'	KILL
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+PREHOOK: query: EXPLAIN DROP TRIGGER plan_1.trigger_1
+PREHOOK: type: DROP TRIGGER
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DROP TRIGGER plan_1.trigger_1
+POSTHOOK: type: DROP TRIGGER
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop WM Trigger
+      Resource plan name: plan_1
+      Trigger name: trigger_1
+
 PREHOOK: query: DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3716,11 +4320,11 @@ plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
+POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
@@ -3752,7 +4356,7 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 table	default	database	BYTES_WRITTEN > "1GB"	MOVE TO default
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -3770,7 +4374,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -3793,11 +4397,11 @@ table	default	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > "1000gb" DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3817,11 +4421,11 @@ table	default	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > "1000KB" DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3842,21 +4446,40 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 plan_2	default	trigger_1	BYTES_READ > 0	MOVE TO null_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
+PREHOOK: query: EXPLAIN CREATE POOL plan_1.default WITH
+   ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
+PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN CREATE POOL plan_1.default WITH
+   ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
+POSTHOOK: type: CREATE POOL
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Pool
+      Alloc fraction: 1.0
+      Pool path: default
+      Query parallelism: 5
+      Resource plan name: plan_1
+      Scheduling policy: default
+
 PREHOOK: query: CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
 PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 FAILED: SemanticException alloc_fraction should be specified for a pool
 FAILED: SemanticException query_parallelism should be specified for a pool
 PREHOOK: query: CREATE POOL plan_2.default WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5
 PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Pool already exists: )
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. AlreadyExistsException(message:Pool already exists: )
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -3868,7 +4491,11 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	default	1.0	4	NULL
 plan_2	default	default	1.0	5	NULL
 table	default	default	1.0	4	NULL
-FAILED: SemanticException Invalid scheduling policy invalid
+PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
+    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='invalid'
+PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Invalid scheduling policy invalid
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 PREHOOK: type: CREATE POOL
@@ -3883,6 +4510,26 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.75
 POSTHOOK: type: CREATE POOL
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_2 VALIDATE
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Validate Resource Plan
+      Resource plan name: plan_2
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3892,7 +4539,23 @@ Sum of children pools' alloc fraction should be less than 1 got: 1.05 for pool: 
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.05 for pool: default])
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.05 for pool: default])
+PREHOOK: query: EXPLAIN ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
+PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
+POSTHOOK: type: ALTER POOL
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Pool
+      Alloc fraction: 0.7
+      Pool path: default.c2
+      Query parallelism: 1
+      Resource plan name: plan_2
+
 PREHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -3973,10 +4636,24 @@ plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
 table	default	default	1.0	4	NULL
+PREHOOK: query: EXPLAIN DROP POOL plan_2.default
+PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DROP POOL plan_2.default
+POSTHOOK: type: DROP POOL
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop WM Pool
+      Pool path: default
+      Resource plan name: plan_2
+
 PREHOOK: query: DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot delete pool: default)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. NoSuchObjectException(message:Cannot delete pool: default)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -3994,7 +4671,7 @@ PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.8
 PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Pool path is invalid, the parent does not exist)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. NoSuchObjectException(message:Pool path is invalid, the parent does not exist)
 PREHOOK: query: CREATE POOL `table`.`table` WITH
   SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
 PREHOOK: type: CREATE POOL
@@ -4070,7 +4747,7 @@ table	default	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.`table`
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Cannot drop a pool that has child pools)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Cannot drop a pool that has child pools)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4091,7 +4768,7 @@ table	default	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Cannot drop default pool of a resource plan)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Cannot drop default pool of a resource plan)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4120,10 +4797,72 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
 table	default	DISABLED	1	default
-PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Resource plan Set
+      Default pool: table.pool
+      Query parallelism: 2
+      Resource plan name: table
+
+PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	def
+table	default	DISABLED	2	table.pool
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Resource plans
+      Resource plan name: table
+      Unset Default Pool: true
+      Unset Query parallelism: true
+
+PREHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_1	default	ACTIVE	NULL	default
+plan_2	default	DISABLED	10	def
+table	default	DISABLED	NULL	NULL
+PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=1
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=1
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
@@ -4162,6 +4901,21 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
 table	default	DISABLED	1	NULL
+PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
+PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
+POSTHOOK: type: ALTER POOL
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Trigger to pool mappings
+      Pool path: def.c1
+      Resource plan name: plan_2
+      Trigger name: trigger_1
+
 PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4225,13 +4979,13 @@ POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
 table[status=DISABLED,parallelism=1,defaultPool=null]
  +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
-     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
+     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
      +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
          +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
              |  trigger trigger2: if (ELAPSED_TIME > '1hour') { KILL }
          +  child1[allocFraction=0.3,schedulingPolicy=fair,parallelism=1]
-             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
+             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO default }
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
  +  <unmanaged queries>
      |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
@@ -4264,11 +5018,11 @@ table	default	table.pool.child2	trigger2
 PREHOOK: query: ALTER POOL plan_2.default ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. NoSuchObjectException(message:Cannot find pool: default)
 PREHOOK: query: ALTER POOL plan_2.def ADD TRIGGER trigger_2
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools_to_triggers
@@ -4283,6 +5037,21 @@ table	default	table	table
 table	default	table.pool.child1	table
 table	default	table.pool.child1	trigger1
 table	default	table.pool.child2	trigger2
+PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
+PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
+POSTHOOK: type: ALTER POOL
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Trigger to pool mappings
+      Pool path: def.c1
+      Resource plan name: plan_2
+      Trigger name: trigger_1
+
 PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4291,7 +5060,7 @@ POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_2
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
 PREHOOK: query: DROP POOL `table`.`table`.pool.child1
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4312,6 +5081,22 @@ POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
 plan_2	default	def.c2	trigger_1
 table	default	table	table
+PREHOOK: query: EXPLAIN CREATE USER MAPPING "user1" IN plan_2 TO def
+PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN CREATE USER MAPPING "user1" IN plan_2 TO def
+POSTHOOK: type: CREATE MAPPING
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Mapping
+      Entity name: user1
+      Entity type: USER
+      Pool path: def
+      Resource plan name: plan_2
+
 PREHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
 PREHOOK: type: CREATE MAPPING
 PREHOOK: Output: dummyHostnameForTest
@@ -4337,11 +5122,42 @@ PREHOOK: type: CREATE MAPPING
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING 'group2' IN plan_2 TO def.c2 WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
+PREHOOK: query: EXPLAIN CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
+PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
+POSTHOOK: type: CREATE MAPPING
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Mapping
+      Entity name: group3
+      Entity type: GROUP
+      Ordering: 1
+      Resource plan name: plan_2
+
 PREHOOK: query: CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
 PREHOOK: type: CREATE MAPPING
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
+PREHOOK: query: EXPLAIN ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
+PREHOOK: type: ALTER MAPPING
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
+POSTHOOK: type: ALTER MAPPING
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Alter Mapping
+      Entity name: user1
+      Entity type: USER
+      Resource plan name: plan_2
+
 PREHOOK: query: ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
 PREHOOK: type: ALTER MAPPING
 PREHOOK: Output: dummyHostnameForTest
@@ -4382,12 +5198,42 @@ plan_2	default	USER	user2	def	1
 PREHOOK: query: DROP POOL plan_2.def.c1
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Please remove all mappings for this pool.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Please remove all mappings for this pool.)
+PREHOOK: query: EXPLAIN DROP USER MAPPING "user2" in plan_2
+PREHOOK: type: DROP MAPPING
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DROP USER MAPPING "user2" in plan_2
+POSTHOOK: type: DROP MAPPING
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop mapping
+      Entity name: user2
+      Entity type: USER
+      Resource plan name: plan_2
+
 PREHOOK: query: DROP USER MAPPING "user2" in plan_2
 PREHOOK: type: DROP MAPPING
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP USER MAPPING "user2" in plan_2
 POSTHOOK: type: DROP MAPPING
+PREHOOK: query: EXPLAIN DROP GROUP MAPPING "group2" in plan_2
+PREHOOK: type: DROP MAPPING
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN DROP GROUP MAPPING "group2" in plan_2
+POSTHOOK: type: DROP MAPPING
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop mapping
+      Entity name: group2
+      Entity type: GROUP
+      Resource plan name: plan_2
+
 PREHOOK: query: DROP GROUP MAPPING "group2" in plan_2
 PREHOOK: type: DROP MAPPING
 PREHOOK: Output: dummyHostnameForTest
@@ -4481,7 +5327,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	default	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4587,7 +5433,7 @@ plan_4a	default	trigger_1	BYTES_READ > '10GB'	KILL
 plan_4a	default	trigger_2	BYTES_READ > '11GB'	KILL
 plan_4b	default	trigger_1	BYTES_READ > '10GB'	KILL
 plan_4b	default	trigger_2	BYTES_READ > '11GB'	KILL
-table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	default	table	BYTES_WRITTEN > '100KB'	MOVE TO default
 table	default	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	default	trigger1	ELAPSED_TIME > 10	KILL
 table	default	trigger2	ELAPSED_TIME > '1hour'	KILL
@@ -4612,6 +5458,20 @@ POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
 plan_4a	default	USER	user1	pool1	0
 plan_4b	default	USER	user1	pool1	0
+PREHOOK: query: EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN REPLACE RESOURCE PLAN plan_4a WITH plan_4b
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Replace Resource plan
+      Destination Resource plan name: plan_4a
+      Resource plan name: plan_4b
+
 PREHOOK: query: REPLACE RESOURCE PLAN plan_4a WITH plan_4b
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4691,6 +5551,22 @@ PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_4a.pool3 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 POSTHOOK: type: CREATE POOL
+PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
+PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
+POSTHOOK: type: ALTER RESOURCEPLAN
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Enable Resource plan
+      Resource plan name: plan_4a
+      Activate: true
+      Enable: true
+      Replace: true
+
 PREHOOK: query: ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest

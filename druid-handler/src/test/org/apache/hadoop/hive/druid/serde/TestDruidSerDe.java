@@ -35,9 +35,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import io.druid.java.util.http.client.HttpClient;
-import io.druid.java.util.http.client.response.HttpResponseHandler;
-import io.druid.query.scan.ScanResultValue;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.response.HttpResponseHandler;
+import org.apache.druid.query.scan.ScanResultValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -80,12 +80,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.SettableFuture;
 
-import io.druid.data.input.Row;
-import io.druid.query.Query;
-import io.druid.query.Result;
-import io.druid.query.select.SelectResultValue;
-import io.druid.query.timeseries.TimeseriesResultValue;
-import io.druid.query.topn.TopNResultValue;
+import org.apache.druid.data.input.Row;
+import org.apache.druid.query.Query;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.select.SelectResultValue;
+import org.apache.druid.query.timeseries.TimeseriesResultValue;
+import org.apache.druid.query.topn.TopNResultValue;
 import org.junit.rules.ExpectedException;
 
 /**
@@ -808,8 +808,9 @@ import org.junit.rules.ExpectedException;
     DruidQueryRecordReader<?> reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
 
     final HiveDruidSplit split = new HiveDruidSplit(jsonQuery, new Path("empty"), new String[]{"testing_host"});
-
-    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient);
+    Configuration conf = new Configuration();
+    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient,
+        conf);
     StructObjectInspector oi = (StructObjectInspector) serDe.getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
 
@@ -834,7 +835,8 @@ import org.junit.rules.ExpectedException;
     futureResult.set(new ByteArrayInputStream(resultString));
     when(httpClient.go(anyObject(), any(HttpResponseHandler.class))).thenReturn(futureResult);
     reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
-    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient);
+    reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient,
+        conf);
 
     pos = 0;
     while (reader.nextKeyValue()) {

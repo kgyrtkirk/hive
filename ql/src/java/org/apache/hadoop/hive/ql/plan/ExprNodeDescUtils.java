@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Multimap;
+import java.util.Collection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -54,6 +58,8 @@ import java.util.Map;
 
 
 public class ExprNodeDescUtils {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(ExprNodeDescUtils.class);
 
   public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources) {
     for (int i = 0; i < sources.size(); i++) {
@@ -102,7 +108,8 @@ public class ExprNodeDescUtils {
 
   private static boolean isDefaultPartition(ExprNodeDesc origin, String defaultPartitionName) {
     if (origin instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)origin).getValue() != null &&
-        ((ExprNodeConstantDesc)origin).getValue().equals(defaultPartitionName)) {
+        ((ExprNodeConstantDesc)origin).getValue() instanceof String && ((ExprNodeConstantDesc)origin).getValue()
+            .equals(defaultPartitionName)) {
       return true;
     } else {
       return false;
@@ -415,7 +422,7 @@ public class ExprNodeDescUtils {
   /**
    * Join keys are expressions based on the select operator. Resolve the expressions so they
    * are based on the ReduceSink operator
-   *   SEL -> RS -> JOIN
+   *   SEL -&gt; RS -&gt; JOIN
    * @param source
    * @param reduceSinkOp
    * @return
@@ -447,8 +454,13 @@ public class ExprNodeDescUtils {
           // Join key expression is likely some expression involving functions/operators, so there
           // is no actual table column for this. But the ReduceSink operator should still have an
           // output column corresponding to this expression, using the columnInternalName.
-          // TODO: does tableAlias matter for this kind of expression?
-          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, "", false);
+          String tabAlias = "";
+          // HIVE-21746: Set tabAlias when possible, such as for constant folded column
+          // that has foldedFromTab info.
+          if (source instanceof ExprNodeConstantDesc) {
+            tabAlias = ((ExprNodeConstantDesc) source).getFoldedFromTab();
+          }
+          return new ExprNodeColumnDesc(source.getTypeInfo(), columnInternalName, tabAlias, false);
         }
       }
     }
@@ -567,44 +579,51 @@ public class ExprNodeDescUtils {
     } catch (Exception e) {
       return null;
     }
-	}
+  }
 
-	public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
-			Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap) {
-		for (ExprNodeDesc exprNodeDesc : exprDescList) {
-			getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
-		}
-	}
+  public static void getExprNodeColumnDesc(List<ExprNodeDesc> exprDescList,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap) {
+    for (ExprNodeDesc exprNodeDesc : exprDescList) {
+      getExprNodeColumnDesc(exprNodeDesc, hashCodeTocolumnDescMap);
+    }
+  }
 
-	/**
-	 * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
-	 *
-	 * @param exprDesc
-	 * @param hashCodeToColumnDescMap
-	 *            Assumption: If two ExprNodeColumnDesc have same hash code then
-	 *            they are logically referring to same projection
-	 */
-	public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
-			Map<Integer, ExprNodeDesc> hashCodeToColumnDescMap) {
-		if (exprDesc instanceof ExprNodeColumnDesc) {
-			hashCodeToColumnDescMap.put(exprDesc.hashCode(), exprDesc);
-		} else if (exprDesc instanceof ExprNodeColumnListDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
-			for (ExprNodeDesc child : exprDesc.getChildren()) {
-				getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
-			}
-		} else if (exprDesc instanceof ExprNodeFieldDesc) {
-			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
-					hashCodeToColumnDescMap);
-		} else if( exprDesc instanceof  ExprNodeSubQueryDesc) {
-		    getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
-                    hashCodeToColumnDescMap);
+  /**
+   * Get Map of ExprNodeColumnDesc HashCode to ExprNodeColumnDesc.
+   *
+   * @param exprDesc
+   * @param hashCodeToColumnDescMap
+   */
+  public static void getExprNodeColumnDesc(ExprNodeDesc exprDesc,
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeToColumnDescMap) {
+    if (exprDesc instanceof ExprNodeColumnDesc) {
+      Collection<ExprNodeColumnDesc> nodes = hashCodeToColumnDescMap.get(exprDesc.hashCode());
+      boolean insert = true;
+      for (ExprNodeColumnDesc node : nodes) {
+        if (node.isSame(exprDesc)) {
+          insert = false;
+          break;
         }
-
-	}
+      }
+      if (insert) {
+        nodes.add((ExprNodeColumnDesc) exprDesc);
+      }
+    } else if (exprDesc instanceof ExprNodeColumnListDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
+      for (ExprNodeDesc child : exprDesc.getChildren()) {
+        getExprNodeColumnDesc(child, hashCodeToColumnDescMap);
+      }
+    } else if (exprDesc instanceof ExprNodeFieldDesc) {
+      getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
+          hashCodeToColumnDescMap);
+    } else if(exprDesc instanceof  ExprNodeSubQueryDesc) {
+      getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
+          hashCodeToColumnDescMap);
+    }
+  }
 
   public static boolean isConstant(ExprNodeDesc value) {
     if (value instanceof ExprNodeConstantDesc) {
@@ -665,10 +684,10 @@ public class ExprNodeDescUtils {
    * @param inputOp
    *          Input Hive Operator
    * @param startPos
-   *          starting position in the input operator schema; must be >=0 and <=
+   *          starting position in the input operator schema; must be &gt;=0 and &lt;=
    *          endPos
    * @param endPos
-   *          end position in the input operator schema; must be >=0.
+   *          end position in the input operator schema; must be &gt;=0.
    * @return List of ExprNodeDesc
    */
   public static ArrayList<ExprNodeDesc> genExprNodeDesc(Operator inputOp, int startPos, int endPos,

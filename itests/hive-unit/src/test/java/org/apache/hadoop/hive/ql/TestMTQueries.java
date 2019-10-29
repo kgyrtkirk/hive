@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import org.junit.Test;
+import static org.junit.Assert.fail;
 
 /**
  * Suite for testing running of queries in multi-threaded mode.
@@ -32,11 +34,12 @@ public class TestMTQueries extends BaseTestQueries {
     }
   }
 
+  @Test
   public void testMTQueries1() throws Exception {
     String[] testNames = new String[] {"join2.q", "groupby1.q", "input1.q", "input19.q"};
 
     File[] qfiles = setupQFiles(testNames);
-    QTestUtil[] qts = QTestUtil.queryListRunnerSetup(qfiles, resDir, logDir, "q_test_init_src_with_stats.sql",
+    QTestUtil[] qts = QTestRunnerUtils.queryListRunnerSetup(qfiles, resDir, logDir, "q_test_init_src_with_stats.sql",
       "q_test_cleanup_src_with_stats.sql");
     for (QTestUtil util : qts) {
       // derby fails creating multiple stats aggregator concurrently
@@ -48,7 +51,7 @@ public class TestMTQueries extends BaseTestQueries {
       util.getConf().set("hive.stats.column.autogather", "false");
       util.newSession();
     }
-    boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
+    boolean success = QTestRunnerUtils.queryListRunnerMultiThreaded(qfiles, qts);
     if (!success) {
       fail("One or more queries failed");
     }

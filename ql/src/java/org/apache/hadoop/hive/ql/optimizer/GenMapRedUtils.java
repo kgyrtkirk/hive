@@ -117,7 +117,6 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
@@ -153,9 +152,9 @@ public final class GenMapRedUtils {
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx =
         opProcCtx.getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
-    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
+    Task<?> currTask = mapredCtx.getCurrTask();
     MapredWork plan = (MapredWork) currTask.getWork();
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+    HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap =
         opProcCtx.getOpTaskMap();
     TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
 
@@ -196,11 +195,11 @@ public final class GenMapRedUtils {
    */
   public static void initUnionPlan(ReduceSinkOperator op, UnionOperator currUnionOp,
       GenMRProcContext opProcCtx,
-      Task<? extends Serializable> unionTask) throws SemanticException {
+      Task<?> unionTask) throws SemanticException {
     Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
 
     MapredWork plan = (MapredWork) unionTask.getWork();
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
+    HashMap<Operator<? extends OperatorDesc>, Task<?>> opTaskMap =
         opProcCtx.getOpTaskMap();
 
     opTaskMap.put(reducer, unionTask);
@@ -220,7 +219,7 @@ public final class GenMapRedUtils {
   }
 
   private static void setUnionPlan(GenMRProcContext opProcCtx,
-      boolean local, Task<? extends Serializable> currTask, GenMRUnionCtx uCtx,
+      boolean local, Task<?> currTask, GenMRUnionCtx uCtx,
       boolean mergeTask) throws SemanticException {
     TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
 
@@ -266,7 +265,7 @@ public final class GenMapRedUtils {
    * for the union. The plan has already been created.
    */
   public static void initUnionPlan(GenMRProcContext opProcCtx, UnionOperator currUnionOp,
-      Task<? extends Serializable> currTask, boolean local)
+      Task<?> currTask, boolean local)
       throws SemanticException {
     // In case of lateral views followed by a join, the same tree
     // can be traversed more than one
@@ -282,8 +281,8 @@ public final class GenMapRedUtils {
    */
   public static void joinUnionPlan(GenMRProcContext opProcCtx,
       UnionOperator currUnionOp,
-      Task<? extends Serializable> currentUnionTask,
-      Task<? extends Serializable> existingTask, boolean local)
+      Task<?> currentUnionTask,
+      Task<?> existingTask, boolean local)
       throws SemanticException {
     assert currUnionOp != null;
     GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
@@ -291,7 +290,7 @@ public final class GenMapRedUtils {
 
     setUnionPlan(opProcCtx, local, existingTask, uCtx, true);
 
-    List<Task<? extends Serializable>> parTasks = null;
+    List<Task<?>> parTasks = null;
     if (opProcCtx.getRootTasks().contains(currentUnionTask)) {
       opProcCtx.getRootTasks().remove(currentUnionTask);
       if (!opProcCtx.getRootTasks().contains(existingTask) &&
@@ -302,17 +301,17 @@ public final class GenMapRedUtils {
 
     if ((currentUnionTask != null) && (currentUnionTask.getParentTasks() != null)
         && !currentUnionTask.getParentTasks().isEmpty()) {
-      parTasks = new ArrayList<Task<? extends Serializable>>();
+      parTasks = new ArrayList<Task<?>>();
       parTasks.addAll(currentUnionTask.getParentTasks());
       Object[] parTaskArr = parTasks.toArray();
       for (Object parTask : parTaskArr) {
-        ((Task<? extends Serializable>) parTask)
+        ((Task<?>) parTask)
             .removeDependentTask(currentUnionTask);
       }
     }
 
     if ((currentUnionTask != null) && (parTasks != null)) {
-      for (Task<? extends Serializable> parTask : parTasks) {
+      for (Task<?> parTask : parTasks) {
         parTask.addDependentTask(existingTask);
         if (opProcCtx.getRootTasks().contains(existingTask)) {
           opProcCtx.getRootTasks().remove(existingTask);
@@ -333,22 +332,22 @@ public final class GenMapRedUtils {
    * @param opProcCtx
    *          processing context
    */
-  public static void joinPlan(Task<? extends Serializable> currTask,
-      Task<? extends Serializable> oldTask, GenMRProcContext opProcCtx)
+  public static void joinPlan(Task<?> currTask,
+      Task<?> oldTask, GenMRProcContext opProcCtx)
       throws SemanticException {
     assert currTask != null && oldTask != null;
 
     TableScanOperator currTopOp = opProcCtx.getCurrTopOp();
-    List<Task<? extends Serializable>> parTasks = null;
+    List<Task<?>> parTasks = null;
     // terminate the old task and make current task dependent on it
     if (currTask.getParentTasks() != null
         && !currTask.getParentTasks().isEmpty()) {
-      parTasks = new ArrayList<Task<? extends Serializable>>();
+      parTasks = new ArrayList<Task<?>>();
       parTasks.addAll(currTask.getParentTasks());
 
       Object[] parTaskArr = parTasks.toArray();
       for (Object element : parTaskArr) {
-        ((Task<? extends Serializable>) element).removeDependentTask(currTask);
+        ((Task<?>) element).removeDependentTask(currTask);
       }
     }
 
@@ -357,7 +356,7 @@ public final class GenMapRedUtils {
     }
 
     if (parTasks != null) {
-      for (Task<? extends Serializable> parTask : parTasks) {
+      for (Task<?> parTask : parTasks) {
         parTask.addDependentTask(oldTask);
       }
     }
@@ -375,7 +374,7 @@ public final class GenMapRedUtils {
    * If currTopOp is not set for input of the task, add input for to the task
    */
   static boolean mergeInput(TableScanOperator currTopOp,
-      GenMRProcContext opProcCtx, Task<? extends Serializable> task, boolean local)
+      GenMRProcContext opProcCtx, Task<?> task, boolean local)
       throws SemanticException {
     if (!opProcCtx.isSeenOp(task, currTopOp)) {
       String currAliasId = opProcCtx.getCurrAliasId();
@@ -390,7 +389,7 @@ public final class GenMapRedUtils {
    * Split and link two tasks by temporary file : pRS-FS / TS-cRS-OP
    */
   static void splitPlan(ReduceSinkOperator cRS,
-      Task<? extends Serializable> parentTask, Task<? extends Serializable> childTask,
+      Task<?> parentTask, Task<?> childTask,
       GenMRProcContext opProcCtx) throws SemanticException {
     assert parentTask != null && childTask != null;
     splitTasks(cRS, parentTask, childTask, opProcCtx);
@@ -409,10 +408,10 @@ public final class GenMapRedUtils {
       throws SemanticException {
     // Generate a new task
     ParseContext parseCtx = opProcCtx.getParseCtx();
-    Task<? extends Serializable> parentTask = opProcCtx.getCurrTask();
+    Task<?> parentTask = opProcCtx.getCurrTask();
 
     MapredWork childPlan = getMapRedWork(parseCtx);
-    Task<? extends Serializable> childTask = TaskFactory.get(childPlan);
+    Task<?> childTask = TaskFactory.get(childPlan);
     Operator<? extends OperatorDesc> reducer = cRS.getChildOperators().get(0);
 
     // Add the reducer
@@ -434,8 +433,8 @@ public final class GenMapRedUtils {
    *          current alias
    * @param topOp
    *          the top operator of the stack
-   * @param plan
-   *          current plan
+   * @param task
+   *          current task
    * @param local
    *          whether you need to add to map-reduce or local work
    * @param opProcCtx
@@ -454,8 +453,8 @@ public final class GenMapRedUtils {
    *          current alias
    * @param topOp
    *          the top operator of the stack
-   * @param plan
-   *          current plan
+   * @param task
+   *          current task
    * @param local
    *          whether you need to add to map-reduce or local work
    * @param opProcCtx
@@ -476,13 +475,11 @@ public final class GenMapRedUtils {
    *
    * @param alias_id
    *          current alias
-   * @param topOp
-   *          the top operator of the stack
    * @param plan
    *          map work to initialize
    * @param local
    *          whether you need to add to map-reduce or local work
-   * @param pList
+   * @param partsList
    *          pruned partition list. If it is null it will be computed on-the-fly.
    * @param inputs
    *          read entities for the map work
@@ -764,7 +761,7 @@ public final class GenMapRedUtils {
    *          whether you need to add to map-reduce or local work
    * @param tt_desc
    *          table descriptor
-   * @throws SerDeException
+   * @throws SemanticException
    */
   public static void setTaskPlan(Path path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
@@ -853,19 +850,18 @@ public final class GenMapRedUtils {
    *
    * @param task
    */
-  public static void setKeyAndValueDescForTaskTree(Task<? extends Serializable> task) {
+  public static void setKeyAndValueDescForTaskTree(Task<?> task) {
 
     if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
+      List<Task<?>> listTasks = ((ConditionalTask) task)
           .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
+      for (Task<?> tsk : listTasks) {
         setKeyAndValueDescForTaskTree(tsk);
       }
     } else if (task instanceof ExecDriver) {
       MapredWork work = (MapredWork) task.getWork();
       work.getMapWork().deriveExplainAttributes();
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = work
-          .getMapWork().getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> opMap = work.getMapWork().getAliasToWork();
       if (opMap != null && !opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           setKeyAndValueDesc(work.getReduceWork(), op);
@@ -891,7 +887,7 @@ public final class GenMapRedUtils {
       return;
     }
 
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+    for (Task<?> childTask : task.getChildTasks()) {
       setKeyAndValueDescForTaskTree(childTask);
     }
   }
@@ -923,7 +919,7 @@ public final class GenMapRedUtils {
    * for an older release will also require picking HIVE-17195 at the least.
    */
   public static void finalMapWorkChores(
-      List<Task<? extends Serializable>> tasks, Configuration conf,
+      List<Task<?>> tasks, Configuration conf,
       Interner<TableDesc> interner) {
     List<ExecDriver> mrTasks = Utilities.getMRTasks(tasks);
     if (!mrTasks.isEmpty()) {
@@ -987,7 +983,7 @@ public final class GenMapRedUtils {
         conf.getBoolVar(
             HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
     work.setMapperCannotSpanPartns(mapperCannotSpanPartns);
-    work.setPathToAliases(new LinkedHashMap<Path, ArrayList<String>>());
+    work.setPathToAliases(new LinkedHashMap<Path, List<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<Path, PartitionDesc>());
     work.setAliasToWork(new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
     return mrWork;
@@ -1066,7 +1062,7 @@ public final class GenMapRedUtils {
    * @param opProcCtx context
    **/
   private static void splitTasks(ReduceSinkOperator op,
-      Task<? extends Serializable> parentTask, Task<? extends Serializable> childTask,
+      Task<?> parentTask, Task<?> childTask,
       GenMRProcContext opProcCtx) throws SemanticException {
     if (op.getNumParent() != 1) {
       throw new IllegalStateException("Expecting operator " + op + " to have one parent. " +
@@ -1078,7 +1074,7 @@ public final class GenMapRedUtils {
 
     // Root Task cannot depend on any other task, therefore childTask cannot be
     // a root Task
-    List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
+    List<Task<?>> rootTasks = opProcCtx.getRootTasks();
     if (rootTasks.contains(childTask)) {
       rootTasks.remove(childTask);
     }
@@ -1166,13 +1162,13 @@ public final class GenMapRedUtils {
    */
   public static void replaceMapWork(String sourceAlias, String targetAlias,
       MapWork source, MapWork target) {
-    Map<Path, ArrayList<String>> sourcePathToAliases = source.getPathToAliases();
+    Map<Path, List<String>> sourcePathToAliases = source.getPathToAliases();
     Map<Path, PartitionDesc> sourcePathToPartitionInfo = source.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> sourceAliasToWork = source.getAliasToWork();
     Map<String, PartitionDesc> sourceAliasToPartnInfo = source.getAliasToPartnInfo();
 
-    LinkedHashMap<Path, ArrayList<String>> targetPathToAliases = target.getPathToAliases();
-    LinkedHashMap<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
+    Map<Path, List<String>> targetPathToAliases = target.getPathToAliases();
+    Map<Path, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
     Map<String, Operator<? extends OperatorDesc>> targetAliasToWork = target.getAliasToWork();
     Map<String, PartitionDesc> targetAliasToPartnInfo = target.getAliasToPartnInfo();
 
@@ -1194,8 +1190,8 @@ public final class GenMapRedUtils {
     targetAliasToWork.remove(targetAlias);
     targetAliasToPartnInfo.remove(targetAlias);
     List<Path> pathsToRemove = new ArrayList<>();
-    for (Entry<Path, ArrayList<String>> entry: targetPathToAliases.entrySet()) {
-      ArrayList<String> aliases = entry.getValue();
+    for (Entry<Path, List<String>> entry: targetPathToAliases.entrySet()) {
+      List<String> aliases = entry.getValue();
       aliases.remove(targetAlias);
       if (aliases.isEmpty()) {
         pathsToRemove.add(entry.getKey());
@@ -1211,8 +1207,8 @@ public final class GenMapRedUtils {
     targetAliasToPartnInfo.putAll(sourceAliasToPartnInfo);
     targetPathToPartitionInfo.putAll(sourcePathToPartitionInfo);
     List<Path> pathsToAdd = new ArrayList<>();
-    for (Entry<Path, ArrayList<String>> entry: sourcePathToAliases.entrySet()) {
-      ArrayList<String> aliases = entry.getValue();
+    for (Entry<Path, List<String>> entry: sourcePathToAliases.entrySet()) {
+      List<String> aliases = entry.getValue();
       if (aliases.contains(sourceAlias)) {
         pathsToAdd.add(entry.getKey());
       }
@@ -1254,11 +1250,11 @@ public final class GenMapRedUtils {
    *          v
    *          FileSinkOperator (fsMerge)
    *
-   *          Here the pathToPartitionInfo & pathToAlias will remain the same, which means the paths
+   *          Here the pathToPartitionInfo &amp; pathToAlias will remain the same, which means the paths
    *          do
    *          not contain the dynamic partitions (their parent). So after the dynamic partitions are
    *          created (after the first job finished before the moveTask or ConditionalTask start),
-   *          we need to change the pathToPartitionInfo & pathToAlias to include the dynamic
+   *          we need to change the pathToPartitionInfo &amp; pathToAlias to include the dynamic
    *          partition
    *          directories.
    *
@@ -1266,7 +1262,7 @@ public final class GenMapRedUtils {
   public static void createMRWorkForMergingFiles(FileSinkOperator fsInput,
       Path finalName, DependencyCollectionTask dependencyTask,
       List<Task<MoveWork>> mvTasks, HiveConf conf,
-      Task<? extends Serializable> currTask, LineageState lineageState)
+      Task<?> currTask, LineageState lineageState)
       throws SemanticException {
 
     //
@@ -1309,7 +1305,7 @@ public final class GenMapRedUtils {
     DynamicPartitionCtx dpCtx = fsInputDesc.getDynPartCtx();
     if (dpCtx != null && dpCtx.getNumDPCols() > 0) {
       // adding DP ColumnInfo to the RowSchema signature
-      ArrayList<ColumnInfo> signature = inputRS.getSignature();
+      List<ColumnInfo> signature = inputRS.getSignature();
       String tblAlias = fsInputDesc.getTableInfo().getTableName();
       for (String dpCol : dpCtx.getDPColNames()) {
         ColumnInfo colInfo = new ColumnInfo(dpCol,
@@ -1408,7 +1404,7 @@ public final class GenMapRedUtils {
    * @param dependencyTask
    */
   private static void linkMoveTask(Task<MoveWork> mvTask,
-      Task<? extends Serializable> task, HiveConf hconf,
+      Task<?> task, HiveConf hconf,
       DependencyCollectionTask dependencyTask) {
 
     if (task.getDependentTasks() == null || task.getDependentTasks().isEmpty()) {
@@ -1416,7 +1412,7 @@ public final class GenMapRedUtils {
       addDependentMoveTasks(mvTask, hconf, task, dependencyTask);
     } else {
       // Otherwise, for each child run this method recursively
-      for (Task<? extends Serializable> childTask : task.getDependentTasks()) {
+      for (Task<?> childTask : task.getDependentTasks()) {
         linkMoveTask(mvTask, childTask, hconf, dependencyTask);
       }
     }
@@ -1434,7 +1430,7 @@ public final class GenMapRedUtils {
    * @param dependencyTask
    */
   public static void addDependentMoveTasks(Task<MoveWork> mvTask, HiveConf hconf,
-      Task<? extends Serializable> parentTask, DependencyCollectionTask dependencyTask) {
+      Task<?> parentTask, DependencyCollectionTask dependencyTask) {
 
     if (mvTask != null) {
       if (dependencyTask != null) {
@@ -1487,7 +1483,7 @@ public final class GenMapRedUtils {
    *          HiveConf
    */
   public static void addStatsTask(FileSinkOperator nd, MoveTask mvTask,
-      Task<? extends Serializable> currTask, HiveConf hconf) {
+      Task<?> currTask, HiveConf hconf) {
 
     MoveWork mvWork = mvTask.getWork();
     BasicStatsWork statsWork = null;
@@ -1556,7 +1552,7 @@ public final class GenMapRedUtils {
     columnStatsWork.truncateExisting(truncate);
 
     columnStatsWork.setSourceTask(currTask);
-    Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork);
+    Task<?> statsTask = TaskFactory.get(columnStatsWork);
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
     // of dynamic partition list to the StatsTask
@@ -1616,8 +1612,8 @@ public final class GenMapRedUtils {
    *
    * @param fsInputDesc
    * @param finalName
+   * @param hasDynamicPartitions
    * @param ctx
-   * @param inputFormatClass
    * @return MergeWork if table is stored as RCFile or ORCFile,
    *         null otherwise
    */
@@ -1655,7 +1651,7 @@ public final class GenMapRedUtils {
     // create the merge file work
     MergeFileWork work = new MergeFileWork(inputDirs, finalName,
         hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName(), tblDesc);
-    LinkedHashMap<Path, ArrayList<String>> pathToAliases = new LinkedHashMap<>();
+    Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
     pathToAliases.put(inputDir, inputDirstr);
     work.setMapperCannotSpanPartns(true);
     work.setPathToAliases(pathToAliases);
@@ -1784,7 +1780,7 @@ public final class GenMapRedUtils {
    */
   @SuppressWarnings("unchecked")
   private static ConditionalTask createCondTask(HiveConf conf,
-      Task<? extends Serializable> currTask, MoveWork mvWork, Serializable mergeWork,
+      Task<?> currTask, MoveWork mvWork, Serializable mergeWork,
       Path condInputPath, Path condOutputPath, Task<MoveWork> moveTaskToLink,
       DependencyCollectionTask dependencyTask, LineageState lineageState) {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
@@ -1811,10 +1807,10 @@ public final class GenMapRedUtils {
     // conflicts.
     // TODO: if we are not dealing with concatenate DDL, we should not create a merge+move path
     //       because it should be impossible to get incompatible outputs.
-    Task<? extends Serializable> mergeOnlyMergeTask = TaskFactory.get(mergeWork);
-    Task<? extends Serializable> moveOnlyMoveTask = TaskFactory.get(workForMoveOnlyTask);
-    Task<? extends Serializable> mergeAndMoveMergeTask = TaskFactory.get(mergeWork);
-    Task<? extends Serializable> mergeAndMoveMoveTask = TaskFactory.get(moveWork);
+    Task<?> mergeOnlyMergeTask = TaskFactory.get(mergeWork);
+    Task<?> moveOnlyMoveTask = TaskFactory.get(workForMoveOnlyTask);
+    Task<?> mergeAndMoveMergeTask = TaskFactory.get(mergeWork);
+    Task<?> mergeAndMoveMoveTask = TaskFactory.get(moveWork);
 
     // NOTE! It is necessary merge task is the parent of the move task, and not
     // the other way around, for the proper execution of the execute method of
@@ -1827,7 +1823,7 @@ public final class GenMapRedUtils {
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
 
-    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    List<Task<?>> listTasks = new ArrayList<Task<?>>();
     listTasks.add(moveOnlyMoveTask);
     listTasks.add(mergeOnlyMergeTask);
     listTasks.add(mergeAndMoveMergeTask);
@@ -1906,7 +1902,7 @@ public final class GenMapRedUtils {
    * Returns true iff the fsOp requires a merge
    */
   public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf,
-      FileSinkOperator fsOp, Task<? extends Serializable> currTask, boolean isInsertTable) {
+      FileSinkOperator fsOp, Task<?> currTask, boolean isInsertTable) {
     // Has the user enabled merging of files for map-only jobs or for all jobs
     if (mvTasks == null  || mvTasks.isEmpty()) {
       return false;
@@ -1943,7 +1939,7 @@ public final class GenMapRedUtils {
   }
 
   private static boolean isMergeRequiredForMr(HiveConf hconf,
-      FileSinkOperator fsOp, Task<? extends Serializable> currTask) {
+      FileSinkOperator fsOp, Task<?> currTask) {
     if (fsOp.getConf().isLinkedFileSink()) {
       // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
       // number of reducers are few, so the number of files anyway are small.
@@ -1981,7 +1977,7 @@ public final class GenMapRedUtils {
    * @param dependencyTask
    * @return
    */
-  public static Path createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
+  public static Path createMoveTask(Task<?> currTask, boolean chDir,
       FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
       HiveConf hconf, DependencyCollectionTask dependencyTask) {
 

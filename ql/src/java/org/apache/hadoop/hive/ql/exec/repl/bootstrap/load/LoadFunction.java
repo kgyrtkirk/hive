@@ -65,10 +65,10 @@ public class LoadFunction {
     this.tracker = new TaskTracker(existingTracker);
   }
 
-  private void createFunctionReplLogTask(List<Task<? extends Serializable>> functionTasks,
+  private void createFunctionReplLogTask(List<Task<?>> functionTasks,
                                          String functionName) {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName);
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
     DAGTraversal.traverse(functionTasks, new AddDependencyToLeaves(replLogTask));
   }
 
@@ -82,9 +82,9 @@ public class LoadFunction {
         return tracker;
       }
       CreateFunctionHandler handler = new CreateFunctionHandler();
-      List<Task<? extends Serializable>> tasks = handler.handle(
+      List<Task<?>> tasks = handler.handle(
           new MessageHandler.Context(
-              dbNameToLoadIn, null, fromPath.toString(), null, null, context.hiveConf,
+              dbNameToLoadIn, fromPath.toString(), null, null, context.hiveConf,
               context.hiveDb, context.nestedContext, LOG)
       );
       createFunctionReplLogTask(tasks, handler.getFunctionName());

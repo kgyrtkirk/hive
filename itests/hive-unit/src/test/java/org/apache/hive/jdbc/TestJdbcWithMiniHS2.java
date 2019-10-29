@@ -1312,6 +1312,19 @@ public class TestJdbcWithMiniHS2 {
     assertEquals(3, res.getInt(1));
     assertFalse("no more results", res.next());
 
+    //try creating same function again which should fail with AlreadyExistsException
+    String createSameFunctionAgain =
+            "CREATE FUNCTION example_add AS '" + testUdfClassName + "' USING JAR '" + jarFilePath + "'";
+    try {
+      stmt.execute(createSameFunctionAgain);
+    }catch (Exception e){
+      assertTrue("recreating same function failed with AlreadyExistsException ", e.getMessage().contains("AlreadyExistsException"));
+    }
+
+    // Call describe to see if function still available in registry
+    res = stmt.executeQuery("DESCRIBE FUNCTION " + testDbName + ".example_add");
+    checkForNotExist(res);
+
     // A new connection should be able to call describe/use function without issue
     Connection conn2 = getConnection(testDbName);
     Statement stmt2 = conn2.createStatement();
@@ -1662,5 +1675,26 @@ public class TestJdbcWithMiniHS2 {
       }
     }
     return extendedDescription;
+  }
+
+  @Test
+  public void testCustomPathsForCTLV() throws Exception {
+    try (Statement stmt = conTestDb.createStatement()) {
+      // Initialize
+      stmt.execute("CREATE TABLE emp_table (id int, name string, salary int)");
+      stmt.execute("insert into emp_table values(1,'aaaaa',20000)");
+      stmt.execute("CREATE VIEW emp_view AS SELECT * FROM emp_table WHERE salary>10000");
+      String customPath = System.getProperty("test.tmp.dir") + "/custom";
+
+      //Test External CTLV
+      String extPath = customPath + "/emp_ext_table";
+      stmt.execute("CREATE EXTERNAL TABLE emp_ext_table like emp_view STORED AS PARQUET LOCATION '" + extPath + "'");
+      assertTrue(getDetailedTableDescription(stmt, "emp_ext_table").contains(extPath));
+
+      //Test Managed CTLV
+      String mndPath = customPath + "/emp_mm_table";
+      stmt.execute("CREATE TABLE emp_mm_table like emp_view STORED AS ORC LOCATION '" + mndPath + "'");
+      assertTrue(getDetailedTableDescription(stmt, "emp_mm_table").contains(mndPath));
+    }
   }
 }

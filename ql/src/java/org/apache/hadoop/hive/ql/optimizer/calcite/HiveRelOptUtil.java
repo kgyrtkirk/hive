@@ -495,21 +495,15 @@ public class HiveRelOptUtil extends RelOptUtil {
         mq.getNodeTypes(operator);
     for (Entry<Class<? extends RelNode>, Collection<RelNode>> e :
         nodesBelowNonFkInput.asMap().entrySet()) {
+      if (e.getKey() == Project.class) {
+        // It does not alter cardinality, continue
+        continue;
+      }
+
       if (e.getKey() == TableScan.class) {
         if (e.getValue().size() > 1) {
           // Bail out as we may not have more than one TS on non-FK side
           return true;
-        }
-      } else if (e.getKey() == Project.class) {
-        // We check there is no windowing expression
-        for (RelNode node : e.getValue()) {
-          Project p = (Project) node;
-          for (RexNode expr : p.getChildExps()) {
-            if (expr instanceof RexOver) {
-              // Bail out as it may change cardinality
-              return true;
-            }
-          }
         }
       } else if (e.getKey() == Aggregate.class) {
         // We check there is are not grouping sets
@@ -564,8 +558,16 @@ public class HiveRelOptUtil extends RelOptUtil {
     // 1) Gather all tables from the FK side and the table from the
     // non-FK side
     final Set<RelTableRef> leftTables = mq.getTableReferences(join.getLeft());
-    final Set<RelTableRef> rightTables =
-        Sets.difference(mq.getTableReferences(join), mq.getTableReferences(join.getLeft()));
+    if (leftTables == null) {
+      // Could not infer, bail out
+      return cannotExtract;
+    }
+    final Set<RelTableRef> joinTables = mq.getTableReferences(join);
+    if (joinTables == null) {
+      // Could not infer, bail out
+      return cannotExtract;
+    }
+    final Set<RelTableRef> rightTables = Sets.difference(joinTables, leftTables);
     final Set<RelTableRef> fkTables = join.getLeft() == fkInput ? leftTables : rightTables;
     final Set<RelTableRef> nonFkTables = join.getLeft() == fkInput ? rightTables : leftTables;
 
@@ -1042,7 +1044,7 @@ public class HiveRelOptUtil extends RelOptUtil {
       return null;
     }
 
-    final HiveRelWriterImpl planWriter = new HiveRelWriterImpl();
+    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl();
     rel.explain(planWriter);
     return planWriter.asString();
   }

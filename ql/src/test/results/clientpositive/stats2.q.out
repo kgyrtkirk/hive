@@ -34,14 +34,14 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr: ds is not null (type: boolean)
-            Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: PARTIAL
+              Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -111,6 +111,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	0                   
@@ -215,6 +216,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	4                   
 	numRows             	2000                

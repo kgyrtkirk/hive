@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,12 +42,15 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -62,9 +67,7 @@ import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
@@ -81,7 +84,6 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
 /**
  * PlanUtils.
@@ -231,26 +233,18 @@ public final class PlanUtils {
         columnTypes, lastColumnTakesRestOfTheLine);
   }
 
-  public static TableDesc getTableDesc(
-      Class<? extends Deserializer> serdeClass, String separatorCode,
-      String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine) {
+  public static TableDesc getTableDesc(Class<? extends Deserializer> serdeClass,
+      String separatorCode, String columns, String columnTypes,
+      boolean lastColumnTakesRestOfTheLine) {
+
     return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
-        lastColumnTakesRestOfTheLine, false);
+        lastColumnTakesRestOfTheLine, "TextFile");
   }
 
   public static TableDesc getTableDesc(
       Class<? extends Deserializer> serdeClass, String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
-      boolean useDelimitedJSON) {
-
-    return getTableDesc(serdeClass, separatorCode, columns, columnTypes,
-        lastColumnTakesRestOfTheLine, useDelimitedJSON, "TextFile");
-  }
-
-  public static TableDesc getTableDesc(
-      Class<? extends Deserializer> serdeClass, String separatorCode,
-      String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine,
-      boolean useDelimitedJSON, String fileFormat) {
+      String fileFormat) {
 
     Properties properties = Utilities.makeProperties(
         serdeConstants.SERIALIZATION_FORMAT, separatorCode, serdeConstants.LIST_COLUMNS,
@@ -269,18 +263,12 @@ public final class PlanUtils {
           "true");
     }
 
-    // It is not a very clean way, and should be modified later - due to
-    // compatibility reasons,
-    // user sees the results as json for custom scripts and has no way for
-    // specifying that.
-    // Right now, it is hard-coded in the code
-    if (useDelimitedJSON) {
-      serdeClass = DelimitedJSONSerDe.class;
-    }
-
     Class inputFormat, outputFormat;
     // get the input & output file formats
-    if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
+    if ("HiveSequenceFile".equalsIgnoreCase(fileFormat)) {
+      inputFormat = HiveSequenceFileInputFormat.class;
+      outputFormat = SequenceFileOutputFormat.class;
+    } else if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
       inputFormat = SequenceFileInputFormat.class;
       outputFormat = SequenceFileOutputFormat.class;
     } else if ("RCFile".equalsIgnoreCase(fileFormat)) {
@@ -302,7 +290,7 @@ public final class PlanUtils {
   public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
       String fileFormat, Class<? extends Deserializer> serdeClass) {
     TableDesc tblDesc =
-        getTableDesc(serdeClass, "" + Utilities.ctrlaCode, cols, colTypes, false, false, fileFormat);
+        getTableDesc(serdeClass, "" + Utilities.ctrlaCode, cols, colTypes, false, fileFormat);
     // enable escaping
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_ESCAPE_CRLF, "true");
@@ -345,7 +333,7 @@ public final class PlanUtils {
       }
 
       ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes,
-          lastColumnTakesRestOfTheLine, false);
+          lastColumnTakesRestOfTheLine);
 
       // set other table properties
       Properties properties = ret.getProperties();
@@ -442,7 +430,7 @@ public final class PlanUtils {
       }
 
       ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes,
-          lastColumnTakesRestOfTheLine, false);
+          lastColumnTakesRestOfTheLine);
 
       // set other table properties
       Properties properties = ret.getProperties();
@@ -659,7 +647,7 @@ public final class PlanUtils {
    */
   public static List<FieldSchema> getFieldSchemasFromRowSchema(RowSchema row,
       String fieldPrefix) {
-    ArrayList<ColumnInfo> c = row.getSignature();
+    List<ColumnInfo> c = row.getSignature();
     return getFieldSchemasFromColumnInfo(c, fieldPrefix);
   }
 
@@ -667,7 +655,7 @@ public final class PlanUtils {
    * Convert the ColumnInfo to FieldSchema.
    */
   public static List<FieldSchema> getFieldSchemasFromColumnInfo(
-      ArrayList<ColumnInfo> cols, String fieldPrefix) {
+      List<ColumnInfo> cols, String fieldPrefix) {
     if ((cols == null) || (cols.size() == 0)) {
       return new ArrayList<FieldSchema>();
     }
@@ -717,9 +705,9 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
+      List<ExprNodeDesc> keyCols, List<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
+      List<ExprNodeDesc> partitionCols, String order, String nullOrder,
       int numReducers, AcidUtils.Operation writeType) {
     return getReduceSinkDesc(keyCols, keyCols.size(), valueCols,
         new ArrayList<List<Integer>>(),
@@ -758,18 +746,18 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      final ArrayList<ExprNodeDesc> keyCols, int numKeys,
-      ArrayList<ExprNodeDesc> valueCols,
+      final List<ExprNodeDesc> keyCols, int numKeys,
+      List<ExprNodeDesc> valueCols,
       List<List<Integer>> distinctColIndices,
       List<String> outputKeyColumnNames,
       List<String> outputValueColumnNames,
       boolean includeKeyCols, int tag,
-      ArrayList<ExprNodeDesc> partitionCols, String order, String nullOrder,
+      List<ExprNodeDesc> partitionCols, String order, String nullOrder,
       int numReducers, AcidUtils.Operation writeType) {
     TableDesc keyTable = null;
     TableDesc valueTable = null;
-    ArrayList<String> outputKeyCols = new ArrayList<String>();
-    ArrayList<String> outputValCols = new ArrayList<String>();
+    List<String> outputKeyCols = new ArrayList<String>();
+    List<String> outputValCols = new ArrayList<String>();
     if (includeKeyCols) {
       List<FieldSchema> keySchema = getFieldSchemasFromColumnListWithLength(
           keyCols, distinctColIndices, outputKeyColumnNames, numKeys, "");
@@ -819,7 +807,7 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      ArrayList<ExprNodeDesc> keyCols, ArrayList<ExprNodeDesc> valueCols,
+      List<ExprNodeDesc> keyCols, List<ExprNodeDesc> valueCols,
       List<String> outputColumnNames, boolean includeKey, int tag,
       int numPartitionFields, int numReducers, AcidUtils.Operation writeType)
       throws SemanticException {
@@ -861,8 +849,7 @@ public final class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static ReduceSinkDesc getReduceSinkDesc(
-      ArrayList<ExprNodeDesc> keyCols, int numKeys,
-      ArrayList<ExprNodeDesc> valueCols,
+      List<ExprNodeDesc> keyCols, int numKeys, List<ExprNodeDesc> valueCols,
       List<List<Integer>> distinctColIndices,
       List<String> outputKeyColumnNames, List<String> outputValueColumnNames,
       boolean includeKey, int tag,
@@ -1004,7 +991,7 @@ public final class PlanUtils {
   }
 
   /**
-   * Remove prefix from "Path -> Alias"
+   * Remove prefix from "Path -&gt; Alias"
    * This is required for testing.
    * In order to verify that path is right, we need to display it in expected test result.
    * But, mask pattern masks path with some patterns.

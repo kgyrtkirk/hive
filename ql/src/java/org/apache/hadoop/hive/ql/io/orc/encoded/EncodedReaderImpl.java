@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -148,14 +149,14 @@ class EncodedReaderImpl implements EncodedReader {
   private final IoTrace trace;
   private final TypeDescription fileSchema;
   private final WriterVersion version;
-  private final String tag;
+  private final CacheTag tag;
   private AtomicBoolean isStopped;
   private StoppableAllocator allocator;
 
   public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types,
       TypeDescription fileSchema, org.apache.orc.CompressionKind kind, WriterVersion version,
       int bufferSize, long strideRate, DataCache cacheWrapper, DataReader dataReader,
-      PoolFactory pf, IoTrace trace, boolean useCodecPool, String tag) throws IOException {
+      PoolFactory pf, IoTrace trace, boolean useCodecPool, CacheTag tag) throws IOException {
     this.fileKey = fileKey;
     this.compressionKind = kind;
     this.isCompressed = kind != org.apache.orc.CompressionKind.NONE;
@@ -592,15 +593,15 @@ class EncodedReaderImpl implements EncodedReader {
       long stripeOffset, boolean hasFileId, IdentityHashMap<ByteBuffer, Boolean> toRelease)
           throws IOException {
     DiskRangeList.MutateHelper toRead = new DiskRangeList.MutateHelper(listToRead);
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Resulting disk ranges to read (file " + fileKey + "): "
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Resulting disk ranges to read (file " + fileKey + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     BooleanRef isAllInCache = new BooleanRef();
     if (hasFileId) {
       cacheWrapper.getFileData(fileKey, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Disk ranges after cache (found everything " + isAllInCache.value + "; file "
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Disk ranges after cache (found everything " + isAllInCache.value + "; file "
             + fileKey + ", base offset " + stripeOffset  + "): "
             + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
@@ -2078,8 +2079,8 @@ class EncodedReaderImpl implements EncodedReader {
         releaseBuffers(toRelease.keySet(), true);
         toRelease.clear();
       }
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Disk ranges after pre-read (file " + fileKey + ", base offset "
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Disk ranges after pre-read (file " + fileKey + ", base offset "
             + stripeOffset + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
       iter = toRead.next; // Reset the iter to start.

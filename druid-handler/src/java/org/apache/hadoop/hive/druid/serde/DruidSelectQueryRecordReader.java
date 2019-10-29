@@ -28,9 +28,9 @@ import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.druid.query.Result;
-import io.druid.query.select.EventHolder;
-import io.druid.query.select.SelectResultValue;
+import org.apache.druid.query.Result;
+import org.apache.druid.query.select.EventHolder;
+import org.apache.druid.query.select.SelectResultValue;
 
 /**
  * Record reader for results for Druid SelectQuery.
@@ -52,8 +52,8 @@ public class DruidSelectQueryRecordReader extends DruidQueryRecordReader<Result<
     if (values.hasNext()) {
       return true;
     }
-    if (queryResultsIterator.hasNext()) {
-      Result<SelectResultValue> current = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      Result<SelectResultValue> current = getQueryResultsIterator().next();
       values = current.getValue().getEvents().iterator();
       return nextKeyValue();
     }
@@ -86,7 +86,7 @@ public class DruidSelectQueryRecordReader extends DruidQueryRecordReader<Result<
   }
 
   @Override public float getProgress() {
-    return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

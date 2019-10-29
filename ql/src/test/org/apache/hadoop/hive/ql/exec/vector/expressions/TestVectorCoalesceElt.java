@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -449,7 +449,7 @@ public class TestVectorCoalesceElt {
             hiveConf);
     VectorExpression vectorExpression =
         vectorizationContext.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (coalesceEltTestMode == CoalesceEltTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

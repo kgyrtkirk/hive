@@ -157,17 +157,22 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       semiJoin = false;
     }
 
+    List<ExprNodeDesc> newBetweenNodes = new ArrayList<>();
+    List<ExprNodeDesc> newBloomFilterNodes = new ArrayList<>();
     for (DynamicListContext ctx : removerContext) {
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
       boolean semiJoinAttempted = false;
 
+      ExprNodeDesc constNode =
+          new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
       if (column != null) {
         // Need unique IDs to refer to each min/max key value in the DynamicValueRegistry
         String keyBaseAlias = "";
 
         Table table = ts.getConf().getTableMetadata();
 
-        if (table != null && table.isPartitionKey(column)) {
+        boolean nonEquiJoin = isNonEquiJoin(ctx.parent);
+        if (table != null && table.isPartitionKey(column) && !nonEquiJoin) {
           String columnType = table.getPartColByName(column).getType();
           String alias = ts.getConf().getAlias();
           PrunedPartitionList plist = parseContext.getPrunedPartitions(alias, ts);
@@ -197,7 +202,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
-                  && ts.getConf().getFilterExpr() != null) {
+                  && ts.getConf().getFilterExpr() != null && !nonEquiJoin) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
 
@@ -264,22 +269,31 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           ExprNodeDesc bloomFilterNode = ExprNodeGenericFuncDesc.newInstance(
                   FunctionRegistry.getFunctionInfo("in_bloom_filter").
                           getGenericUDF(), bloomFilterArgs);
-          List<ExprNodeDesc> andArgs = new ArrayList<ExprNodeDesc>();
-          andArgs.add(betweenNode);
-          andArgs.add(bloomFilterNode);
-          ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
-              FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
-          replaceExprNode(ctx, desc, andExpr);
-        } else {
-          ExprNodeDesc replaceNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-          replaceExprNode(ctx, desc, replaceNode);
+          newBetweenNodes.add(betweenNode);
+          newBloomFilterNodes.add(bloomFilterNode);
         }
+      }
+      replaceExprNode(ctx, desc, constNode);
+    }
+
+    if (!newBetweenNodes.isEmpty()) {
+      // We need to add the new nodes: first the between nodes, then the bloom filters
+      if (FunctionRegistry.isOpAnd(desc.getPredicate())) { // AND
+        desc.getPredicate().getChildren().addAll(newBetweenNodes);
+        desc.getPredicate().getChildren().addAll(newBloomFilterNodes);
       } else {
-        ExprNodeDesc constNode =
-                new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-        replaceExprNode(ctx, desc, constNode);
+        List<ExprNodeDesc> andArgs = new ArrayList<>();
+        andArgs.add(desc.getPredicate());
+        andArgs.addAll(newBetweenNodes);
+        andArgs.addAll(newBloomFilterNodes);
+        ExprNodeGenericFuncDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+            FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
+        // Also pass in filter as tableScan filterExpr
+        ts.getConf().setFilterExpr(andExpr);
+        desc.setPredicate(andExpr);
       }
     }
+
     // if we pushed the predicate into the table scan we need to remove the
     // synthetic conditions there.
     cleanTableScanFilters(ts);
@@ -434,6 +448,18 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     }
   }
 
+  private boolean isNonEquiJoin(ExprNodeDesc predicate)  {
+    Preconditions.checkArgument(predicate instanceof ExprNodeGenericFuncDesc);
+
+    ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) predicate;
+    if (funcDesc.getGenericUDF() instanceof GenericUDFIn) {
+      return false;
+    }
+
+    return true;
+  }
+
+
   private void generateEventOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
       TableScanOperator ts, String column, String columnType) {
 
@@ -458,10 +484,13 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     ArrayList<String> outputNames = new ArrayList<String>();
     outputNames.add(HiveConf.getColumnInternalName(0));
 
+    ArrayList<ColumnInfo> selectColInfos = new ArrayList<ColumnInfo>();
+    selectColInfos.add(new ColumnInfo(outputNames.get(0), key.getTypeInfo(), "", false));
+
     // project the relevant key column
     SelectDesc select = new SelectDesc(keyExprs, outputNames);
     SelectOperator selectOp =
-        (SelectOperator) OperatorFactory.getAndMakeChild(select, parentOfRS);
+        (SelectOperator) OperatorFactory.getAndMakeChild(select, new RowSchema(selectColInfos), parentOfRS);
 
     // do a group by on the list to dedup
     float groupByMemoryUsage =
@@ -469,6 +498,9 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     float memoryThreshold =
         HiveConf.getFloatVar(parseContext.getConf(),
             HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr =
+        HiveConf.getFloatVar(parseContext.getConf(),
+            ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     ArrayList<ExprNodeDesc> groupByExprs = new ArrayList<ExprNodeDesc>();
     ExprNodeDesc groupByExpr =
@@ -478,10 +510,13 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     GroupByDesc groupBy =
         new GroupByDesc(GroupByDesc.Mode.HASH, outputNames, groupByExprs,
             new ArrayList<AggregationDesc>(), false, groupByMemoryUsage, memoryThreshold,
-            null, false, -1, true);
+            minReductionHashAggr, null, false, -1, true);
+
+    ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
+    groupbyColInfos.add(new ColumnInfo(outputNames.get(0), key.getTypeInfo(), "", false));
 
     GroupByOperator groupByOp = (GroupByOperator) OperatorFactory.getAndMakeChild(
-        groupBy, selectOp);
+        groupBy, new RowSchema(groupbyColInfos), selectOp);
 
     Map<String, ExprNodeDesc> colMap = new HashMap<String, ExprNodeDesc>();
     colMap.put(outputNames.get(0), groupByExpr);
@@ -529,13 +564,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
   private boolean generateSemiJoinOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
       TableScanOperator ts, String keyBaseAlias, String internalColName,
       String colName, SemiJoinHint sjHint) throws SemanticException {
-
-    // Semijoin reduction for non-equi join not yet supported, check for it
-    ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) ctx.parent;
-    if (!(funcDesc.getGenericUDF() instanceof GenericUDFIn)) {
-      LOG.info("Semijoin reduction for non-equi joins is currently disabled.");
-      return false;
-    }
 
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
@@ -589,16 +617,11 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     // Create the column expr map
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     ExprNodeDesc exprNode = null;
-    if ( parentOfRS.getColumnExprMap() != null) {
-      exprNode = parentOfRS.getColumnExprMap().get(internalColName).clone();
-    } else {
-      exprNode = new ExprNodeColumnDesc(columnInfo);
+    if (columnInfo == null) {
+      LOG.debug("No ColumnInfo found in {} for {}", parentOfRS.getOperatorId(), internalColName);
+      return false;
     }
-
-    if (exprNode instanceof ExprNodeColumnDesc) {
-      ExprNodeColumnDesc encd = (ExprNodeColumnDesc) exprNode;
-      encd.setColumn(internalColName);
-    }
+    exprNode = new ExprNodeColumnDesc(columnInfo);
     colExprMap.put(internalColName, exprNode);
 
     // Create the Select Operator
@@ -612,6 +635,9 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     float memoryThreshold =
             HiveConf.getFloatVar(parseContext.getConf(),
                     HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+    float minReductionHashAggr =
+        HiveConf.getFloatVar(parseContext.getConf(),
+            ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
 
     // Add min/max and bloom filter aggregations
     List<ObjectInspector> aggFnOIs = new ArrayList<ObjectInspector>();
@@ -658,8 +684,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(1));
     gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(2));
     GroupByDesc groupBy = new GroupByDesc(GroupByDesc.Mode.HASH,
-            gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
-        groupByMemoryUsage, memoryThreshold, null, false, -1, false);
+        gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
+        groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, false);
 
     ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
     groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(0), key.getTypeInfo(), "", false));
@@ -758,7 +784,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     GroupByDesc groupByDescFinal = new GroupByDesc(GroupByDesc.Mode.FINAL,
             gbOutputNames, new ArrayList<ExprNodeDesc>(), aggsFinal, false,
-            groupByMemoryUsage, memoryThreshold, null, false, 0, false);
+            groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, 0, false);
     GroupByOperator groupByOpFinal = (GroupByOperator)OperatorFactory.getAndMakeChild(
             groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());

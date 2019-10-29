@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableComparable;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -509,7 +509,7 @@ public class TestVectorIndex {
             hiveConf);
     VectorExpression vectorExpression =
         vectorizationContext.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
-    vectorExpression.transientInit();
+    vectorExpression.transientInit(hiveConf);
 
     if (indexTestMode == IndexTestMode.VECTOR_EXPRESSION &&
         vectorExpression instanceof VectorUDFAdaptor) {

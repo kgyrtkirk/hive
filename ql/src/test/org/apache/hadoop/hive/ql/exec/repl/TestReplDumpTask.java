@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -39,7 +40,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
@@ -78,7 +78,7 @@ public class TestReplDumpTask {
     }
 
     @Override
-    String getValidTxnListForReplDump(Hive hiveDb) {
+    String getValidTxnListForReplDump(Hive hiveDb, long waitUntilTime) {
       return "";
     }
 
@@ -103,19 +103,22 @@ public class TestReplDumpTask {
   public void removeDBPropertyToPreventRenameWhenBootstrapDumpOfTableFails() throws Exception {
     List<String> tableList = Arrays.asList("a1", "a2");
     String dbRandomKey = "akeytoberandom";
+    ReplScope replScope = new ReplScope("default");
 
     mockStatic(Utils.class);
     when(Utils.matchesDb(same(hive), eq("default")))
         .thenReturn(Collections.singletonList("default"));
-    when(Utils.getAllTables(same(hive), eq("default"))).thenReturn(tableList);
+    when(Utils.getAllTables(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
     when(Utils.setDbBootstrapDumpState(same(hive), eq("default"))).thenReturn(dbRandomKey);
-    when(Utils.matchesTbl(same(hive), eq("default"), anyString())).thenReturn(tableList);
+    when(Utils.matchesTbl(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);
 
 
     when(hive.getAllFunctions()).thenReturn(Collections.emptyList());
     when(queryState.getConf()).thenReturn(conf);
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
     when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
+    when(HiveConf.getVar(conf,
+            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
 
     whenNew(Writer.class).withAnyArguments().thenReturn(mock(Writer.class));
     whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
@@ -136,7 +139,7 @@ public class TestReplDumpTask {
 
     task.initialize(queryState, null, null, null);
     task.setWork(
-        new ReplDumpWork("default", "",
+        new ReplDumpWork(replScope, null,
             Long.MAX_VALUE, Long.MAX_VALUE, "",
             Integer.MAX_VALUE, "")
     );

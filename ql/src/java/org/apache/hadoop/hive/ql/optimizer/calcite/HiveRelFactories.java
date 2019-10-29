@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
@@ -41,6 +43,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -52,6 +55,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
 import com.google.common.collect.ImmutableList;
 
@@ -101,7 +107,8 @@ public class HiveRelFactories {
     public RelNode createProject(RelNode child,
         List<? extends RexNode> childExprs, List<String> fieldNames) {
       RelOptCluster cluster = child.getCluster();
-      RelDataType rowType = RexUtil.createStructType(cluster.getTypeFactory(), childExprs, fieldNames);
+      RelDataType rowType = RexUtil.createStructType(
+          cluster.getTypeFactory(), childExprs, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
       RelTraitSet trait = TraitsUtil.getDefaultTraitSet(cluster, child.getTraitSet());
       RelNode project = HiveProject.create(cluster, child,
           childExprs, rowType, trait, Collections.<RelCollation> emptyList());

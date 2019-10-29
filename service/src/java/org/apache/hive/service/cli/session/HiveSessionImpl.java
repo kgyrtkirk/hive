@@ -82,6 +82,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+
 /**
  * HiveSession
  *
@@ -134,16 +136,6 @@ public class HiveSessionImpl implements HiveSession {
     this.forwardedAddresses = forwardedAddresses;
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
-    try {
-      // In non-impersonation mode, map scheduler queue to current user
-      // if fair scheduler is configured.
-      if (! sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS) &&
-        sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE)) {
-        ShimLoader.getHadoopShims().refreshDefaultQueue(sessionConf, username);
-      }
-    } catch (IOException e) {
-      LOG.warn("Error setting scheduler queue: " + e, e);
-    }
     // Set an explicit session name to control the download directory name
     sessionConf.set(ConfVars.HIVESESSIONID.varname,
         this.sessionHandle.getHandleIdentifier().toString());
@@ -311,7 +303,8 @@ public class HiveSessionImpl implements HiveSession {
         }
       } else if (key.startsWith("use:")) {
         try {
-          if (sessionHive.getDatabase(entry.getValue()) == null) {
+          if (!(StringUtils.equals(DEFAULT_DATABASE_NAME, entry.getValue()))
+              && sessionHive.getDatabase(entry.getValue()) == null) {
             throw new HiveSQLException("Database " + entry.getValue() + " does not exist");
           }
         } catch (HiveException e) {

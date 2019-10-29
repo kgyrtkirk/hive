@@ -522,7 +522,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       mapJoinDesc =
           new MapJoinDesc(
                   MapJoinProcessor.getKeys(joinOp.getConf().isLeftInputJoin(),
-                  joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
+                  joinOp.getConf().getBaseSrc(), joinOp).getRight(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
                   joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
@@ -639,7 +639,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     ReduceSinkOperator bigTableRS = (ReduceSinkOperator)joinOp.getParentOperators().get(bigTablePosition);
     OpTraits opTraits = bigTableRS.getOpTraits();
     List<List<String>> listBucketCols = opTraits.getBucketColNames();
-    ArrayList<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
+    List<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
     boolean updatePartitionCols = false;
     List<Integer> positions = new ArrayList<>();
 
@@ -691,8 +691,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
 
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
-        ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();
-        ArrayList<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
+        List<ExprNodeDesc> newPartitionCols = new ArrayList<>();
+        List<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
         for (Integer position : positions) {
           newPartitionCols.add(partitionCols.get(position));
         }
@@ -1073,6 +1073,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     Set<Integer> bigTableCandidateSet =
         MapJoinProcessor.getBigTableCandidates(conds, /* isSupportFullOuter */ true);
+
+    if (bigTableCandidateSet.isEmpty()) {
+      return null;
+    }
+
     int bigTablePosition = -1;
     // big input cumulative row count
     long bigInputCumulativeCardinality = -1L;
@@ -1178,6 +1183,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         bigInputStat = currInputStat;
       }
 
+    }
+
+    if (bigTablePosition == -1) {
+      LOG.debug("No big table selected, no MapJoin");
+      return null;
     }
 
     // Check if size of data to shuffle (larger table) is less than given max size

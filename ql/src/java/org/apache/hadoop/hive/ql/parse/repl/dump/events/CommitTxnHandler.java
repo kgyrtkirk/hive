@@ -18,15 +18,18 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -100,19 +103,61 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     createDumpFile(context, qlMdTable, qlPtns, fileListArray);
   }
 
+  private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
+    String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
+    RawStore rawStore = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf);
+    List<WriteEventInfo> writeEventInfoList
+            = rawStore.getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, null);
+    return ((writeEventInfoList == null)
+            ? null
+            : new ArrayList<>(Collections2.filter(writeEventInfoList,
+              writeEventInfo -> {
+                assert(writeEventInfo != null);
+                // If replication policy is replaced with new included/excluded tables list, then events
+                // corresponding to tables which are included in both old and new policies should be dumped.
+                // If table is included in new policy but not in old policy, then it should be skipped.
+                // Those tables would be bootstrapped along with the current incremental
+                // replication dump. If the table is in the list of tables to be bootstrapped, then
+                // it should be skipped.
+                return (ReplUtils.tableIncludedInReplScope(withinContext.replScope, writeEventInfo.getTable())
+                        && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable())
+                        && !withinContext.getTablesForBootstrap().contains(writeEventInfo.getTable().toLowerCase()));
+              })));
+  }
+
   @Override
   public void handle(Context withinContext) throws Exception {
+    if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+      return;
+    }
     LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), eventMessageAsJSON);
     String payload = eventMessageAsJSON;
 
     if (!withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
 
-      String contextDbName =  withinContext.dbName == null ? null :
-              StringUtils.normalizeIdentifier(withinContext.dbName);
-      String contextTableName =  withinContext.tableName == null ? null :
-              StringUtils.normalizeIdentifier(withinContext.tableName);
-      List<WriteEventInfo> writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
-          getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, contextTableName);
+      boolean replicatingAcidEvents = true;
+      if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)) {
+        // We do not dump ACID table related events when taking a bootstrap dump of ACID tables as
+        // part of an incremental dump. So we shouldn't be dumping any changes to ACID table as
+        // part of the commit. At the same time we need to dump the commit transaction event so
+        // that replication can end a transaction opened when replaying open transaction event.
+        LOG.debug("writeEventsInfoList will be removed from commit message because we are " +
+                "bootstrapping acid tables.");
+        replicatingAcidEvents = false;
+      } else if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
+        // Similar to the above condition, only for testing purposes, if the config doesn't allow
+        // ACID tables to be replicated, we don't dump any changes to the ACID tables as part of
+        // commit.
+        LOG.debug("writeEventsInfoList will be removed from commit message because we are " +
+                "not dumping acid tables.");
+        replicatingAcidEvents = false;
+      }
+
+      List<WriteEventInfo> writeEventInfoList = null;
+      if (replicatingAcidEvents) {
+        writeEventInfoList = getAllWriteEventInfo(withinContext);
+      }
+
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);

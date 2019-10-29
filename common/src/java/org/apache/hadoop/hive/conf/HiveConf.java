@@ -470,12 +470,12 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
-    REPL_DUMP_INCLUDE_ACID_TABLES("hive.repl.dump.include.acid.tables", false,
-        "Indicates if repl dump should include information about ACID tables. It should be \n"
-            + "used in conjunction with 'hive.repl.dump.metadata.only' to enable copying of \n"
-            + "metadata for acid tables which do not require the corresponding transaction \n"
-            + "semantics to be applied on target. This can be removed when ACID table \n"
-            + "replication is supported."),
+    REPL_BOOTSTRAP_ACID_TABLES("hive.repl.bootstrap.acid.tables", false,
+        "Indicates if repl dump should bootstrap the information about ACID tables along with \n"
+            + "incremental dump for replication. It is recommended to keep this config parameter \n"
+            + "as false always and should be set to true only via WITH clause of REPL DUMP \n"
+            + "command. It should be set to true only once for incremental repl dump on \n"
+            + "each of the existing replication policies after enabling acid tables replication."),
     REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT("hive.repl.bootstrap.dump.open.txn.timeout", "1h",
         new TimeValidator(TimeUnit.HOURS),
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "
@@ -584,7 +584,8 @@ public class HiveConf extends Configuration {
         "The smaller it is the more load there will be on the jobtracker, the higher it is the less granular the caught will be."),
     DYNAMICPARTITIONING("hive.exec.dynamic.partition", true,
         "Whether or not to allow dynamic partitions in DML/DDL."),
-    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict",
+    DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "nonstrict",
+        new StringSet("strict", "nonstrict"),
         "In strict mode, the user must specify at least one static partition\n" +
         "in case the user accidentally overwrites all partitions.\n" +
         "In nonstrict mode all partitions are allowed to be dynamic."),
@@ -627,10 +628,26 @@ public class HiveConf extends Configuration {
         "internal usage only, used only in test mode. If set false, the operation logs, and the " +
         "operation log directory will not be removed, so they can be found after the test runs."),
 
+    HIVE_TEST_LOAD_HOSTNAMES("hive.test.load.hostnames", "",
+        "Specify host names for load testing. (e.g., \"host1,host2,host3\"). Leave it empty if no " +
+        "load generation is needed (eg. for production)."),
+    HIVE_TEST_LOAD_INTERVAL("hive.test.load.interval", "10ms", new TimeValidator(TimeUnit.MILLISECONDS),
+        "The interval length used for load and idle periods in milliseconds."),
+    HIVE_TEST_LOAD_UTILIZATION("hive.test.load.utilization", 0.2f,
+        "Specify processor load utilization between 0.0 (not loaded on all threads) and 1.0 " +
+        "(fully loaded on all threads). Comparing this with a random value the load generator creates " +
+        "hive.test.load.interval length active loops or idle periods"),
+
     HIVE_IN_TEZ_TEST("hive.in.tez.test", false, "internal use only, true when in testing tez",
         true),
     HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD("hive.mapjoin.testing.no.hash.table.load", false, "internal use only, true when in testing map join",
         true),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_PATTERN("hive.qtest.additional.partial.mask.pattern", "",
+        "internal use only, used in only qtests. Provide additional partial masks pattern" +
+         "for qtests as a ',' separated list"),
+    HIVE_ADDITIONAL_PARTIAL_MASKS_REPLACEMENT_TEXT("hive.qtest.additional.partial.mask.replacement.text", "",
+        "internal use only, used in only qtests. Provide additional partial masks replacement" +
+        "text for qtests as a ',' separated list"),
 
     HIVE_IN_REPL_TEST_FILES_SORTED("hive.in.repl.test.files.sorted", false,
       "internal usage only, set to true if the file listing is required in sorted order during bootstrap load", true),
@@ -642,7 +659,7 @@ public class HiveConf extends Configuration {
     LOCALMODEMAXINPUTFILES("hive.exec.mode.local.auto.input.files.max", 4,
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
-    DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
+    DROP_IGNORES_NON_EXISTENT("hive.exec.drop.ignorenonexistent", true,
         "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
@@ -725,6 +742,10 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
+    METASTORE_CLIENT_CAPABILITIES("hive.metastore.client.capabilities", "EXTWRITE,EXTREAD,HIVEBUCKET2,"
+        + "HIVEFULLACIDREAD,HIVEFULLACIDWRITE,HIVECACHEINVALIDATE,HIVEMANAGESTATS,"
+        + "HIVEMANAGEDINSERTWRITE,HIVEMANAGEDINSERTREAD,"
+        + "HIVESQL,HIVEMQT,HIVEONLYMQTWRITE", "Capabilities possessed by HiveServer"),
     METASTORE_CLIENT_CACHE_ENABLED("hive.metastore.client.cache.enabled", false,
       "Whether to enable metastore client cache"),
     METASTORE_CLIENT_CACHE_EXPIRY_TIME("hive.metastore.client.cache.expiry.time", "120s",
@@ -1191,7 +1212,7 @@ public class HiveConf extends Configuration {
      */
     @Deprecated
     METASTORE_EVENT_MESSAGE_FACTORY("hive.metastore.event.message.factory",
-        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder",
+        "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     /**
      * @deprecated Use MetastoreConf.EXECUTE_SET_UGI
@@ -1390,7 +1411,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.AGGREGATE_STATS_CACHE_ENABLED
      */
     @Deprecated
-    METASTORE_AGGREGATE_STATS_CACHE_ENABLED("hive.metastore.aggregate.stats.cache.enabled", true,
+    METASTORE_AGGREGATE_STATS_CACHE_ENABLED("hive.metastore.aggregate.stats.cache.enabled", false,
         "Whether aggregate stats caching is enabled or not."),
     /**
      * @deprecated Use MetastoreConf.AGGREGATE_STATS_CACHE_SIZE
@@ -1518,10 +1539,6 @@ public class HiveConf extends Configuration {
     CLIPROMPT("hive.cli.prompt", "hive",
         "Command line prompt configuration value. Other hiveconf can be used in this configuration value. \n" +
         "Variable substitution will only be invoked at the Hive CLI startup."),
-    CLIPRETTYOUTPUTNUMCOLS("hive.cli.pretty.output.num.cols", -1,
-        "The number of columns to use when formatting output generated by the DESCRIBE PRETTY table_name command.\n" +
-        "If the value of this property is -1, then Hive will use the auto-detected terminal width."),
-
     /**
      * @deprecated Use MetastoreConf.FS_HANDLER_CLS
      */
@@ -1634,6 +1651,10 @@ public class HiveConf extends Configuration {
         + "the evaluation of certain joins, since we will not be emitting rows which are thrown away by "
         + "a Filter operator straight away. However, currently vectorization does not support them, thus "
         + "enabling it is only recommended when vectorization is disabled."),
+    HIVE_PTF_RANGECACHE_SIZE("hive.ptf.rangecache.size", 10000,
+        "Size of the cache used on reducer side, that stores boundaries of ranges within a PTF " +
+        "partition. Used if a query specifies a RANGE type window including an orderby clause." +
+        "Set this to 0 to disable this cache."),
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
@@ -1690,6 +1711,10 @@ public class HiveConf extends Configuration {
         "tries to modify the original materialization contents to reflect the latest changes to the\n" +
         "materialized view source tables, instead of rebuilding the contents fully. Incremental rebuild\n" +
         "is based on the materialized view algebraic incremental rewriting."),
+    HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR("hive.materializedview.rebuild.incremental.factor", 0.1f,
+        "The estimated cost of the resulting plan for incremental maintenance of materialization\n" +
+        "with aggregations will be multiplied by this value. Reducing the value can be useful to\n" +
+        "favour incremental rebuild over full rebuild."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),
@@ -1698,7 +1723,10 @@ public class HiveConf extends Configuration {
 
     HIVE_ENABLE_JDBC_PUSHDOWN("hive.jdbc.pushdown.enable", true,
         "Flag to control enabling pushdown of operators into JDBC connection and subsequent SQL generation\n" +
-        "using Calcite."),
+        "using Calcite"),
+    HIVE_ENABLE_JDBC_SAFE_PUSHDOWN("hive.jdbc.pushdown.safe.enable", false,
+        "Flag to control enabling pushdown of operators using Calcite that prevent splitting results\n" +
+        "retrieval in the JDBC storage handler"),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
     // need to remove by hive .13. Also, do not change default (see SMB operator)
@@ -1709,7 +1737,7 @@ public class HiveConf extends Configuration {
         "Only works on Tez and Spark, because memory-optimized hashtable cannot be serialized."),
     HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT("hive.mapjoin.optimized.hashtable.probe.percent",
         (float) 0.5, "Probing space percentage of the optimized hashtable"),
-    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", true, "Whether to use hybrid" +
+    HIVEUSEHYBRIDGRACEHASHJOIN("hive.mapjoin.hybridgrace.hashtable", false, "Whether to use hybrid" +
         "grace hash join as the join method for mapjoin. Tez only."),
     HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ("hive.mapjoin.hybridgrace.memcheckfrequency", 1024, "For " +
         "hybrid grace hash join, how often (how many rows apart) we check if memory is full. " +
@@ -1737,16 +1765,20 @@ public class HiveConf extends Configuration {
         "How many rows with the same key value should be cached in memory per smb joined table."),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000,
         "Number of rows after which size of the grouping keys/aggregation classes is performed"),
-    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.99,
+    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float) 0.5,
         "Portion of total memory to be used by map-side group aggregation hash table"),
     HIVEMAPJOINFOLLOWEDBYMAPAGGRHASHMEMORY("hive.mapjoin.followby.map.aggr.hash.percentmemory", (float) 0.3,
         "Portion of total memory to be used by map-side group aggregation hash table, when this group by is followed by map join"),
     HIVEMAPAGGRMEMORYTHRESHOLD("hive.map.aggr.hash.force.flush.memory.threshold", (float) 0.9,
         "The max memory to be used by map-side group aggregation hash table.\n" +
         "If the memory usage is higher than this number, force to flush data"),
-    HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float) 0.5,
+    HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float) 0.99,
         "Hash aggregation will be turned off if the ratio between hash  table size and input rows is bigger than this number. \n" +
         "Set to 1 to make sure hash aggregation is never turned off."),
+    HIVEMAPAGGRHASHMINREDUCTIONSTATSADJUST("hive.map.aggr.hash.min.reduction.stats", true,
+        "Whether the value for hive.map.aggr.hash.min.reduction should be set statically using stats estimates. \n" +
+        "If this is enabled, the default value for hive.map.aggr.hash.min.reduction is only used as an upper-bound\n" +
+        "for the value set in the map-side group by operators."),
     HIVEMULTIGROUPBYSINGLEREDUCER("hive.multigroupby.singlereducer", true,
         "Whether to optimize multi group by query to generate single M/R  job plan. If the multi group by query has \n" +
         "common group by keys, it will be optimized to generate single M/R job."),
@@ -1962,9 +1994,15 @@ public class HiveConf extends Configuration {
         "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
         "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
         "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
-    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", false,
+    HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
       "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
       "on reading parquet files from other tools"),
+    HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
+        "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
+        "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
+        "Setting this flag to true will treat legacy timestamps as time zone agnostic. Setting " +
+        "it to false will treat legacy timestamps as UTC-normalized. This flag will not affect " +
+        "timestamps written after this change."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -1980,6 +2018,9 @@ public class HiveConf extends Configuration {
         " ETL strategy is used when spending little more time in split generation is acceptable" +
         " (split generation reads and caches file footers). HYBRID chooses between the above strategies" +
         " based on heuristics."),
+    HIVE_ORC_BLOB_STORAGE_SPLIT_SIZE("hive.exec.orc.blob.storage.split.size", 128L * 1024 * 1024,
+      "When blob storage is used, BI split strategy does not have block locations for splitting orc files.\n" +
+        "In such cases, split generation will use this config to split orc file"),
     HIVE_ORC_WRITER_LLAP_MEMORY_MANAGER_ENABLED("hive.exec.orc.writer.llap.memory.manager.enabled", true,
       "Whether orc writers should use llap-aware memory manager. LLAP aware memory manager will use memory\n" +
         "per executor instead of entire heap memory when concurrent orc writers are involved. This will let\n" +
@@ -2149,6 +2190,17 @@ public class HiveConf extends Configuration {
         "the Tez UI representing the work that was done. Used by Spark to set the query name, will show up in the\n" +
         "Spark UI."),
 
+    SYSLOG_INPUT_FORMAT_FILE_PRUNING("hive.syslog.input.format.file.pruning", true,
+      "Whether syslog input format should prune files based on timestamp (ts) column in sys.logs table."),
+    SYSLOG_INPUT_FORMAT_FILE_TIME_SLICE("hive.syslog.input.format.file.time.slice", "300s",
+      new TimeValidator(TimeUnit.SECONDS, 0L, false, Long.MAX_VALUE, false),
+      "Files stored in sys.logs typically are chunked with time interval. For example: depending on the\n" +
+        "logging library used this represents the flush interval/time slice. \n" +
+        "If time slice/flust interval is set to 5 minutes, then the expectation is that the filename \n" +
+        "2019-01-02-10-00_0.log represent time range from 10:00 to 10:05.\n" +
+        "This time slice should align with the flush interval of the logging library else file pruning may\n" +
+        "incorrectly prune files leading to incorrect results from sys.logs table."),
+
     HIVEOPTIMIZEBUCKETINGSORTING("hive.optimize.bucketingsorting", true,
         "Don't create a reducer for enforcing \n" +
         "bucketing/sorting for queries of the form: \n" +
@@ -2162,6 +2214,10 @@ public class HiveConf extends Configuration {
         "should the query fail or not ? For example, if the buckets in the tables being joined are\n" +
         "not a multiple of each other, bucketed map-side join cannot be performed, and the\n" +
         "query will fail if hive.enforce.bucketmapjoin is set to true."),
+
+    HIVE_SORT_WHEN_BUCKETING("hive.optimize.clustered.sort", true,
+        "When this option is true, when a Hive table was created with a clustered by clause, we will also\n" +
+        "sort by same value (if sort columns were not specified)"),
 
     HIVE_ENFORCE_NOT_NULL_CONSTRAINT("hive.constraint.notnull.enforce", true,
         "Should \"IS NOT NULL \" constraint be enforced?"),
@@ -2215,6 +2271,8 @@ public class HiveConf extends Configuration {
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 2,
              "Minimum number of OR clauses needed to transform into IN clauses"),
+    HIVEOPT_TRANSFORM_IN_MAXNODES("hive.optimize.transform.in.maxnodes", 16,
+        "Maximum number of IN expressions beyond which IN will not be transformed into OR clause"),
     HIVECOUNTDISTINCTOPTIMIZER("hive.optimize.countdistinct", true,
                  "Whether to transform count distinct into two stages"),
    HIVEPARTITIONCOLUMNSEPARATOR("hive.optimize.partition.columns.separate", true,
@@ -2247,10 +2305,9 @@ public class HiveConf extends Configuration {
         "Currently it only works with Apache Tez. This should always be set to true. \n" +
         "Since it is a new feature, it has been made configurable."),
 
+    @Deprecated
     HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", false,
-        "When enabled dynamic partitioning column will be globally sorted.\n" +
-        "This way we can keep only one record writer open for each partition value\n" +
-        "in the reducer thereby reducing the memory pressure on reducers."),
+        "Deprecated. Use hive.optimize.sort.dynamic.partition.threshold instead."),
     HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", 0,
                                 "When enabled dynamic partitioning column will be globally sorted.\n" +
                                     "This way we can keep only one record writer open for each partition value\n" +
@@ -2300,6 +2357,9 @@ public class HiveConf extends Configuration {
 
     HIVE_OPTIMIZE_CONSTRAINTS_JOIN("hive.optimize.constraints.join", true, "Whether to use referential constraints\n" +
         "to optimize (remove or transform) join operators"),
+
+    HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS("hive.optimize.filter.preds.sort", true, "Whether to sort conditions in filters\n" +
+        "based on estimated selectivity and compute cost"),
 
     HIVE_OPTIMIZE_REDUCE_WITH_STATS("hive.optimize.filter.stats.reduction", false, "Whether to simplify comparison\n" +
         "expressions in filter operators using column stats"),
@@ -2477,6 +2537,11 @@ public class HiveConf extends Configuration {
         "When estimating output rows for a join involving multiple columns, the default behavior assumes" +
         "the columns are independent. Setting this flag to true will cause the estimator to assume" +
         "the columns are correlated."),
+    HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION("hive.stats.filter.range.uniform", true,
+        "When estimating output rows from a condition, if a range predicate is applied over a column and the\n" +
+        "minimum and maximum values for that column are available, assume uniform distribution of values\n" +
+        "across that range and scales number of rows proportionally. If this is set to false, default\n" +
+        "selectivity value is used."),
     // in the absence of uncompressed/raw data size, total file size will be used for statistics
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
@@ -2522,7 +2587,11 @@ public class HiveConf extends Configuration {
         "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
         "read MM tables with original files will fail. The default in Hive 3.0 is false."),
 
-     // Zookeeper related configs
+    // Zookeeper related configs
+    HIVE_ZOOKEEPER_USE_KERBEROS("hive.zookeeper.kerberos.enabled", true,
+        "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
+        "is kerberized, but Zookeeper is not."),
+
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
         "List of ZooKeeper servers to talk to. This is needed for: \n" +
         "1. Read/write locks - when hive.lock.manager is set to \n" +
@@ -2537,7 +2606,7 @@ public class HiveConf extends Configuration {
         "The port of ZooKeeper servers to talk to.\n" +
         "If the list of Zookeeper servers specified in hive.zookeeper.quorum\n" +
         "does not contain port numbers, this value is used."),
-    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "1200000ms",
+    HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", "120000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
@@ -2708,7 +2777,7 @@ public class HiveConf extends Configuration {
     COMPACTOR_CRUD_QUERY_BASED("hive.compactor.crud.query.based", false,
         "Means Major compaction on full CRUD tables is done as a query, "
         + "and minor compaction will be disabled."),
-    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"), 
+    SPLIT_GROUPING_MODE("hive.split.grouping.mode", "query", new StringSet("query", "compactor"),
         "This is set to compactor from within the query based compactor. This enables the Tez SplitGrouper "
         + "to group splits based on their bucket number, so that all rows from different bucket files "
         + " for the same bucket number can end up in the same bucket file after the compaction."),
@@ -2849,6 +2918,11 @@ public class HiveConf extends Configuration {
     HIVE_HBASE_SNAPSHOT_NAME("hive.hbase.snapshot.name", null, "The HBase table snapshot name to use."),
     HIVE_HBASE_SNAPSHOT_RESTORE_DIR("hive.hbase.snapshot.restoredir", "/tmp", "The directory in which to " +
         "restore the HBase table snapshot."),
+
+    // For Kudu storage handler
+    HIVE_KUDU_MASTER_ADDRESSES_DEFAULT("hive.kudu.master.addresses.default", "localhost:7050",
+        "Comma-separated list of all of the Kudu master addresses.\n" +
+            "This value is only used for a given table if the kudu.master_addresses table property is not set."),
 
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
@@ -3186,6 +3260,10 @@ public class HiveConf extends Configuration {
         "The implementation that we should use for the materialized views registry. \n" +
         "  DEFAULT: Default cache for materialized views\n" +
         "  DUMMY: Do not cache materialized views and hence forward requests to metastore"),
+    HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_REFRESH("hive.server2.materializedviews.registry.refresh.period", "1500s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Period, specified in seconds, between successive refreshes of the registry to pull new materializations " +
+        "from the metastore that may have been created by other HS2 instances."),
 
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
@@ -3233,6 +3311,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS("hive.server2.webui.cors.allowed.headers",
       "X-Requested-With,Content-Type,Accept,Origin",
       "Comma separated list of http headers that are allowed when CORS is enabled.\n"),
+    HIVE_SERVER2_WEBUI_XFRAME_ENABLED("hive.server2.webui.xframe.enabled", true,
+            "Whether to enable xframe\n"),
+    HIVE_SERVER2_WEBUI_XFRAME_VALUE("hive.server2.webui.xframe.value", "SAMEORIGIN",
+            "Configuration to allow the user to set the x_frame-options value\n"),
 
 
     // Tez session settings
@@ -3431,6 +3513,21 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport"),
+    HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
+        "Specifies the host or a domain to trust connections from. Authentication is skipped " +
+        "for any connection coming from a host whose hostname ends with the value of this" +
+        " property. If authentication is expected to be skipped for connections from " +
+        "only a given host, fully qualified hostname of that host should be specified. By default" +
+        " it is empty, which means that all the connections to HiveServer2 are authenticated. " +
+        "When it is non-empty, the client has to provide a Hive user name. Any password, if " +
+        "provided, will not be used when authentication is skipped."),
+    HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER("hive.server2.trusted.domain.use.xff.header", false,
+      "When trusted domain authentication is enabled, the clients connecting to the HS2 could pass" +
+        "through many layers of proxy. Some proxies append its own ip address to 'X-Forwarded-For' header" +
+        "before passing on the request to another proxy or HS2. Some proxies also connect on behalf of client" +
+        "and may create a separate connection to HS2 without binding using client IP. For such environments, instead" +
+        "of looking at client IP from the request, if this config is set and if 'X-Forwarded-For' is present," +
+        "trusted domain authentication will use left most ip address from X-Forwarded-For header."),
     HIVE_SERVER2_ALLOW_USER_SUBSTITUTION("hive.server2.allow.user.substitution", true,
         "Allow alternate user to be specified as part of HiveServer2 open connection request."),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", "",
@@ -3541,12 +3638,6 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
-    HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE("hive.server2.map.fair.scheduler.queue", true,
-        "If the YARN fair scheduler is configured and HiveServer2 is running in non-impersonation mode,\n" +
-        "this setting determines the user for fair scheduler queue mapping.\n" +
-        "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
-        "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
-        "If set to false, all Hive jobs go to the 'hive' user's queue."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +
@@ -3833,6 +3924,7 @@ public class HiveConf extends Configuration {
          "Time to wait to finish prewarming spark executors"),
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
+    HIVEUSEGOOGLEREGEXENGINE("hive.use.googleregex.engine",false,"whether to use google regex engine or not, default regex engine is java.util.regex"),
 
     HIVECOUNTERGROUP("hive.counters.group.name", "HIVE",
         "The name of counter group for internal Hive variables (CREATED_FILE, FATAL_ERROR, etc.)"),
@@ -3965,6 +4057,9 @@ public class HiveConf extends Configuration {
         -1f, "The customized fraction of JVM memory which Tez will reserve for the processor"),
     TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED("hive.tez.cartesian-product.enabled",
         false, "Use Tez cartesian product edge to speed up cross product"),
+    TEZ_SIMPLE_CUSTOM_EDGE_TINY_BUFFER_SIZE_MB("hive.tez.unordered.output.buffer.size.mb", -1,
+        "When we have an operation that does not need a large buffer, we use this buffer size for simple custom edge.\n" +
+        "Value is an integer. Default value is -1, which means that we will estimate this value from operators in the plan."),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
     LLAP_IO_ROW_WRAPPER_ENABLED("hive.llap.io.row.wrapper.enabled", true, "Whether the LLAP IO row wrapper is enabled for non-vectorized queries."),
@@ -4013,6 +4108,10 @@ public class HiveConf extends Configuration {
     LLAP_ALLOCATOR_DEFRAG_HEADROOM("hive.llap.io.allocator.defrag.headroom", "1Mb",
         "How much of a headroom to leave to allow allocator more flexibility to defragment.\n" +
         "The allocator would further cap it to a fraction of total memory."),
+    LLAP_ALLOCATOR_MAX_FORCE_EVICTED("hive.llap.io.allocator.max.force.eviction", "16Mb",
+        "Fragmentation can lead to some cases where more eviction has to happen to accommodate allocations\n" +
+            " This configuration puts a limit on how many bytes to force evict before using Allocator Discard method."
+            + " Higher values will allow allocator more flexibility and will lead to better caching."),
     LLAP_TRACK_CACHE_USAGE("hive.llap.io.track.cache.usage", true,
          "Whether to tag LLAP cache contents, mapping them to Hive entities (paths for\n" +
          "partitions and tables) for reporting."),
@@ -4069,13 +4168,16 @@ public class HiveConf extends Configuration {
         "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
-    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 50000,
-        "The default queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+    LLAP_IO_VRB_QUEUE_LIMIT_MAX("hive.llap.io.vrb.queue.limit.max", 50000,
+        "The maximum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO. The actual queue size is set per fragment, and is adjusted down\n" +
-        "from the base, depending on the schema."),
-    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
+        "from the base, depending on the schema see LLAP_IO_CVB_BUFFERED_SIZE."),
+    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 1,
         "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO (used when determining the size from base size)."),
+    LLAP_IO_CVB_BUFFERED_SIZE("hive.llap.io.cvb.memory.consumption.", 1L << 30,
+        "The amount of bytes used to buffer CVB between IO and Processor Threads default to 1GB, "
+            + "this will be used to compute a best effort queue size for VRBs produced by a LLAP IO thread."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
@@ -4099,6 +4201,10 @@ public class HiveConf extends Configuration {
     LLAP_EXECUTION_MODE("hive.llap.execution.mode", "none",
         new StringSet("auto", "none", "all", "map", "only"),
         "Chooses whether query fragments will run in container or in llap"),
+    LLAP_IO_ETL_SKIP_FORMAT("hive.llap.io.etl.skip.format", "encode", new StringSet("none", "encode", "all"),
+      "For ETL queries, determines whether to skip llap io cache. By default, hive.llap.io.encode.enabled " +
+        "will be set to false which disables LLAP IO for text formats. Setting it to 'all' will disable LLAP IO for all" +
+        " formats. 'none' will not disable LLAP IO for any formats."),
     LLAP_OBJECT_CACHE_ENABLED("hive.llap.object.cache.enabled", true,
         "Cache objects (plans, hashtables, etc) in llap"),
     LLAP_IO_DECODING_METRICS_PERCENTILE_INTERVALS("hive.llap.io.decoding.metrics.percentiles.intervals", "30",
@@ -4107,6 +4213,9 @@ public class HiveConf extends Configuration {
         "hive.llap.queue.metrics.percentiles.intervals"),
     LLAP_IO_THREADPOOL_SIZE("hive.llap.io.threadpool.size", 10,
         "Specify the number of threads to use for low-level IO thread pool."),
+    LLAP_USE_KERBEROS("hive.llap.kerberos.enabled", true,
+        "If LLAP is configured for Kerberos authentication. This could be useful when cluster\n" +
+        "is kerberized, but LLAP is not."),
     LLAP_KERBEROS_PRINCIPAL(HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME, "",
         "The name of the LLAP daemon's service principal."),
     LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",
@@ -4169,6 +4278,9 @@ public class HiveConf extends Configuration {
       "Port to use for LLAP plugin rpc server"),
     LLAP_PLUGIN_RPC_NUM_HANDLERS("hive.llap.plugin.rpc.num.handlers", 1,
       "Number of RPC handlers for AM LLAP plugin endpoint."),
+    LLAP_HDFS_PACKAGE_DIR("hive.llap.hdfs.package.dir", ".yarn",
+      "Package directory on HDFS used for holding collected configuration and libraries" +
+      " required for YARN launch. Note: this should be set to the same as yarn.service.base.path"),
     LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
         "Working directories for the daemon. This should not be set if running as a YARN\n" +
         "Service. It must be set when not running on YARN. If the value is set when\n" +
@@ -4268,6 +4380,41 @@ public class HiveConf extends Configuration {
         "Number of threads to use in LLAP task plugin client."),
     LLAP_DAEMON_DOWNLOAD_PERMANENT_FNS("hive.llap.daemon.download.permanent.fns", false,
         "Whether LLAP daemon should localize the resources for permanent UDFs."),
+    LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_MS("hive.llap.task.scheduler.am.collect.daemon.metrics.ms", "0ms",
+      new TimeValidator(TimeUnit.MILLISECONDS), "Collect llap daemon metrics in the AM every given milliseconds,\n" +
+      "so that the AM can use this information, to make better scheduling decisions.\n" +
+      "If it's set to 0, then the feature is disabled."),
+    LLAP_TASK_SCHEDULER_AM_COLLECT_DAEMON_METRICS_LISTENER(
+      "hive.llap.task.scheduler.am.collect.daemon.metrics.listener", "",
+      "The listener which is called when new Llap Daemon statistics is received on AM side.\n" +
+      "The listener should implement the " +
+      "org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsListener interface."),
+    LLAP_NODEHEALTHCHECKS_MINTASKS(
+      "hive.llap.nodehealthchecks.mintasks", 2000,
+      "Specifies the minimum amount of tasks, executed by a particular LLAP daemon, before the health\n" +
+      "status of the node is examined."),
+    LLAP_NODEHEALTHCHECKS_MININTERVALDURATION(
+      "hive.llap.nodehealthckecks.minintervalduration", "300s",
+      new TimeValidator(TimeUnit.SECONDS),
+      "The minimum time that needs to elapse between two actions that are the correcting results of identifying\n" +
+      "an unhealthy node. Even if additional nodes are considered to be unhealthy, no action is performed until\n" +
+      "this time interval has passed since the last corrective action."),
+    LLAP_NODEHEALTHCHECKS_TASKTIMERATIO(
+      "hive.llap.nodehealthckecks.tasktimeratio", 1.5f,
+      "LLAP daemons are considered unhealthy, if their average (Map-) task execution time is significantly larger\n" +
+      "than the average task execution time of other nodes. This value specifies the ratio of a node to other\n" +
+      "nodes, which is considered as threshold for unhealthy. A value of 1.5 for example considers a node to be\n" +
+      "unhealthy if its average task execution time is 50% larger than the average of other nodes."),
+    LLAP_NODEHEALTHCHECKS_EXECUTORRATIO(
+      "hive.llap.nodehealthckecks.executorratio", 2.0f,
+      "If an unhealthy node is identified, it is blacklisted only where there is enough free executors to execute\n" +
+      "the tasks. This value specifies the ratio of the free executors compared to the blacklisted ones.\n" +
+      "A value of 2.0 for example defines that we blacklist an unhealthy node only if we have 2 times more\n" +
+      "free executors on the remaining nodes than the unhealthy node."),
+    LLAP_NODEHEALTHCHECKS_MAXNODES(
+      "hive.llap.nodehealthckecks.maxnodes", 1,
+      "The maximum number of blacklisted nodes. If there are at least this number of blacklisted nodes\n" +
+      "the listener will not blacklist further nodes even if all the conditions are met."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
       "AM registry name for LLAP task scheduler plugin to register with."),
     LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",
@@ -4326,6 +4473,21 @@ public class HiveConf extends Configuration {
       "Whether non-finishable running tasks (e.g. a reducer waiting for inputs) should be\n" +
       "preempted by finishable tasks inside LLAP scheduler.",
       "llap.daemon.task.scheduler.enable.preemption"),
+    LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_DATA_POINTS(
+      "hive.llap.daemon.metrics.timed.window.average.data.points", 0,
+      "The number of data points stored for calculating executor metrics timed averages.\n" +
+      "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n" +
+      "0 means that average calculation is turned off"),
+    LLAP_DAEMON_METRICS_TIMED_WINDOW_AVERAGE_WINDOW_LENGTH(
+      "hive.llap.daemon.metrics.timed.window.average.window.length", "1m",
+      new TimeValidator(TimeUnit.NANOSECONDS),
+      "The length of the time window used for calculating executor metrics timed averages.\n" +
+      "Currently used for ExecutorNumExecutorsAvailableAverage and ExecutorNumQueuedRequestsAverage\n"),
+    LLAP_DAEMON_METRICS_SIMPLE_AVERAGE_DATA_POINTS(
+      "hive.llap.daemon.metrics.simple.average.data.points", 0,
+      "The number of data points stored for calculating executor metrics simple averages.\n" +
+      "Currently used for AverageQueueTime and AverageResponseTime\n" +
+      "0 means that average calculation is turned off"),
     LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS(
       "hive.llap.task.communicator.connection.timeout.ms", "16000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
@@ -4387,7 +4549,12 @@ public class HiveConf extends Configuration {
         "logger used for llap-daemons."),
     LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", true,
       "Whether LLapOutputFormatService should output arrow batches"),
-
+    LLAP_COLLECT_LOCK_METRICS("hive.llap.lockmetrics.collect", false,
+        "Whether lock metrics (wait times, counts) are collected for LLAP "
+        + "related locks"),
+    LLAP_TASK_TIME_SUMMARY(
+        "hive.llap.task.time.print.summary", false,
+        "Display queue and runtime of tasks by host for every query executed by the shell."),
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Interval for validating triggers during execution of a query. Triggers defined in resource plan will get\n" +
@@ -4564,7 +4731,8 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
         + ",dfs.adls.oauth2.credential"
-        + ",fs.adl.oauth2.credential",
+        + ",fs.adl.oauth2.credential"
+        + ",fs.azure.account.oauth2.client.secret",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
@@ -4588,7 +4756,7 @@ public class HiveConf extends Configuration {
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure"),
-    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "query",
+    HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
             + "  query: runtime statistics are only used during re-execution\n"
@@ -4604,6 +4772,8 @@ public class HiveConf extends Configuration {
         "If runtime stats are stored in metastore; the maximal batch size per round during load."),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
         "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100."),
+    HIVE_QUERY_PLANMAPPER_LINK_RELNODES("hive.query.planmapper.link.relnodes", true,
+        "Wether to link Calcite nodes to runtime statistics."),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
@@ -4656,7 +4826,11 @@ public class HiveConf extends Configuration {
             "This parameter enables a number of optimizations when running on blobstores:\n" +
             "(1) If hive.blobstore.use.blobstore.as.scratchdir is false, force the last Hive job to write to the blobstore.\n" +
             "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
-            "See HIVE-15121 for details.");
+            "See HIVE-15121 for details."),
+
+    HIVE_ADDITIONAL_CONFIG_FILES("hive.additional.config.files", "",
+            "The names of additional config files, such as ldap-site.xml," +
+                    "spark-site.xml, etc in comma separated list.");
 
     public final String varname;
     public final String altName;
@@ -5283,7 +5457,7 @@ public class HiveConf extends Configuration {
 
   public static void setVar(Configuration conf, ConfVars var, String val) {
     assert (var.valClass == String.class) : var.varname;
-    conf.set(var.varname, val);
+    conf.set(var.varname, val, "setVar");
   }
   public static void setVar(Configuration conf, ConfVars var, String val,
     EncoderDecoder<String, String> encoderDecoder) {
@@ -5392,7 +5566,7 @@ public class HiveConf extends Configuration {
     origProp = getAllProperties();
 
     // Overlay the ConfVars. Note that this ignores ConfVars with null values
-    addResource(getConfVarInputStream());
+    addResource(getConfVarInputStream(), "HiveConf.java");
 
     // Overlay hive-site.xml if it exists
     if (hiveSiteURL != null) {
@@ -5427,6 +5601,18 @@ public class HiveConf extends Configuration {
       addResource(hiveServer2SiteUrl);
     }
 
+    String val = this.getVar(HiveConf.ConfVars.HIVE_ADDITIONAL_CONFIG_FILES);
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    if (val != null && !val.isEmpty()) {
+      String[] configFiles = val.split(",");
+      for (String config : configFiles) {
+        URL configURL = findConfigFile(classLoader, config, true);
+        if (configURL != null) {
+          addResource(configURL);
+        }
+      }
+    }
     // Overlay the values of any system properties and manual overrides
     applySystemProperties();
 
@@ -5493,14 +5679,14 @@ public class HiveConf extends Configuration {
     if (whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
       // set the default configs in whitelist
       whiteListParamsStr = getSQLStdAuthDefaultWhiteListPattern();
+      setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
     }
-    setVar(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST, whiteListParamsStr);
   }
 
   private static String getSQLStdAuthDefaultWhiteListPattern() {
     // create the default white list from list of safe config params
     // and regex list
-    String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(sqlStdAuthSafeVarNames));
+    String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(SQL_STD_AUTH_SAFE_VAR_NAMES));
     String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
     return regexPatternStr + "|" + confVarPatternStr;
   }
@@ -5529,75 +5715,75 @@ public class HiveConf extends Configuration {
    * Default list of modifiable config parameters for sql standard authorization
    * For internal use only.
    */
-  private static final String [] sqlStdAuthSafeVarNames = new String [] {
-    ConfVars.AGGR_JOIN_TRANSPOSE.varname,
-    ConfVars.BYTESPERREDUCER.varname,
-    ConfVars.CLIENT_STATS_COUNTERS.varname,
-    ConfVars.DEFAULTPARTITIONNAME.varname,
-    ConfVars.DROPIGNORESNONEXISTENT.varname,
-    ConfVars.HIVECOUNTERGROUP.varname,
-    ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname,
-    ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
-    ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
-    ConfVars.HIVEEXPREVALUATIONCACHE.varname,
-    ConfVars.HIVEQUERYRESULTFILEFORMAT.varname,
-    ConfVars.HIVEHASHTABLELOADFACTOR.varname,
-    ConfVars.HIVEHASHTABLETHRESHOLD.varname,
-    ConfVars.HIVEIGNOREMAPJOINHINT.varname,
-    ConfVars.HIVELIMITMAXROWSIZE.varname,
-    ConfVars.HIVEMAPREDMODE.varname,
-    ConfVars.HIVEMAPSIDEAGGREGATE.varname,
-    ConfVars.HIVEOPTIMIZEMETADATAQUERIES.varname,
-    ConfVars.HIVEROWOFFSET.varname,
-    ConfVars.HIVEVARIABLESUBSTITUTE.varname,
-    ConfVars.HIVEVARIABLESUBSTITUTEDEPTH.varname,
-    ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,
-    ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL.varname,
-    ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
-    ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
-    ConfVars.HIVE_COMPAT.varname,
-    ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
-    ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
-    ConfVars.HIVE_EXECUTION_ENGINE.varname,
-    ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname,
-    ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
-    ConfVars.HIVE_FILE_MAX_FOOTER.varname,
-    ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
-    ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
-    ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
-    ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED.varname,
-    ConfVars.HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS.varname,
-    ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
-    ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
-    ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
-    ConfVars.HIVE_SCHEMA_EVOLUTION.varname,
-    ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname,
-    ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS.varname,
-    ConfVars.HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES.varname,
-    ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
-    ConfVars.JOB_DEBUG_TIMEOUT.varname,
-    ConfVars.LLAP_IO_ENABLED.varname,
-    ConfVars.LLAP_IO_USE_FILEID_PATH.varname,
-    ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
-    ConfVars.LLAP_EXECUTION_MODE.varname,
-    ConfVars.LLAP_AUTO_ALLOW_UBER.varname,
-    ConfVars.LLAP_AUTO_ENFORCE_TREE.varname,
-    ConfVars.LLAP_AUTO_ENFORCE_VECTORIZED.varname,
-    ConfVars.LLAP_AUTO_ENFORCE_STATS.varname,
-    ConfVars.LLAP_AUTO_MAX_INPUT.varname,
-    ConfVars.LLAP_AUTO_MAX_OUTPUT.varname,
-    ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK.varname,
-    ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS.varname,
-    ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP.varname,
-    ConfVars.LLAP_ALLOW_PERMANENT_FNS.varname,
-    ConfVars.MAXCREATEDFILES.varname,
-    ConfVars.MAXREDUCERS.varname,
-    ConfVars.NWAYJOINREORDER.varname,
-    ConfVars.OUTPUT_FILE_EXTENSION.varname,
-    ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
-    ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
-    ConfVars.HIVEQUERYID.varname,
-    ConfVars.HIVEQUERYTAG.varname,
+  private static final String[] SQL_STD_AUTH_SAFE_VAR_NAMES = new String[] {
+      ConfVars.AGGR_JOIN_TRANSPOSE.varname,
+      ConfVars.BYTESPERREDUCER.varname,
+      ConfVars.CLIENT_STATS_COUNTERS.varname,
+      ConfVars.DEFAULTPARTITIONNAME.varname,
+      ConfVars.DROP_IGNORES_NON_EXISTENT.varname,
+      ConfVars.HIVECOUNTERGROUP.varname,
+      ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT.varname,
+      ConfVars.HIVEENFORCEBUCKETMAPJOIN.varname,
+      ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN.varname,
+      ConfVars.HIVEEXPREVALUATIONCACHE.varname,
+      ConfVars.HIVEQUERYRESULTFILEFORMAT.varname,
+      ConfVars.HIVEHASHTABLELOADFACTOR.varname,
+      ConfVars.HIVEHASHTABLETHRESHOLD.varname,
+      ConfVars.HIVEIGNOREMAPJOINHINT.varname,
+      ConfVars.HIVELIMITMAXROWSIZE.varname,
+      ConfVars.HIVEMAPREDMODE.varname,
+      ConfVars.HIVEMAPSIDEAGGREGATE.varname,
+      ConfVars.HIVEOPTIMIZEMETADATAQUERIES.varname,
+      ConfVars.HIVEROWOFFSET.varname,
+      ConfVars.HIVEVARIABLESUBSTITUTE.varname,
+      ConfVars.HIVEVARIABLESUBSTITUTEDEPTH.varname,
+      ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,
+      ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL.varname,
+      ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
+      ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
+      ConfVars.HIVE_COMPAT.varname,
+      ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
+      ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
+      ConfVars.HIVE_EXECUTION_ENGINE.varname,
+      ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname,
+      ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname,
+      ConfVars.HIVE_FILE_MAX_FOOTER.varname,
+      ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS.varname,
+      ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS.varname,
+      ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES.varname,
+      ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED.varname,
+      ConfVars.HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS.varname,
+      ConfVars.HIVE_QUOTEDID_SUPPORT.varname,
+      ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES.varname,
+      ConfVars.HIVE_STATS_COLLECT_PART_LEVEL_STATS.varname,
+      ConfVars.HIVE_SCHEMA_EVOLUTION.varname,
+      ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname,
+      ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS.varname,
+      ConfVars.HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES.varname,
+      ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES.varname,
+      ConfVars.JOB_DEBUG_TIMEOUT.varname,
+      ConfVars.LLAP_IO_ENABLED.varname,
+      ConfVars.LLAP_IO_USE_FILEID_PATH.varname,
+      ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname,
+      ConfVars.LLAP_EXECUTION_MODE.varname,
+      ConfVars.LLAP_AUTO_ALLOW_UBER.varname,
+      ConfVars.LLAP_AUTO_ENFORCE_TREE.varname,
+      ConfVars.LLAP_AUTO_ENFORCE_VECTORIZED.varname,
+      ConfVars.LLAP_AUTO_ENFORCE_STATS.varname,
+      ConfVars.LLAP_AUTO_MAX_INPUT.varname,
+      ConfVars.LLAP_AUTO_MAX_OUTPUT.varname,
+      ConfVars.LLAP_SKIP_COMPILE_UDF_CHECK.varname,
+      ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS.varname,
+      ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP.varname,
+      ConfVars.LLAP_ALLOW_PERMANENT_FNS.varname,
+      ConfVars.MAXCREATEDFILES.varname,
+      ConfVars.MAXREDUCERS.varname,
+      ConfVars.NWAYJOINREORDER.varname,
+      ConfVars.OUTPUT_FILE_EXTENSION.varname,
+      ConfVars.SHOW_JOB_FAIL_DEBUG_INFO.varname,
+      ConfVars.TASKLOG_DEBUG_TIMEOUT.varname,
+      ConfVars.HIVEQUERYID.varname,
+      ConfVars.HIVEQUERYTAG.varname,
   };
 
   /**
@@ -5630,6 +5816,7 @@ public class HiveConf extends Configuration {
     "hive\\.mapjoin\\..*",
     "hive\\.merge\\..*",
     "hive\\.optimize\\..*",
+    "hive\\.materializedview\\..*",
     "hive\\.orc\\..*",
     "hive\\.outerjoin\\..*",
     "hive\\.parquet\\..*",
@@ -5643,6 +5830,8 @@ public class HiveConf extends Configuration {
     "hive\\.strict\\..*",
     "hive\\.tez\\..*",
     "hive\\.vectorized\\..*",
+    "hive\\.query\\.reexecution\\..*",
+    "reexec\\.overlay\\..*",
     "fs\\.defaultFS",
     "ssl\\.client\\.truststore\\.location",
     "distcp\\.atomic",

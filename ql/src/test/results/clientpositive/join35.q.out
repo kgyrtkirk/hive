@@ -32,6 +32,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1_n24
+OPTIMIZED SQL: SELECT `t5`.`key`, `t5`.`value`, `t3`.`$f1` AS `cnt`
+FROM (SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`src`
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` < 20
+GROUP BY `key`
+UNION ALL
+SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`src`
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` > 100
+GROUP BY `key`) AS `t3`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src1`
+WHERE CAST(`key` AS DOUBLE) BETWEEN 20 AND 100 AND `key` IS NOT NULL) AS `t5` ON `t3`.`key` = `t5`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1, Stage-5
@@ -47,16 +60,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
-            filterExpr: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) < 20.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) < 20.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 74 Data size: 7030 Basic stats: COMPLETE Column stats: COMPLETE
@@ -236,6 +250,7 @@ STAGE PLANS:
                     Statistics: Num rows: 46 Data size: 8234 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(val2, 'hll')
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
@@ -313,6 +328,7 @@ STAGE PLANS:
                     Statistics: Num rows: 46 Data size: 8234 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(val2, 'hll')
+                      minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
@@ -548,16 +564,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
-            filterExpr: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+            filterExpr: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((UDFToDouble(key) > 100.0D) and UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D) (type: boolean)
+              predicate: (UDFToDouble(key) NOT BETWEEN 20.0D AND 100.0D and (UDFToDouble(key) > 100.0D)) (type: boolean)
               Statistics: Num rows: 148 Data size: 12876 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: count()
                 keys: key (type: string)
+                minReductionHashAggr: 0.99
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 74 Data size: 7030 Basic stats: COMPLETE Column stats: COMPLETE

@@ -1,5 +1,8 @@
 SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
 
+-- HIVE-21336 safeguards from failures from indices being too long
+ALTER SESSION SET NLS_LENGTH_SEMANTICS=BYTE;
+
 --@041-HIVE-16556.oracle.sql;
 CREATE TABLE METASTORE_DB_PROPERTIES
 (
@@ -247,7 +250,7 @@ UPDATE DBS
   SET "CTLG_NAME" = 'hive';
 
 -- Add the not null constraint
-ALTER TABLE DBS MODIFY CTLG_NAME NOT NULL;
+ALTER TABLE DBS MODIFY CTLG_NAME DEFAULT 'hive' NOT NULL;
 
 -- Put back the unique index 
 CREATE UNIQUE INDEX UNIQUE_DATABASE ON DBS ("NAME", CTLG_NAME);

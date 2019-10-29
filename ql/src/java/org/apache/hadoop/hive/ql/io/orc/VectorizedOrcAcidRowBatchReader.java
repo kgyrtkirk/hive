@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.IntegerColumnStatistics;
 import org.apache.orc.OrcConf;
@@ -271,7 +272,7 @@ public class VectorizedOrcAcidRowBatchReader
        * isOriginal - don't have meta columns - nothing to skip
        * there no relevant delete events && ROW__ID is not needed higher up
        * (e.g. this is not a delete statement)*/
-      if (!isOriginal && deleteEventRegistry.isEmpty() && !rowIdProjected) {
+      if (deleteEventRegistry.isEmpty() && !rowIdProjected) {
         Path parent = orcSplit.getPath().getParent();
         while (parent != null && !rootPath.equals(parent)) {
           if (parent.getName().startsWith(AcidUtils.BASE_PREFIX)) {
@@ -318,11 +319,11 @@ public class VectorizedOrcAcidRowBatchReader
       RecordIdentifier k = keyInterval.getMinKey();
       b = SearchArgumentFactory.newBuilder();
       b.startAnd()  //not(ot < 7) -> ot >=7
-          .startNot().lessThan("originalTransaction",
+          .startNot().lessThan(OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
           PredicateLeaf.Type.LONG, k.getWriteId()).end();
       b.startNot().lessThan(
-          "bucket", PredicateLeaf.Type.LONG, minBucketProp).end();
-      b.startNot().lessThan("rowId",
+          OrcRecordUpdater.BUCKET_FIELD_NAME, PredicateLeaf.Type.LONG, minBucketProp).end();
+      b.startNot().lessThan(OrcRecordUpdater.ROW_ID_FIELD_NAME,
           PredicateLeaf.Type.LONG, minRowId).end();
       b.end();
     }
@@ -332,16 +333,20 @@ public class VectorizedOrcAcidRowBatchReader
         b = SearchArgumentFactory.newBuilder();
       }
       b.startAnd().lessThanEquals(
-          "originalTransaction", PredicateLeaf.Type.LONG, k.getWriteId());
-      b.lessThanEquals("bucket", PredicateLeaf.Type.LONG, maxBucketProp);
-      b.lessThanEquals("rowId", PredicateLeaf.Type.LONG, maxRowId);
+          OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME, PredicateLeaf.Type.LONG, k.getWriteId());
+      b.lessThanEquals(OrcRecordUpdater.BUCKET_FIELD_NAME, PredicateLeaf.Type.LONG, maxBucketProp);
+      b.lessThanEquals(OrcRecordUpdater.ROW_ID_FIELD_NAME, PredicateLeaf.Type.LONG, maxRowId);
       b.end();
     }
     if(b != null) {
       deleteEventSarg = b.build();
       LOG.info("deleteReader SARG(" + deleteEventSarg + ") ");
       deleteEventReaderOptions.searchArgument(deleteEventSarg,
-          new String[] {"originalTransaction", "bucket", "rowId"});
+          new String[] {
+              OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
+              OrcRecordUpdater.BUCKET_FIELD_NAME,
+              OrcRecordUpdater.ROW_ID_FIELD_NAME
+          });
       return;
     }
     deleteEventReaderOptions.searchArgument(null, null);
@@ -718,8 +723,8 @@ public class VectorizedOrcAcidRowBatchReader
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
         //statementId is from directory name (or 0 if there is none)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
-    AcidUtils.Directory directoryState = AcidUtils.getAcidState( syntheticTxnInfo.folder, conf,
-        validWriteIdList, false, true);
+    AcidUtils.Directory directoryState = AcidUtils.getAcidState(null, syntheticTxnInfo.folder, conf,
+        validWriteIdList, Ref.from(false), true, null, true);
     for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
       int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
       if (bucketIdFromPath != bucketId) {
@@ -744,7 +749,7 @@ public class VectorizedOrcAcidRowBatchReader
    * @param hasDeletes - if there are any deletes that apply to this split
    * todo: HIVE-17944
    */
-  static boolean canUseLlapForAcid(OrcSplit split, boolean hasDeletes, Configuration conf) {
+  static boolean canUseLlapIoForAcid(OrcSplit split, boolean hasDeletes, Configuration conf) {
     if(!split.isOriginal()) {
       return true;
     }
@@ -798,10 +803,10 @@ public class VectorizedOrcAcidRowBatchReader
   /**
    * There are 2 types of schema from the {@link #baseReader} that this handles.  In the case
    * the data was written to a transactional table from the start, every row is decorated with
-   * transaction related info and looks like <op, owid, writerId, rowid, cwid, <f1, ... fn>>.
+   * transaction related info and looks like &lt;op, owid, writerId, rowid, cwid, &lt;f1, ... fn&gt;&gt;.
    *
    * The other case is when data was written to non-transactional table and thus only has the user
-   * data: <f1, ... fn>.  Then this table was then converted to a transactional table but the data
+   * data: &lt;f1, ... fn&gt;.  Then this table was then converted to a transactional table but the data
    * files are not changed until major compaction.  These are the "original" files.
    *
    * In this case we may need to decorate the outgoing data with transactional column values at
@@ -901,12 +906,8 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
 
-    if (isOriginal) {
-     /* Just copy the payload.  {@link recordIdColumnVector} has already been populated */
-      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0, value.getDataColumnCount());
-    } else {
-      copyFromBase(value);
-    }
+    copyFromBase(value);
+
     if (rowIdProjected) {
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
       value.cols[ix] = recordIdColumnVector;
@@ -918,7 +919,11 @@ public class VectorizedOrcAcidRowBatchReader
   //ColumnVectors for acid meta cols to create a single ColumnVector
   //representing RecordIdentifier and (optionally) set it in 'value'
   private void copyFromBase(VectorizedRowBatch value) {
-    assert !isOriginal;
+    if (isOriginal) {
+      /* Just copy the payload.  {@link recordIdColumnVector} has already been populated if needed */
+      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0, value.getDataColumnCount());
+      return;
+    }
     if (isFlatPayload) {
       int payloadCol = includeAcidColumns ? OrcRecordUpdater.ROW : 0;
         // Ignore the struct column and just copy all the following data columns.
@@ -1261,7 +1266,6 @@ public class VectorizedOrcAcidRowBatchReader
      * A simple wrapper class to hold the (owid, bucketProperty, rowId) pair.
      */
     static class DeleteRecordKey implements Comparable<DeleteRecordKey> {
-      private static final DeleteRecordKey otherKey = new DeleteRecordKey();
       private long originalWriteId;
       /**
        * see {@link BucketCodec}
@@ -1283,25 +1287,29 @@ public class VectorizedOrcAcidRowBatchReader
         if (other == null) {
           return -1;
         }
-        if (originalWriteId != other.originalWriteId) {
-          return originalWriteId < other.originalWriteId ? -1 : 1;
-        }
-        if(bucketProperty != other.bucketProperty) {
-          return bucketProperty < other.bucketProperty ? -1 : 1;
-        }
-        if (rowId != other.rowId) {
-          return rowId < other.rowId ? -1 : 1;
-        }
-        return 0;
+        return compareTo(other.originalWriteId, other.bucketProperty, other.rowId);
       }
+
       private int compareTo(RecordIdentifier other) {
         if (other == null) {
           return -1;
         }
-        otherKey.set(other.getWriteId(), other.getBucketProperty(),
-            other.getRowId());
-        return compareTo(otherKey);
+        return compareTo(other.getWriteId(), other.getBucketProperty(), other.getRowId());
       }
+
+      private int compareTo(long oOriginalWriteId, int oBucketProperty, long oRowId) {
+        if (originalWriteId != oOriginalWriteId) {
+          return originalWriteId < oOriginalWriteId ? -1 : 1;
+        }
+        if(bucketProperty != oBucketProperty) {
+          return bucketProperty < oBucketProperty ? -1 : 1;
+        }
+        if (rowId != oRowId) {
+          return rowId < oRowId ? -1 : 1;
+        }
+        return 0;
+      }
+
       @Override
       public String toString() {
         return "DeleteRecordKey(" + originalWriteId + "," +

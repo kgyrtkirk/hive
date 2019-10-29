@@ -262,9 +262,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    */
   @Override
   public void refreshDefaultQueue(Configuration conf, String userName) throws IOException {
-    if (StringUtils.isNotBlank(userName) && isFairScheduler(conf)) {
-      ShimLoader.getSchedulerShims().refreshDefaultQueue(conf, userName);
-    }
+    //no op
   }
 
   private boolean isFairScheduler (Configuration conf) {
@@ -416,6 +414,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
       conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
       conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
+      conf.setInt(TezConfiguration.TEZ_COUNTERS_MAX, 1024);
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
@@ -1142,9 +1141,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, String doAsUser) throws IOException {
-    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
-        doAsUser, UserGroupInformation.getLoginUser());
+  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf,
+                             UserGroupInformation proxyUser) throws IOException {
     try {
       return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
         @Override

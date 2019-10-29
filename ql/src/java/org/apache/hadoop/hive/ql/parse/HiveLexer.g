@@ -45,6 +45,7 @@ KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
 KW_UNKNOWN : 'UNKNOWN';
 KW_ALL : 'ALL';
+KW_SOME : 'SOME';
 KW_NONE: 'NONE';
 KW_AND : 'AND';
 KW_OR : 'OR';
@@ -147,6 +148,7 @@ KW_UNIONTYPE: 'UNIONTYPE';
 KW_REDUCE: 'REDUCE';
 KW_PARTITIONED: 'PARTITIONED';
 KW_CLUSTERED: 'CLUSTERED';
+KW_DISTRIBUTED: 'DISTRIBUTED';
 KW_SORTED: 'SORTED';
 KW_INTO: 'INTO';
 KW_BUCKETS: 'BUCKETS';
@@ -383,6 +385,7 @@ KW_SYNC: 'SYNC';
 KW_AST: 'AST';
 KW_COST: 'COST';
 KW_JOINCOST: 'JOINCOST';
+KW_WITHIN: 'WITHIN';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

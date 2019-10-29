@@ -120,7 +120,7 @@ public final class ConstantPropagateProcFactory {
   /**
    * Get ColumnInfo from column expression.
    *
-   * @param rr
+   * @param rs
    * @param desc
    * @return
    */
@@ -588,7 +588,7 @@ public final class ConstantPropagateProcFactory {
        return null;
      }
      GenericUDF childUDF = caseOrWhenexpr.getGenericUDF();
-     List<ExprNodeDesc> children = caseOrWhenexpr.getChildren();
+      List<ExprNodeDesc> children = new ArrayList(caseOrWhenexpr.getChildren());
      int i;
      if (childUDF instanceof GenericUDFWhen) {
        for (i = 1; i < children.size(); i+=2) {
@@ -1120,7 +1120,7 @@ public final class ConstantPropagateProcFactory {
       }
 
       GroupByDesc conf = op.getConf();
-      ArrayList<ExprNodeDesc> keys = conf.getKeys();
+      List<ExprNodeDesc> keys = conf.getKeys();
       for (int i = 0; i < keys.size(); i++) {
         ExprNodeDesc key = keys.get(i);
         ExprNodeDesc newkey = foldExpr(key, colToConstants, cppCtx, op, 0, false);
@@ -1205,11 +1205,17 @@ public final class ConstantPropagateProcFactory {
             if (HiveConf.getPositionFromInternalName(colName) == -1) {
               // if its not an internal name, this is what we want.
               ((ExprNodeConstantDesc)newCol).setFoldedFromCol(colName);
+              // See if we can set the tabAlias this was folded from as well.
+              ExprNodeDesc colExpr = colList.get(i);
+              if (colExpr instanceof ExprNodeColumnDesc) {
+                ((ExprNodeConstantDesc)newCol).setFoldedFromTab(((ExprNodeColumnDesc) colExpr).getTabAlias());
+              }
             } else {
               // If it was internal column, lets try to get name from columnExprMap
               ExprNodeDesc desc = columnExprMap.get(colName);
               if (desc instanceof ExprNodeConstantDesc) {
                 ((ExprNodeConstantDesc)newCol).setFoldedFromCol(((ExprNodeConstantDesc)desc).getFoldedFromCol());
+                ((ExprNodeConstantDesc)newCol).setFoldedFromTab(((ExprNodeConstantDesc)desc).getFoldedFromTab());
               }
             }
           }
@@ -1370,7 +1376,7 @@ public final class ConstantPropagateProcFactory {
       for (ExprNodeDesc desc : rsDesc.getKeyCols()) {
         ExprNodeDesc newDesc = foldExpr(desc, constants, cppCtx, op, 0, false);
         if (newDesc != desc && desc instanceof ExprNodeColumnDesc && newDesc instanceof ExprNodeConstantDesc) {
-          ((ExprNodeConstantDesc)newDesc).setFoldedFromCol(((ExprNodeColumnDesc)desc).getColumn());
+          ((ExprNodeConstantDesc)newDesc).setFoldedTabCol((ExprNodeColumnDesc)desc);
         }
         newKeyEpxrs.add(newDesc);
       }
@@ -1382,7 +1388,7 @@ public final class ConstantPropagateProcFactory {
         ExprNodeDesc expr = foldExpr(desc, constants, cppCtx, op, 0, false);
         if (expr != desc && desc instanceof ExprNodeColumnDesc
             && expr instanceof ExprNodeConstantDesc) {
-          ((ExprNodeConstantDesc) expr).setFoldedFromCol(((ExprNodeColumnDesc) desc).getColumn());
+          ((ExprNodeConstantDesc) expr).setFoldedTabCol((ExprNodeColumnDesc) desc);
         }
         newPartExprs.add(expr);
       }

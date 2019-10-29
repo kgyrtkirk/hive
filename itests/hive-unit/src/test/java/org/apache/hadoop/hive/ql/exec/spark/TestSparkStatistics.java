@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistic;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Assert;
@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
 public class TestSparkStatistics {
 
   @Test
-  public void testSparkStatistics() throws MalformedURLException {
+  public void testSparkStatistics() throws MalformedURLException, CommandProcessorException {
     String confDir = "../../data/conf/spark/standalone/hive-site.xml";
     HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf conf = new HiveConf();
@@ -61,8 +60,8 @@ public class TestSparkStatistics {
               .withHiveConf(conf).build(),
               null, null);
 
-      Assert.assertEquals(0, driver.run("create table test (col int)").getResponseCode());
-      Assert.assertEquals(0, driver.compile("select * from test order by col"));
+      driver.run("create table test (col int)");
+      Assert.assertEquals(0, driver.compile("select * from test order by col", true));
 
       List<SparkTask> sparkTasks = Utilities.getSparkTasks(driver.getPlan().getRootTasks());
       Assert.assertEquals(1, sparkTasks.size());
@@ -95,7 +94,7 @@ public class TestSparkStatistics {
       Assert.assertTrue(Long.parseLong(statsMap.get(SparkStatisticsNames.EXECUTOR_RUN_TIME)) > 0);
     } finally {
       if (driver != null) {
-        Assert.assertEquals(0, driver.run("drop table if exists test").getResponseCode());
+        driver.run("drop table if exists test");
         driver.destroy();
       }
     }

@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
@@ -114,10 +115,11 @@ import static org.mockito.Mockito.verify;
 public abstract class TestHiveMetaStore {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStore.class);
   protected static HiveMetaStoreClient client;
-  protected static Configuration conf = MetastoreConf.newMetastoreConf();
+  protected static Configuration conf = null;
   protected static Warehouse warehouse;
   protected static boolean isThriftClient = false;
 
+  private static final String ENGINE = "hive";
   private static final String TEST_DB1_NAME = "testdb1";
   private static final String TEST_DB2_NAME = "testdb2";
 
@@ -127,6 +129,7 @@ public abstract class TestHiveMetaStore {
 
   @Before
   public void setUp() throws Exception {
+    initConf();
     warehouse = new Warehouse(conf);
 
     // set some values to use for getting conf. vars
@@ -142,6 +145,12 @@ public abstract class TestHiveMetaStore {
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
+  }
+
+  protected void initConf() {
+    if (null == conf) {
+      conf = MetastoreConf.newMetastoreConf();
+    }
   }
 
   @Test
@@ -1585,28 +1594,28 @@ public abstract class TestHiveMetaStore {
     assertEquals(4,partNames.size());
 
     // Test for both colNames and partNames being empty:
-    AggrStats aggrStatsEmpty = client.getAggrColStatsFor(dbName,tblName,emptyColNames,emptyPartNames);
+    AggrStats aggrStatsEmpty = client.getAggrColStatsFor(dbName,tblName,emptyColNames,emptyPartNames, ENGINE);
     assertNotNull(aggrStatsEmpty); // short-circuited on client-side, verifying that it's an empty object, not null
     assertEquals(0,aggrStatsEmpty.getPartsFound());
     assertNotNull(aggrStatsEmpty.getColStats());
     assert(aggrStatsEmpty.getColStats().isEmpty());
 
     // Test for only colNames being empty
-    AggrStats aggrStatsOnlyParts = client.getAggrColStatsFor(dbName,tblName,emptyColNames,partNames);
+    AggrStats aggrStatsOnlyParts = client.getAggrColStatsFor(dbName,tblName,emptyColNames,partNames, ENGINE);
     assertNotNull(aggrStatsOnlyParts); // short-circuited on client-side, verifying that it's an empty object, not null
     assertEquals(0,aggrStatsOnlyParts.getPartsFound());
     assertNotNull(aggrStatsOnlyParts.getColStats());
     assert(aggrStatsOnlyParts.getColStats().isEmpty());
 
     // Test for only partNames being empty
-    AggrStats aggrStatsOnlyCols = client.getAggrColStatsFor(dbName,tblName,colNames,emptyPartNames);
+    AggrStats aggrStatsOnlyCols = client.getAggrColStatsFor(dbName,tblName,colNames,emptyPartNames, ENGINE);
     assertNotNull(aggrStatsOnlyCols); // short-circuited on client-side, verifying that it's an empty object, not null
     assertEquals(0,aggrStatsOnlyCols.getPartsFound());
     assertNotNull(aggrStatsOnlyCols.getColStats());
     assert(aggrStatsOnlyCols.getColStats().isEmpty());
 
     // Test for valid values for both.
-    AggrStats aggrStatsFull = client.getAggrColStatsFor(dbName,tblName,colNames,partNames);
+    AggrStats aggrStatsFull = client.getAggrColStatsFor(dbName,tblName,colNames,partNames, ENGINE);
     assertNotNull(aggrStatsFull);
     assertEquals(0,aggrStatsFull.getPartsFound()); // would still be empty, because no stats are actually populated.
     assertNotNull(aggrStatsFull.getColStats());
@@ -1683,13 +1692,14 @@ public abstract class TestHiveMetaStore {
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
+      colStats.setEngine(ENGINE);
 
       // write stats objs persistently
       client.updateTableColumnStatistics(colStats);
 
       // retrieve the stats obj that was just written
       ColumnStatisticsObj colStats2 = client.getTableColumnStatistics(
-          dbName, tblName, Lists.newArrayList(colName[0])).get(0);
+          dbName, tblName, Lists.newArrayList(colName[0]), ENGINE).get(0);
 
      // compare stats obj to ensure what we get is what we wrote
       assertNotNull(colStats2);
@@ -1701,11 +1711,11 @@ public abstract class TestHiveMetaStore {
 
       // test delete column stats; if no col name is passed all column stats associated with the
       // table is deleted
-      boolean status = client.deleteTableColumnStatistics(dbName, tblName, null);
+      boolean status = client.deleteTableColumnStatistics(dbName, tblName, null, ENGINE);
       assertTrue(status);
       // try to query stats for a column for which stats doesn't exist
       assertTrue(client.getTableColumnStatistics(
-          dbName, tblName, Lists.newArrayList(colName[1])).isEmpty());
+          dbName, tblName, Lists.newArrayList(colName[1]), ENGINE).isEmpty());
 
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
@@ -1715,7 +1725,7 @@ public abstract class TestHiveMetaStore {
 
       // query column stats for column whose stats were updated in the previous call
       colStats2 = client.getTableColumnStatistics(
-          dbName, tblName, Lists.newArrayList(colName[0])).get(0);
+          dbName, tblName, Lists.newArrayList(colName[0]), ENGINE).get(0);
 
       // partition level column statistics test
       // create a table with multiple partitions
@@ -1744,11 +1754,12 @@ public abstract class TestHiveMetaStore {
       colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
+      colStats.setEngine(ENGINE);
 
      client.updatePartitionColumnStatistics(colStats);
 
      colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
-         Lists.newArrayList(partName), Lists.newArrayList(colName[1])).get(partName).get(0);
+         Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE).get(partName).get(0);
 
      // compare stats obj to ensure what we get is what we wrote
      assertNotNull(colStats2);
@@ -1760,14 +1771,14 @@ public abstract class TestHiveMetaStore {
      assertEquals(colStats2.getStatsData().getStringStats().getNumDVs(), numDVs);
 
      // test stats deletion at partition level
-     client.deletePartitionColumnStatistics(dbName, tblName, partName, colName[1]);
+     client.deletePartitionColumnStatistics(dbName, tblName, partName, colName[1], ENGINE);
 
      colStats2 = client.getPartitionColumnStatistics(dbName, tblName,
-         Lists.newArrayList(partName), Lists.newArrayList(colName[0])).get(partName).get(0);
+         Lists.newArrayList(partName), Lists.newArrayList(colName[0]), ENGINE).get(partName).get(0);
 
      // test get stats on a column for which stats doesn't exist
      assertTrue(client.getPartitionColumnStatistics(dbName, tblName,
-           Lists.newArrayList(partName), Lists.newArrayList(colName[1])).isEmpty());
+           Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE).isEmpty());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testColumnStatistics() failed.");
@@ -3292,6 +3303,11 @@ public abstract class TestHiveMetaStore {
     }
     int size = allUuids.size();
     assertEquals(numAPICallsPerThread * parallelCalls, size);
+  }
+
+  @Test
+  public void testVersion() throws TException {
+    assertEquals(MetastoreVersionInfo.getVersion(), client.getServerVersion());
   }
 
   /**

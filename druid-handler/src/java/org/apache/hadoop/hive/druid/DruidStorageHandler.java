@@ -26,37 +26,41 @@ import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import io.druid.data.input.impl.DimensionSchema;
-import io.druid.data.input.impl.DimensionsSpec;
-import io.druid.data.input.impl.InputRowParser;
-import io.druid.data.input.impl.TimestampSpec;
-import io.druid.java.util.common.Pair;
-import io.druid.java.util.common.RetryUtils;
-import io.druid.java.util.common.lifecycle.Lifecycle;
-import io.druid.java.util.http.client.HttpClient;
-import io.druid.java.util.http.client.HttpClientConfig;
-import io.druid.java.util.http.client.HttpClientInit;
-import io.druid.java.util.http.client.Request;
-import io.druid.java.util.http.client.response.FullResponseHandler;
-import io.druid.java.util.http.client.response.FullResponseHolder;
-import io.druid.metadata.MetadataStorageConnectorConfig;
-import io.druid.metadata.MetadataStorageTablesConfig;
-import io.druid.metadata.SQLMetadataConnector;
-import io.druid.metadata.storage.derby.DerbyConnector;
-import io.druid.metadata.storage.derby.DerbyMetadataStorage;
-import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.metadata.storage.mysql.MySQLConnectorConfig;
-import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
-import io.druid.query.aggregation.AggregatorFactory;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.indexing.DataSchema;
-import io.druid.segment.indexing.granularity.GranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
-import io.druid.segment.loading.SegmentLoadingException;
-import io.druid.storage.hdfs.HdfsDataSegmentPusher;
-import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
-import io.druid.timeline.DataSegment;
+import org.apache.druid.data.input.impl.DimensionSchema;
+import org.apache.druid.data.input.impl.DimensionsSpec;
+import org.apache.druid.data.input.impl.InputRowParser;
+import org.apache.druid.data.input.impl.TimestampSpec;
+import org.apache.druid.java.util.common.Pair;
+import org.apache.druid.java.util.common.RetryUtils;
+import org.apache.druid.java.util.common.lifecycle.Lifecycle;
+import org.apache.druid.java.util.http.client.HttpClient;
+import org.apache.druid.java.util.http.client.HttpClientConfig;
+import org.apache.druid.java.util.http.client.HttpClientInit;
+import org.apache.druid.java.util.http.client.Request;
+import org.apache.druid.java.util.http.client.response.FullResponseHandler;
+import org.apache.druid.java.util.http.client.response.FullResponseHolder;
+import org.apache.druid.metadata.MetadataStorageConnectorConfig;
+import org.apache.druid.metadata.MetadataStorageTablesConfig;
+import org.apache.druid.metadata.SQLMetadataConnector;
+import org.apache.druid.metadata.storage.derby.DerbyConnector;
+import org.apache.druid.metadata.storage.derby.DerbyMetadataStorage;
+import org.apache.druid.metadata.storage.mysql.MySQLConnector;
+import org.apache.druid.metadata.storage.mysql.MySQLConnectorConfig;
+import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnector;
+import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnectorConfig;
+import org.apache.druid.query.BaseQuery;
+import org.apache.druid.query.Query;
+import org.apache.druid.query.aggregation.AggregatorFactory;
+import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.indexing.DataSchema;
+import org.apache.druid.segment.indexing.granularity.GranularitySpec;
+import org.apache.druid.segment.loading.DataSegmentPusher;
+import org.apache.druid.segment.loading.SegmentLoadingException;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusher;
+import org.apache.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+import org.apache.druid.timeline.DataSegment;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -83,7 +87,10 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -136,7 +143,8 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private static final HttpClient HTTP_CLIENT;
 
-  private static final List<String> ALLOWED_ALTER_TYPES = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
+  private static final List<String> ALLOWED_ALTER_TYPES =
+      ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
 
   static {
     final Lifecycle lifecycle = new Lifecycle();
@@ -558,7 +566,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
             return new URL(String.format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
                 coordinatorAddress,
                 dataSegment.getDataSource(),
-                dataSegment.getIdentifier()));
+                dataSegment.getId().toString()));
           } catch (MalformedURLException e) {
             Throwables.propagate(e);
           }
@@ -603,7 +611,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   @VisibleForTesting void deleteSegment(DataSegment segment) throws SegmentLoadingException {
 
     final Path path = DruidStorageHandlerUtils.getPath(segment);
-    LOG.info("removing segment {}, located at path {}", segment.getIdentifier(), path);
+    LOG.info("removing segment {}, located at path {}", segment.getId().toString(), path);
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -690,7 +698,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()), e);
+          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getId().toString()), e);
         }
       }
     }
@@ -859,7 +867,9 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     case "postgresql":
       connector =
           new PostgreSQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()));
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()),
+                  new PostgreSQLConnectorConfig()
+          );
 
       break;
     case "derby":
@@ -959,5 +969,29 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       // e.g. Total size of segments in druid, load status of table on historical nodes etc.
       return null;
     }
+  }
+
+  @Override public Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc,
+      Map<String, String> initialProps) {
+    if (operatorDesc instanceof TableScanDesc) {
+      TableScanDesc tableScanDesc = (TableScanDesc) operatorDesc;
+      ExprNodeGenericFuncDesc filterExpr = tableScanDesc.getFilterExpr();
+      String druidQuery = initialProps.get(Constants.DRUID_QUERY_JSON);
+
+      if (filterExpr != null && druidQuery != null) {
+        try {
+          Query query = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, BaseQuery.class);
+          Query queryWithDynamicFilters = DruidStorageHandlerUtils.addDynamicFilters(query, filterExpr, conf, false);
+          Map<String, String> props = Maps.newHashMap(initialProps);
+          props.put(Constants.DRUID_QUERY_JSON,
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(queryWithDynamicFilters));
+          return props;
+        } catch (IOException e) {
+          LOG.error("Exception while deserializing druid query. Explain plan may not have final druid query", e);
+        }
+      }
+    }
+    // Case when we do not have any additional info to add.
+    return initialProps;
   }
 }

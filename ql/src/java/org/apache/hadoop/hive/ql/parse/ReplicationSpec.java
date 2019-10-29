@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
@@ -49,12 +50,13 @@ public class ReplicationSpec {
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
   private boolean isMigratingToTxnTable = false;
   private boolean isMigratingToExternalTable = false;
+  private boolean needDupCopyCheck = false;
 
-  // Key definitions related to replication
+  // Key definitions related to replication.
   public enum KEY {
     REPL_SCOPE("repl.scope"),
     EVENT_ID("repl.event.id"),
-    CURR_STATE_ID("repl.last.id"),
+    CURR_STATE_ID(ReplConst.REPL_TARGET_TABLE_PROPERTY),
     NOOP("repl.noop"),
     LAZY("repl.lazy"),
     IS_REPLACE("repl.is.replace"),
@@ -209,7 +211,7 @@ public class ReplicationSpec {
   }
 
   /**
-   * Returns a predicate filter to filter an Iterable<Partition> to return all partitions
+   * Returns a predicate filter to filter an Iterable&lt;Partition&gt; to return all partitions
    * that the current replication event specification is allowed to replicate-replace-into
    */
   public Predicate<Partition> allowEventReplacementInto() {
@@ -425,5 +427,15 @@ public class ReplicationSpec {
     if (lastReplId != null) {
       destParameter.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), lastReplId);
     }
+  }
+
+  public boolean needDupCopyCheck() {
+    return needDupCopyCheck;
+  }
+
+  public void setNeedDupCopyCheck(boolean isFirstIncPending) {
+    // Duplicate file check during copy is required until after first successful incremental load.
+    // Check HIVE-21197 for more detail.
+    this.needDupCopyCheck = isFirstIncPending;
   }
 }

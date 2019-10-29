@@ -498,7 +498,7 @@ public class HiveOpConverter {
       List<String> keepColumns = new ArrayList<String>();
       final ImmutableBitSet sortColsPos = sortColsPosBuilder.build();
       final ImmutableBitSet sortOutputColsPos = sortOutputColsPosBuilder.build();
-      final ArrayList<ColumnInfo> inputSchema = inputOp.getSchema().getSignature();
+      final List<ColumnInfo> inputSchema = inputOp.getSchema().getSignature();
       for (int pos=0; pos<inputSchema.size(); pos++) {
         if ((sortColsPos.get(pos) && sortOutputColsPos.get(pos)) ||
                 (!sortColsPos.get(pos) && !sortOutputColsPos.get(pos))) {
@@ -909,7 +909,7 @@ public class HiveOpConverter {
       if (semiJoin) {
         joinType = JoinType.LEFTSEMI;
       } else {
-        joinType = extractJoinType((Join)join);
+        joinType = transformJoinType(((Join)join).getJoinType());
       }
       joinCondns[0] = new JoinCondDesc(new JoinCond(0, 1, joinType));
       noOuterJoin = joinType != JoinType.FULLOUTER && joinType != JoinType.LEFTOUTER
@@ -1095,27 +1095,6 @@ public class HiveOpConverter {
         filterMap[inputPos] = newMap;
       }
     }
-  }
-
-  private static JoinType extractJoinType(Join join) {
-    // OUTER AND INNER JOINS
-    JoinType resultJoinType;
-    switch (join.getJoinType()) {
-    case FULL:
-      resultJoinType = JoinType.FULLOUTER;
-      break;
-    case LEFT:
-      resultJoinType = JoinType.LEFTOUTER;
-      break;
-    case RIGHT:
-      resultJoinType = JoinType.RIGHTOUTER;
-      break;
-    default:
-      // TODO: UNIQUE JOIN
-      resultJoinType = JoinType.INNER;
-      break;
-    }
-    return resultJoinType;
   }
 
   private static JoinType transformJoinType(JoinRelType type) {

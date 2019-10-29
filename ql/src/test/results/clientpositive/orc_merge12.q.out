@@ -111,7 +111,7 @@ POSTHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
 #### A masked pattern was here ####
--73477136966
+-301360627590
 PREHOOK: query: alter table alltypesorc3xcols concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
 PREHOOK: Input: default@alltypesorc3xcols
@@ -137,14 +137,14 @@ POSTHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
 #### A masked pattern was here ####
--73477136966
+-301360627590
 PREHOOK: query: select * from alltypesorc3xcols limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_135
+File Version: 0.12 with ORC_517
 Rows: 24576
 Compression: ZLIB
 Compression size: 131072

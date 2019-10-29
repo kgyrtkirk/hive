@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
@@ -84,22 +84,26 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
-        + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
+        + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
+        .run("CREATE FUNCTION " + primaryDbName
+            + ".testFunctionTwo as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax'");
 
     WarehouseInstance.Tuple incrementalDump =
         primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
-        .verifyResult(replicatedDbName + ".testFunctionOne");
+        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
+                                      replicatedDbName + ".testFunctionTwo" });
 
     // Test the idempotent behavior of CREATE FUNCTION
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
-        .verifyResult(replicatedDbName + ".testFunctionOne");
+        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+        .verifyResults(new String[] { replicatedDbName + ".testFunctionOne",
+                                      replicatedDbName + ".testFunctionTwo" });
   }
 
   @Test
@@ -148,7 +152,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
-            .run("show functions like '" + replicatedDbName + "*'")
+            .run("show functions like '" + replicatedDbName + "%'")
             .verifyResult(replicatedDbName + "." + funcName1);
 
     // Verify no calls to load f1 only f2.
@@ -182,7 +186,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
-            .run("show functions like '" + replicatedDbName +"*'")
+            .run("show functions like '" + replicatedDbName +"%'")
             .verifyResults(new String[] {replicatedDbName + "." + funcName1,
                                          replicatedDbName +"." +funcName2});
   }
@@ -204,14 +208,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-        .run("SHOW FUNCTIONS LIKE '*testfunctionanother*'")
+        .run("SHOW FUNCTIONS LIKE '%testfunctionanother%'")
         .verifyResult(null);
 
     // Test the idempotent behavior of DROP FUNCTION
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-        .run("SHOW FUNCTIONS LIKE '*testfunctionanother*'")
+        .run("SHOW FUNCTIONS LIKE '%testfunctionanother%'")
         .verifyResult(null);
   }
 
@@ -223,7 +227,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
 
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
-        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
+        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResult(replicatedDbName + ".testFunction");
   }
 
@@ -239,7 +243,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, null);
 
     replica.load(replicatedDbName, tuple.dumpLocation)
-        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
+        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
         .verifyResult(replicatedDbName + ".anotherFunction");
 
     FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
@@ -251,6 +255,40 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     List<String> jars = Arrays.stream(fileStatuses).map(f -> {
       String[] splits = f.getPath().toString().split("/");
       return splits[splits.length - 1];
+    }).collect(Collectors.toList());
+
+    assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
+  }
+
+  @Test
+  public void testIncrementalCreateFunctionWithFunctionBinaryJarsOnHDFS() throws Throwable {
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    Dependencies dependencies = dependencies("ivy://io.github.myui:hivemall:0.4.0-2", primary);
+    String jarSubString = dependencies.toJarSubSql();
+
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".anotherFunction as 'hivemall.tools.string.StopwordUDF' "
+            + "using " + jarSubString);
+
+    WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "%'")
+            .verifyResult(replicatedDbName + ".anotherFunction");
+
+    FileStatus[] fileStatuses = replica.miniDFSCluster.getFileSystem().globStatus(
+            new Path(
+                    replica.functionsRoot + "/" + replicatedDbName.toLowerCase() + "/anotherfunction/*/*")
+            , path -> path.toString().endsWith("jar"));
+    List<String> expectedDependenciesNames = dependencies.jarNames();
+    assertThat(fileStatuses.length, is(equalTo(expectedDependenciesNames.size())));
+    List<String> jars = Arrays.stream(fileStatuses).map(f -> {
+        String[] splits = f.getPath().toString().split("/");
+        return splits[splits.length - 1];
     }).collect(Collectors.toList());
 
     assertThat(jars, containsInAnyOrder(expectedDependenciesNames.toArray()));
@@ -541,7 +579,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "t1" })
         .run("use " + dbTwo)
         .run("show tables")
-        .verifyResults(new String[] { "t1" });
+        .verifyResults(new String[] { "t1" })
+        .verifyReplTargetProperty(primaryDbName)
+        .verifyReplTargetProperty(dbOne)
+        .verifyReplTargetProperty(dbTwo);
 
     /*
        Start of cleanup
@@ -608,7 +649,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "t1" })
         .run("use " + dbOne)
         .run("show tables")
-        .verifyResults(new String[] { "t1" });
+        .verifyResults(new String[] { "t1" })
+        .verifyReplTargetProperty(primaryDbName)
+        .verifyReplTargetProperty(dbOne)
+        .verifyReplTargetProperty(dbTwo);
+
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
+    assertTrue(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
 
     replica.load("", incrementalTuple.dumpLocation)
         .run("show databases")
@@ -618,7 +666,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] { "t1" })
         .run("use " + dbOne)
         .run("show tables")
-        .verifyResults(new String[] { "t1", "t2" });
+        .verifyResults(new String[] { "t1", "t2" })
+        .verifyReplTargetProperty(primaryDbName)
+        .verifyReplTargetProperty(dbOne)
+        .verifyReplTargetProperty(dbTwo);
+
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase("default").getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(primaryDbName).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(dbOne).getParameters()));
+    assertFalse(ReplUtils.isFirstIncPending(replica.getDatabase(dbTwo).getParameters()));
 
     /*
        Start of cleanup
@@ -659,7 +715,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("show tables")
             .verifyResults(new String[] { "table1", "table2" })
             .run("select * from table1")
-            .verifyResults(new String[]{ "1" });
+            .verifyResults(new String[]{ "1" })
+            .verifyReplTargetProperty(replicatedDbName);
 
     ////////////  First Incremental ////////////
     WarehouseInstance.Tuple incrementalOneTuple = primary
@@ -688,8 +745,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] { "1", "2" })
             .run("select * from table3")
             .verifyResults(new String[] { "10" })
-            .run("show functions like '" + replicatedDbName + "*'")
-            .verifyResult(replicatedDbName + ".testFunctionOne");
+            .run("show functions like '" + replicatedDbName + "%'")
+            .verifyResult(replicatedDbName + ".testFunctionOne")
+            .verifyReplTargetProperty(replicatedDbName);
 
     ////////////  Second Incremental ////////////
     WarehouseInstance.Tuple secondIncremental = primary
@@ -726,8 +784,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] { "1" })
             .run("select * from table3")
             .verifyResults(Collections.emptyList())
-            .run("show functions like '" + replicatedDbName + "*'")
-            .verifyResult(null);
+            .run("show functions like '" + replicatedDbName + "%'")
+            .verifyResult(null)
+            .verifyReplTargetProperty(replicatedDbName);
   }
 
   @Test
@@ -932,20 +991,21 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // Incremental load to non existing db should return database not exist error.
     tuple = primary.dump("someJunkDB", tuple.lastReplicationId);
-    CommandProcessorResponse response =
-        replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
-    assertTrue(response.getErrorMessage().toLowerCase()
-        .contains("org.apache.hadoop.hive.ql.exec.DDLTask. Database does not exist: someJunkDB"
-            .toLowerCase()));
+    try {
+      replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation + "'");
+      assert false;
+    } catch (CommandProcessorException e) {
+      assertTrue(e.getErrorMessage().toLowerCase().contains(
+          "org.apache.hadoop.hive.ql.ddl.DDLTask. Database does not exist: someJunkDB".toLowerCase()));
+    }
 
     // Bootstrap load from an empty dump directory should return empty load directory error.
     tuple = primary.dump("someJunkDB", null);
-    response = replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation+"'");
-    assertTrue(response.getErrorMessage().toLowerCase()
-        .contains(
-            "semanticException no data to load in path"
-                .toLowerCase())
-    );
+    try {
+      replica.runCommand("REPL LOAD someJunkDB from '" + tuple.dumpLocation+"'");
+    } catch (CommandProcessorException e) {
+      assertTrue(e.getErrorMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
+    }
 
     primary.run(" drop database if exists " + testDbName + " cascade");
   }
@@ -1012,7 +1072,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dump(primaryDbName, null);
 
     // Bootstrap Repl A -> B
-    WarehouseInstance.Tuple tupleReplica = replica.load(replicatedDbName, tuplePrimary.dumpLocation)
+    replica.load(replicatedDbName, tuplePrimary.dumpLocation)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimary.lastReplicationId)
             .run("show tblproperties t1('custom.property')")
@@ -1020,9 +1080,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .dumpFailure(replicatedDbName, null)
             .run("alter database " + replicatedDbName
                     + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
-            .dump(replicatedDbName, null);
+            .dumpFailure(replicatedDbName, null);//can not dump the db before first successful incremental load is done.
+
+    // do a empty incremental load to allow dump of replicatedDbName
+    WarehouseInstance.Tuple temp = primary.dump(primaryDbName, tuplePrimary.lastReplicationId);
+    replica.load(replicatedDbName, temp.dumpLocation); // first successful incremental load.
 
     // Bootstrap Repl B -> C
+    WarehouseInstance.Tuple tupleReplica = replica.dump(replicatedDbName, null);
     String replDbFromReplica = replicatedDbName + "_dupe";
     replica.load(replDbFromReplica, tupleReplica.dumpLocation)
             .run("use " + replDbFromReplica)
@@ -1223,9 +1288,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
 
     // Retry with different dump should fail.
-    CommandProcessorResponse ret = replica.runCommand("REPL LOAD " + replicatedDbName +
-            " FROM '" + tuple2.dumpLocation + "'");
-    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation, null,
+            ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.
@@ -1389,7 +1453,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResults(new String[] { "t2" })
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"))
-            .run("show functions like '" + replicatedDbName + "*'")
+            .run("show functions like '" + replicatedDbName + "%'")
             .verifyResult(replicatedDbName + ".testFunctionOne");
   }
 

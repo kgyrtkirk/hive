@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import io.druid.query.scan.ScanResultValue;
+import org.apache.druid.query.scan.ScanResultValue;
 
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
-import com.google.common.collect.Iterators;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,7 +38,7 @@ public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResul
   private static final TypeReference<ScanResultValue> TYPE_REFERENCE = new TypeReference<ScanResultValue>() {
   };
 
-  private Iterator<List<Object>> compactedValues = Iterators.emptyIterator();
+  private Iterator<List<Object>> compactedValues = Collections.emptyIterator();
 
   @Override protected JavaType getResultTypeDef() {
     return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
@@ -48,8 +48,8 @@ public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResul
     if (compactedValues.hasNext()) {
       return true;
     }
-    if (queryResultsIterator.hasNext()) {
-      ScanResultValue current = queryResultsIterator.next();
+    if (getQueryResultsIterator().hasNext()) {
+      ScanResultValue current = getQueryResultsIterator().next();
       //noinspection unchecked
       compactedValues = ((List<List<Object>>) current.getEvents()).iterator();
       return nextKeyValue();
@@ -82,7 +82,7 @@ public class DruidScanQueryRecordReader extends DruidQueryRecordReader<ScanResul
   }
 
   @Override public float getProgress() {
-    return queryResultsIterator.hasNext() || compactedValues.hasNext() ? 0 : 1;
+    return getQueryResultsIterator().hasNext() || compactedValues.hasNext() ? 0 : 1;
   }
 
 }

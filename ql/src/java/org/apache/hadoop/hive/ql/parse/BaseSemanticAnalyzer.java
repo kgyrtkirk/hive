@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -81,7 +82,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -119,14 +120,14 @@ public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
   protected final QueryState queryState;
-  protected List<Task<? extends Serializable>> rootTasks;
+  protected List<Task<?>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
   protected final LogHelper console;
 
   protected CompilationOpContext cContext;
   protected Context ctx;
-  protected HashMap<String, String> idToTableNameMap;
+  protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
 
   /**
@@ -143,19 +144,14 @@ public abstract class BaseSemanticAnalyzer {
 
   protected HiveTxnManager txnManager;
 
-  public static final int HIVE_COLUMN_ORDER_ASC = 1;
-  public static final int HIVE_COLUMN_ORDER_DESC = 0;
-  public static final int HIVE_COLUMN_NULLS_FIRST = 0;
-  public static final int HIVE_COLUMN_NULLS_LAST = 1;
-
   /**
    * ReadEntities that are passed to the hooks.
    */
-  protected HashSet<ReadEntity> inputs;
+  protected Set<ReadEntity> inputs;
   /**
    * List of WriteEntities that are passed to the hooks.
    */
-  protected HashSet<WriteEntity> outputs;
+  protected Set<WriteEntity> outputs;
   /**
    * Lineage information for the query.
    */
@@ -270,7 +266,7 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public HashMap<String, String> getIdToTableNameMap() {
+  public Map<String, String> getIdToTableNameMap() {
     return idToTableNameMap;
   }
 
@@ -480,6 +476,13 @@ public abstract class BaseSemanticAnalyzer {
     return val;
   }
 
+  public static Map<String, String> getProps(ASTNode prop) {
+    // Must be deterministic order map for consistent q-test output across Java versions
+    Map<String, String> mapProp = new LinkedHashMap<String, String>();
+    readProps(prop, mapProp);
+    return mapProp;
+  }
+
   /**
    * Converts parsed key/value properties pairs into a map.
    *
@@ -653,11 +656,11 @@ public abstract class BaseSemanticAnalyzer {
     return str.substring(0, i) + replacement + str.substring(i + length);
   }
 
-  public HashSet<ReadEntity> getInputs() {
+  public Set<ReadEntity> getInputs() {
     return inputs;
   }
 
-  public HashSet<WriteEntity> getOutputs() {
+  public Set<WriteEntity> getOutputs() {
     return outputs;
   }
 
@@ -1342,20 +1345,17 @@ public abstract class BaseSemanticAnalyzer {
     int numCh = ast.getChildCount();
     for (int i = 0; i < numCh; i++) {
       ASTNode child = (ASTNode) ast.getChild(i);
-      if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
-        child = (ASTNode) child.getChild(0);
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_ASC));
-      } else {
-        child = (ASTNode) child.getChild(0);
-        if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {
-          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-              HIVE_COLUMN_ORDER_DESC));
-        } else {
-          throw new SemanticException("create/alter table: "
-                  + "not supported NULLS FIRST for ORDER BY in DESC order");
-        }
+      int directionCode = DirectionUtils.tokenToCode(child.getToken().getType());
+      child = (ASTNode) child.getChild(0);
+      if (child.getToken().getType() != HiveParser.TOK_NULLS_FIRST && directionCode == DirectionUtils.ASCENDING_CODE) {
+        throw new SemanticException(
+                "create/alter bucketed table: not supported NULLS LAST for SORTED BY in ASC order");
       }
+      if (child.getToken().getType() != HiveParser.TOK_NULLS_LAST && directionCode == DirectionUtils.DESCENDING_CODE) {
+        throw new SemanticException(
+                "create/alter bucketed table: not supported NULLS FIRST for SORTED BY in DESC order");
+      }
+      colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(), directionCode));
     }
     return colList;
   }
@@ -1948,7 +1948,7 @@ public abstract class BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABCOLVALUE_PAIR:
-        ArrayList<Node> vLNodes = vAstNode.getChildren();
+        List<Node> vLNodes = vAstNode.getChildren();
         for (Node node : vLNodes) {
           if ( ((ASTNode) node).getToken().getType() != HiveParser.TOK_TABCOLVALUES) {
             throw new SemanticException(
@@ -2244,11 +2244,11 @@ public abstract class BaseSemanticAnalyzer {
     return rootTasks;
   }
 
-  public HashSet<ReadEntity> getAllInputs() {
+  public Set<ReadEntity> getAllInputs() {
     return inputs;
   }
 
-  public HashSet<WriteEntity> getAllOutputs() {
+  public Set<WriteEntity> getAllOutputs() {
     return outputs;
   }
 
@@ -2258,10 +2258,11 @@ public abstract class BaseSemanticAnalyzer {
 
   /**
    * Create a FetchTask for a given schema.
-   *
-   * @param schema string
    */
-  protected FetchTask createFetchTask(String schema) {
+  protected FetchTask createFetchTask(String tableSchema) {
+    String schema =
+        "json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")) ? "json#string" : tableSchema;
+
     Properties prop = new Properties();
     // Sets delimiter to tab (ascii 9)
     prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));

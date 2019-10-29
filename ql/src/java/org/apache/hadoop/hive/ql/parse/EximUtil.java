@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,18 +50,18 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -90,13 +91,13 @@ public class EximUtil {
   public static class SemanticAnalyzerWrapperContext {
     private HiveConf conf;
     private Hive db;
-    private HashSet<ReadEntity> inputs;
-    private HashSet<WriteEntity> outputs;
-    private List<Task<? extends Serializable>> tasks;
+    private Set<ReadEntity> inputs;
+    private Set<WriteEntity> outputs;
+    private List<Task<?>> tasks;
     private Logger LOG;
     private Context ctx;
     private DumpType eventType = DumpType.EVENT_UNKNOWN;
-    private Task<? extends Serializable> openTxnTask = null;
+    private Task<?> openTxnTask = null;
 
     public HiveConf getConf() {
       return conf;
@@ -106,15 +107,15 @@ public class EximUtil {
       return db;
     }
 
-    public HashSet<ReadEntity> getInputs() {
+    public Set<ReadEntity> getInputs() {
       return inputs;
     }
 
-    public HashSet<WriteEntity> getOutputs() {
+    public Set<WriteEntity> getOutputs() {
       return outputs;
     }
 
-    public List<Task<? extends Serializable>> getTasks() {
+    public List<Task<?>> getTasks() {
       return tasks;
     }
 
@@ -135,9 +136,9 @@ public class EximUtil {
     }
 
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,
-                                          HashSet<ReadEntity> inputs,
-                                          HashSet<WriteEntity> outputs,
-                                          List<Task<? extends Serializable>> tasks,
+                                          Set<ReadEntity> inputs,
+                                          Set<WriteEntity> outputs,
+                                          List<Task<?>> tasks,
                                           Logger LOG, Context ctx){
       this.conf = conf;
       this.db = db;
@@ -148,10 +149,10 @@ public class EximUtil {
       this.ctx = ctx;
     }
 
-    public Task<? extends Serializable> getOpenTxnTask() {
+    public Task<?> getOpenTxnTask() {
       return openTxnTask;
     }
-    public void setOpenTxnTask(Task<? extends Serializable> openTxnTask) {
+    public void setOpenTxnTask(Task<?> openTxnTask) {
       this.openTxnTask = openTxnTask;
     }
   }
@@ -275,7 +276,8 @@ public class EximUtil {
       tmpParameters.entrySet()
                 .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
                             || e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY)
-                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION));
+                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION)
+                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
       dbObj.setParameters(tmpParameters);
     }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {
@@ -319,14 +321,7 @@ public class EximUtil {
   public static String readAsString(final FileSystem fs, final Path fromMetadataPath)
       throws IOException {
     try (FSDataInputStream stream = fs.open(fromMetadataPath)) {
-      byte[] buffer = new byte[1024];
-      ByteArrayOutputStream sb = new ByteArrayOutputStream();
-      int read = stream.read(buffer);
-      while (read != -1) {
-        sb.write(buffer, 0, read);
-        read = stream.read(buffer);
-      }
-      return new String(sb.toByteArray(), "UTF-8");
+      return IOUtils.toString(stream, StandardCharsets.UTF_8);
     }
   }
 

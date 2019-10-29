@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -26,7 +33,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
@@ -40,13 +47,6 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
   //bucket count for test tables; set it to 1 for easier debugging
@@ -55,7 +55,7 @@ public abstract class TxnCommandsBaseForTests {
   public TestName testName = new TestName();
   protected HiveConf hiveConf;
   Driver d;
-  enum Table {
+  public enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
     ACIDTBL2("acidTbl2"),
@@ -193,18 +193,21 @@ public abstract class TxnCommandsBaseForTests {
 
   protected List<String> runStatementOnDriver(String stmt) throws Exception {
     LOG.info("Running the query: " + stmt);
-    CommandProcessorResponse cpr = d.run(stmt);
-    if(cpr.getResponseCode() != 0) {
-      throw new RuntimeException(stmt + " failed: " + cpr);
+    try {
+      d.run(stmt);
+    } catch (CommandProcessorException e) {
+      throw new RuntimeException(stmt + " failed: " + e);
     }
     List<String> rs = new ArrayList<String>();
     d.getResults(rs);
     return rs;
   }
-  CommandProcessorResponse runStatementOnDriverNegative(String stmt) throws Exception {
-    CommandProcessorResponse cpr = d.run(stmt);
-    if(cpr.getResponseCode() != 0) {
-      return cpr;
+
+  CommandProcessorException runStatementOnDriverNegative(String stmt) throws Exception {
+    try {
+      d.run(stmt);
+    } catch (CommandProcessorException e) {
+      return e;
     }
     throw new RuntimeException("Didn't get expected failure!");
   }

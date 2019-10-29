@@ -27,13 +27,14 @@ import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.HiveDruidSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
-import io.druid.query.Query;
-import junit.framework.TestCase;
+import org.apache.druid.query.Query;
+import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Test Class.
  */
-@SuppressWarnings("SameParameterValue") public class TestHiveDruidQueryBasedInputFormat extends TestCase {
+@SuppressWarnings("SameParameterValue") public class TestHiveDruidQueryBasedInputFormat {
 
   private static final String
       TIMESERIES_QUERY =
@@ -54,6 +55,7 @@ import junit.framework.TestCase;
           + "\"granularity\":\"DAY\","
           + "\"aggregations\":[],"
           + "\"postAggregations\":[],"
+          + "\"limit\":2147483647,"
           + "\"context\":{\"queryId\":\"\"}}, [localhost:8082]}]";
 
   private static final String
@@ -180,6 +182,7 @@ import junit.framework.TestCase;
           + "\"pagingSpec\":{\"pagingIdentifiers\":{},\"threshold\":5,\"fromNext\":false},"
           + "\"context\":{\"druid.query.fetch\":true,\"queryId\":\"\"}}, [localhost:8082]}]";
 
+  @Test
   public void testTimeZone() throws Exception {
     DruidQueryBasedInputFormat input = new DruidQueryBasedInputFormat();
 

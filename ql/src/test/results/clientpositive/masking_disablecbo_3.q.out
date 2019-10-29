@@ -54,6 +54,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -618,7 +619,7 @@ STAGE PLANS:
             filterExpr: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+              predicate: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
@@ -639,6 +640,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1200,7 +1202,7 @@ STAGE PLANS:
             filterExpr: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+              predicate: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
               Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
@@ -1221,6 +1223,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1782,7 +1785,7 @@ STAGE PLANS:
             filterExpr: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+              predicate: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
@@ -1803,6 +1806,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2400,6 +2404,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6629,7 +6634,7 @@ STAGE PLANS:
             filterExpr: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+              predicate: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
@@ -6650,6 +6655,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7211,7 +7217,7 @@ STAGE PLANS:
             filterExpr: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
+              predicate: (UDFToDouble(key) is not null and (key > 0)) (type: boolean)
               Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
               Reduce Output Operator
                 key expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
@@ -7232,6 +7238,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
+                  minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7791,7 +7798,7 @@ STAGE PLANS:
             filterExpr: ((key > 0) and (key < 10) and ((key % 2) = 0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10) and (key > 0)) (type: boolean)
+              predicate: ((key > 0) and (key < 10) and ((key % 2) = 0)) (type: boolean)
               Statistics: Num rows: 27 Data size: 4806 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), upper(value) (type: string)

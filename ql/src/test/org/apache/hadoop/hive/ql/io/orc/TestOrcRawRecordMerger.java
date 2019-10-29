@@ -395,8 +395,13 @@ public class TestOrcRawRecordMerger {
     typeBuilder.setKind(OrcProto.Type.Kind.STRUCT).addSubtypes(1)
         .addSubtypes(2).addSubtypes(3).addSubtypes(4).addSubtypes(5)
         .addSubtypes(6);
-    typeBuilder.addAllFieldNames(Lists.newArrayList("operation", "originalTransaction", "bucket",
-        "rowId", "currentTransaction", "row"));
+    typeBuilder.addAllFieldNames(Lists.newArrayList(
+        OrcRecordUpdater.OPERATION_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.BUCKET_FIELD_NAME,
+        OrcRecordUpdater.ROW_ID_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.ROW_FIELD_NAME));
     types.add(typeBuilder.build());
     types.add(null);
     types.add(null);
@@ -478,15 +483,15 @@ public class TestOrcRawRecordMerger {
     List<? extends StructField> fields =
         eventObjectInspector.getAllStructFieldRefs();
     assertEquals(OrcRecordUpdater.FIELDS, fields.size());
-    assertEquals("operation",
+    assertEquals(OrcRecordUpdater.OPERATION_FIELD_NAME,
         fields.get(OrcRecordUpdater.OPERATION).getFieldName());
-    assertEquals("currentTransaction",
+    assertEquals(OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
         fields.get(OrcRecordUpdater.CURRENT_WRITEID).getFieldName());
-    assertEquals("originalTransaction",
+    assertEquals(OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
         fields.get(OrcRecordUpdater.ORIGINAL_WRITEID).getFieldName());
-    assertEquals("bucket",
+    assertEquals(OrcRecordUpdater.BUCKET_FIELD_NAME,
         fields.get(OrcRecordUpdater.BUCKET).getFieldName());
-    assertEquals("rowId",
+    assertEquals(OrcRecordUpdater.ROW_ID_FIELD_NAME,
         fields.get(OrcRecordUpdater.ROW_ID).getFieldName());
     StructObjectInspector rowObjectInspector =
         (StructObjectInspector) fields.get(OrcRecordUpdater.ROW)
@@ -533,7 +538,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
     OrcOutputFormat of = new OrcOutputFormat();
-    Path root = new Path(tmpDir, "testEmpty").makeQualified(fs);
+    Path root = new Path(tmpDir, "testLogicalEmpty").makeQualified(fs);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -587,20 +592,10 @@ public class TestOrcRawRecordMerger {
         .inspector(inspector).bucket(BUCKET).writingBase(true)
         .maximumWriteId(100).finalDestination(root);
     of.getRecordUpdater(root, options).close(false);
-    {
-      /*OrcRecordUpdater is inconsistent about when it creates empty files and when it does not.
-      This creates an empty bucket. HIVE-17138*/
-      OrcFile.WriterOptions wo = OrcFile.writerOptions(conf);
-      wo.inspector(inspector);
-      wo.callback(new OrcRecordUpdater.KeyIndexBuilder("testEmpty"));
-      Writer w = OrcFile.createWriter(AcidUtils.createBucketFile(new Path(root,
-        AcidUtils.baseDir(100)), BUCKET), wo);
-      w.close();
-    }
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, writeIdList);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false, null, false);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
@@ -671,7 +666,8 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, writeIdList);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format, null,
+        use130Format);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
     assertEquals(new Path(root, use130Format ?

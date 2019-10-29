@@ -76,11 +76,6 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${druid.guava.version}</version>
@@ -91,7 +86,7 @@
       <version>${joda.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -108,14 +103,14 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>io.druid</groupId>
+          <groupId>org.apache.druid</groupId>
           <artifactId>druid-aws-common</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-processing</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -128,7 +123,7 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>druid-hdfs-storage</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -155,7 +150,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
       <exclusions>
@@ -166,35 +161,40 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>io.druid.extensions</groupId>
+      <groupId>org.apache.druid.extensions</groupId>
       <artifactId>postgresql-metadata-storage</artifactId>
       <version>${druid.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <scope>provided</scope>
-      <version>${hadoop.version}</version>
-      <optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
+        <groupId>org.apache.druid.extensions</groupId>
+        <artifactId>druid-bloom-filter</artifactId>
+        <version>${druid.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <scope>provided</scope>
+          <version>${hadoop.version}</version>
+          <optional>true</optional>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.slf4j</groupId>
+                  <artifactId>slf4j-log4j12</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>com.google.guava</groupId>
+                  <artifactId>guava</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>jackson-databind</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <scope>provided</scope>
@@ -240,7 +240,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>org.apache.druid</groupId>
       <artifactId>druid-indexing-hadoop</artifactId>
       <version>${druid.version}</version>
       <scope>test</scope>
@@ -291,8 +291,8 @@
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <relocations>
                     <relocation>
-                      <pattern>io.druid</pattern>
-                      <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
+                      <pattern>org.apache.druid</pattern>
+                      <shadedPattern>org.apache.hive.druid.org.apache.druid</shadedPattern>
                     </relocation>
                     <relocation>
                       <pattern>io.netty</pattern>
@@ -321,8 +321,8 @@
                   </relocations>
                   <artifactSet>
                     <includes>
-                      <include>io.druid:*</include>
-                      <include>io.druid.extensions:*</include>
+                      <include>org.apache.druid:*</include>
+                      <include>org.apache.druid.extensions:*</include>
                       <include>io.netty:*</include>
                       <include>org.apache.calcite:*</include>
                       <include>com.fasterxml.jackson.core:*</include>

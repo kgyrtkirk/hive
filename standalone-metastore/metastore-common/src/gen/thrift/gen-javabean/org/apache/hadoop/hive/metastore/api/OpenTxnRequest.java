@@ -904,13 +904,13 @@ import org.slf4j.LoggerFactory;
           case 6: // REPL_SRC_TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
-                struct.replSrcTxnIds = new ArrayList<Long>(_list594.size);
-                long _elem595;
-                for (int _i596 = 0; _i596 < _list594.size; ++_i596)
+                org.apache.thrift.protocol.TList _list626 = iprot.readListBegin();
+                struct.replSrcTxnIds = new ArrayList<Long>(_list626.size);
+                long _elem627;
+                for (int _i628 = 0; _i628 < _list626.size; ++_i628)
                 {
-                  _elem595 = iprot.readI64();
-                  struct.replSrcTxnIds.add(_elem595);
+                  _elem627 = iprot.readI64();
+                  struct.replSrcTxnIds.add(_elem627);
                 }
                 iprot.readListEnd();
               }
@@ -972,9 +972,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(REPL_SRC_TXN_IDS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.replSrcTxnIds.size()));
-            for (long _iter597 : struct.replSrcTxnIds)
+            for (long _iter629 : struct.replSrcTxnIds)
             {
-              oprot.writeI64(_iter597);
+              oprot.writeI64(_iter629);
             }
             oprot.writeListEnd();
           }
@@ -1031,9 +1031,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplSrcTxnIds()) {
         {
           oprot.writeI32(struct.replSrcTxnIds.size());
-          for (long _iter598 : struct.replSrcTxnIds)
+          for (long _iter630 : struct.replSrcTxnIds)
           {
-            oprot.writeI64(_iter598);
+            oprot.writeI64(_iter630);
           }
         }
       }
@@ -1062,13 +1062,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list599 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.replSrcTxnIds = new ArrayList<Long>(_list599.size);
-          long _elem600;
-          for (int _i601 = 0; _i601 < _list599.size; ++_i601)
+          org.apache.thrift.protocol.TList _list631 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.replSrcTxnIds = new ArrayList<Long>(_list631.size);
+          long _elem632;
+          for (int _i633 = 0; _i633 < _list631.size; ++_i633)
           {
-            _elem600 = iprot.readI64();
-            struct.replSrcTxnIds.add(_elem600);
+            _elem632 = iprot.readI64();
+            struct.replSrcTxnIds.add(_elem632);
           }
         }
         struct.setReplSrcTxnIdsIsSet(true);

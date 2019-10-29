@@ -37,6 +37,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.DateUtils;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
@@ -86,8 +87,19 @@ public class JdbcSerDe extends AbstractSerDe {
                   Preconditions.checkNotNull(properties.getProperty(Constants.JDBC_QUERY_FIELD_TYPES, null));
           hiveColumnNames = fieldNamesProperty.trim().split(",");
           hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(fieldTypesProperty);
-        } else {
+        } else if (properties.containsKey(Constants.JDBC_QUERY)) {
+          // The query has been specified by user, extract column names
           hiveColumnNames = properties.getProperty(serdeConstants.LIST_COLUMNS).split(",");
+          hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES));
+        } else {
+          // Table is specified, we need to get the column names from the accessor due to capitalization
+          hiveColumnNames = dbAccessor.getColumnNames(tableConfig).toArray(new String[0]);
+          // Number should be equal to list of columns
+          if (hiveColumnNames.length != properties.getProperty(serdeConstants.LIST_COLUMNS).split(",").length) {
+            throw new SerDeException("Column numbers do not match. " +
+                "Remote table columns are " + Arrays.toString(hiveColumnNames) + " and declared table columns in Hive " +
+                "external table are " + Arrays.toString(properties.getProperty(serdeConstants.LIST_COLUMNS).split(",")));
+          }
           hiveColumnTypesList = TypeInfoUtils.getTypeInfosFromTypeString(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES));
         }
         if (hiveColumnNames.length == 0) {
@@ -197,7 +209,11 @@ public class JdbcSerDe extends AbstractSerDe {
         case CHAR:
         case VARCHAR:
         case STRING:
-          rowVal = rowVal.toString();
+          if (rowVal instanceof java.sql.Date) {
+            rowVal = DateUtils.getDateFormat().format((java.sql.Date)rowVal);
+          } else {
+            rowVal = rowVal.toString();
+          }
           break;
         case DATE:
           if (rowVal instanceof java.sql.Date) {

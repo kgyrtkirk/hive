@@ -30,9 +30,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.table.creation.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 
 /**
  * Implementation of the query block.
@@ -456,4 +456,11 @@ public class QB {
     }
     return aliasToTabs.size()==0 && aliasToSubq.size()==0;
   }
+
+  // returns false when the query block doesn't have
+  // a table defined, e.g. "select 5"
+  public boolean hasTableDefined() {
+    return !(aliases.size() == 1 && aliases.get(0).equals(SemanticAnalyzer.DUMMY_TABLE));
+  }
+
 }

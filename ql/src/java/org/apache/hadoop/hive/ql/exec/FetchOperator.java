@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -156,6 +157,8 @@ public class FetchOperator implements Serializable {
     LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
   private void initialize() throws HiveException {
+    ensureCorrectSchemaEvolutionConfigs(job);
+
     if (isStatReader) {
       outputOI = work.getStatRowOI();
       return;
@@ -213,9 +216,8 @@ public class FetchOperator implements Serializable {
    */
   private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
-  @SuppressWarnings("unchecked")
   public static InputFormat getInputFormatFromCache(
-    Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
+      Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
       return ReflectionUtil.newInstance(inputFormatClass, conf);
@@ -228,7 +230,7 @@ public class FetchOperator implements Serializable {
         inputFormats.put(inputFormatClass.getName(), format);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
-            + inputFormatClass.getName() + " as specified in mapredWork!", e);
+                                  + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
     return format;
@@ -273,6 +275,13 @@ public class FetchOperator implements Serializable {
       if (isNonNativeTable) {
         return true;
       }
+      // if fetch is not being done from table and file sink has provided a list
+      // of files to fetch from then there is no need to query FS to check the existence
+      // of currpath
+      if(!this.getWork().isSourceTable() && this.getWork().getFilesToFetch() != null
+          && !this.getWork().getFilesToFetch().isEmpty()) {
+        return true;
+      }
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
         if (extractValidWriteIdList() != null &&
@@ -309,9 +318,22 @@ public class FetchOperator implements Serializable {
     }
   }
 
+  private void ensureCorrectSchemaEvolutionConfigs(JobConf conf) {
+    boolean isSchemaEvolution = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
+    boolean isForcePositionalEvolution =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION);
+
+    if (!isSchemaEvolution && isForcePositionalEvolution) {
+      LOG.warn(
+          "invalid schema evolution ({}) and force positional evolution ({}) pair, falling back to disabling both",
+          isSchemaEvolution, isForcePositionalEvolution);
+      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION, false);
+    }
+  }
+
   private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
     if (!iterSplits.hasNext()) {
-      FetchInputFormatSplit[] splits = getNextSplits();
+      List<FetchInputFormatSplit> splits = getNextSplits();
       if (splits == null) {
         return null;
       }
@@ -327,7 +349,7 @@ public class FetchOperator implements Serializable {
       if (isPartitioned) {
         row[1] = createPartValue(currDesc, partKeyOI);
       }
-      iterSplits = Arrays.asList(splits).iterator();
+      iterSplits = splits.iterator();
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating fetchTask with deserializer typeinfo: "
@@ -340,7 +362,6 @@ public class FetchOperator implements Serializable {
 
     final FetchInputFormatSplit target = iterSplits.next();
 
-    @SuppressWarnings("unchecked")
     final RecordReader<WritableComparable, Writable> reader = target.getRecordReader(job);
     if (hasVC || work.getSplitSample() != null) {
       currRecReader = new HiveRecordReader<WritableComparable, Writable>(reader, job) {
@@ -366,7 +387,7 @@ public class FetchOperator implements Serializable {
     return currRecReader;
   }
 
-  protected FetchInputFormatSplit[] getNextSplits() throws Exception {
+  private List<FetchInputFormatSplit> getNextSplits() throws Exception {
     while (getNextPath()) {
       // not using FileInputFormat.setInputPaths() here because it forces a connection to the
       // default file system - which may or may not be online during pure metadata operations
@@ -379,6 +400,11 @@ public class FetchOperator implements Serializable {
       Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
+      if(inputFormat instanceof HiveSequenceFileInputFormat) {
+        // input format could be cached, in which case we need to reset the list of files to fetch
+        ((HiveSequenceFileInputFormat) inputFormat).setFiles(null);
+      }
+
       List<Path> dirs = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();
       processCurrPathForMmWriteIds(inputFormat, dirs, dirsWithOriginals);
       if (dirs.isEmpty() && dirsWithOriginals.isEmpty()) {
@@ -387,12 +413,22 @@ public class FetchOperator implements Serializable {
       }
 
       List<FetchInputFormatSplit> inputSplits = new ArrayList<>();
-      if (!dirs.isEmpty()) {
-        String inputs = makeInputString(dirs);
-        Utilities.FILE_OP_LOGGER.trace("Setting fetch inputs to {}", inputs);
-        job.set("mapred.input.dir", inputs);
+      if(inputFormat instanceof HiveSequenceFileInputFormat && this.getWork().getFilesToFetch() != null
+          && !this.getWork().getFilesToFetch().isEmpty() && !this.getWork().isSourceTable()) {
+        HiveSequenceFileInputFormat fileFormat = (HiveSequenceFileInputFormat)inputFormat;
+        fileFormat.setFiles(this.getWork().getFilesToFetch());
+        InputSplit[] splits = inputFormat.getSplits(job, 1);
+        for (int i = 0; i < splits.length; i++) {
+          inputSplits.add(new FetchInputFormatSplit(splits[i], inputFormat));
+        }
+      } else {
+        if (!dirs.isEmpty()) {
+          String inputs = makeInputString(dirs);
+          Utilities.FILE_OP_LOGGER.trace("Setting fetch inputs to {}", inputs);
+          job.set("mapred.input.dir", inputs);
 
-        generateWrappedSplits(inputFormat, inputSplits, job);
+          generateWrappedSplits(inputFormat, inputSplits, job);
+        }
       }
 
       if (!dirsWithOriginals.isEmpty()) {
@@ -414,7 +450,7 @@ public class FetchOperator implements Serializable {
       if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_IN_TEST)) {
         Collections.sort(inputSplits, new FetchInputFormatSplitComparator());
       }
-      return inputSplits.toArray(new FetchInputFormatSplit[inputSplits.size()]);
+      return inputSplits;
     }
 
     return null;
@@ -640,7 +676,6 @@ public class FetchOperator implements Serializable {
    */
   public void setupContext(List<Path> paths) {
     this.iterPath = paths.iterator();
-    List<PartitionDesc> partitionDescs;
     if (!isPartitioned) {
       this.iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
     } else {
@@ -666,7 +701,6 @@ public class FetchOperator implements Serializable {
       }
       partKeyOI = getPartitionKeyOI(tableDesc);
 
-      PartitionDesc partDesc = new PartitionDesc(tableDesc, null);
       List<PartitionDesc> listParts = work.getPartDesc();
       // Chose the table descriptor if none of the partitions is present.
       // For eg: consider the query:
@@ -745,7 +779,7 @@ public class FetchOperator implements Serializable {
   private FileStatus[] listStatusUnderPath(FileSystem fs, Path p) throws IOException {
     boolean recursive = job.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false);
     // If this is in acid format always read it recursively regardless of what the jobconf says.
-    if (!recursive && !AcidUtils.isAcid(p, job)) {
+    if (!recursive && !AcidUtils.isAcid(fs, p, job)) {
       return fs.listStatus(p, FileUtils.HIDDEN_FILES_PATH_FILTER);
     }
     List<FileStatus> results = new ArrayList<FileStatus>();

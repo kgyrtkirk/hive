@@ -139,7 +139,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
       @SuppressWarnings("unchecked")
-      Task<? extends Serializable> currTask = (Task<? extends Serializable>) nd;
+      Task<?> currTask = (Task<?>) nd;
       if (currTask instanceof TezTask) {
         TezWork work = ((TezTask) currTask).getWork();
         for (BaseWork w: work.getAllWork()) {
@@ -173,19 +173,22 @@ public class LlapDecider implements PhysicalPlanResolver {
         return; // Not based on ARP and cannot assume uniform distribution, bail.
       }
       clusterState.initClusterInfo();
-      int targetCount = 0;
+      final int targetCount;
+      final int executorCount;
+      final int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       if (!clusterState.hasClusterInfo()) {
         LOG.warn("Cannot determine LLAP cluster information");
-        targetCount = (int)Math.ceil(minReducersPerExec * 1 * executorsPerNode);
+        executorCount = executorsPerNode; // assume 1 node
       } else {
-        targetCount = (int)Math.ceil(minReducersPerExec * (clusterState.getKnownExecutorCount()
-            + clusterState.getNodeCountWithUnknownExecutors() * executorsPerNode));
+        executorCount =
+            clusterState.getKnownExecutorCount() + executorsPerNode
+                * clusterState.getNodeCountWithUnknownExecutors();
       }
-      // We only increase the targets here.
+      targetCount = Math.min(maxReducers, (int) Math.ceil(minReducersPerExec * executorCount));
+      // We only increase the targets here, but we stay below maxReducers
       if (reduceWork.isAutoReduceParallelism()) {
         // Do not exceed the configured max reducers.
-        int newMin = Math.min(conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS),
-            Math.max(reduceWork.getMinReduceTasks(), targetCount));
+        int newMin = Math.min(maxReducers, Math.max(reduceWork.getMinReduceTasks(), targetCount));
         if (newMin < reduceWork.getMaxReduceTasks()) {
           reduceWork.setMinReduceTasks(newMin);
           reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
@@ -382,63 +385,56 @@ public class LlapDecider implements PhysicalPlanResolver {
           public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
               Object... os) {
             LOG.debug("Cannot run operator [" + n + "] in llap mode.");
-            return new Boolean(false);
+              return Boolean.FALSE;
           }
         });
-      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            ExprNodeDesc expr = ((FilterOperator)n).getConf().getPredicate();
-            Boolean retval = new Boolean(checkExpression(expr));
-            if (!retval) {
-              LOG.info("Cannot run filter operator [" + n + "] in llap mode");
-            }
-            return new Boolean(retval);
+      opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"), new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+          ExprNodeDesc expr = ((FilterOperator) n).getConf().getPredicate();
+          boolean retval = checkExpression(expr);
+          if (!retval) {
+            LOG.info("Cannot run filter operator [" + n + "] in llap mode");
           }
-        });
-      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"),
-          new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            @SuppressWarnings("unchecked")
-            List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
-            Boolean retval = new Boolean(checkAggregators(aggs));
-            if (!retval) {
-              LOG.info("Cannot run group by operator [" + n + "] in llap mode");
-            }
-            return new Boolean(retval);
+          return Boolean.valueOf(retval);
+        }
+      });
+      opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"), new NodeProcessor() {
+        @Override
+        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+          @SuppressWarnings("unchecked")
+          List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
+          boolean retval = checkAggregators(aggs);
+          if (!retval) {
+            LOG.info("Cannot run group by operator [" + n + "] in llap mode");
           }
-        });
+          return Boolean.valueOf(retval);
+        }
+      });
       opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
           new NodeProcessor() {
-          @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
-              Object... os) {
-            @SuppressWarnings({ "unchecked" })
-            List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
-            Boolean retval = new Boolean(checkExpressions(exprs));
-            if (!retval) {
-              LOG.info("Cannot run select operator [" + n + "] in llap mode");
+            @Override
+            public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+              @SuppressWarnings({"unchecked"})
+              List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
+              boolean retval = checkExpressions(exprs);
+              if (!retval) {
+                LOG.info("Cannot run select operator [" + n + "] in llap mode");
+              }
+              return Boolean.valueOf(retval);
             }
-            return new Boolean(retval);
-          }
-        });
+          });
 
       if (!conf.getBoolVar(HiveConf.ConfVars.LLAP_ENABLE_GRACE_JOIN_IN_LLAP)) {
-        opRules.put(
-            new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
-                MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
+        opRules.put(new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
+            MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
               @Override
               public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
-                if (mapJoinOp.getConf().isHybridHashJoin()
-                    && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
+                if (mapJoinOp.getConf().isHybridHashJoin() && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
                   mapJoinOpList.add((MapJoinOperator) n);
                 }
-                return new Boolean(true);
+                return Boolean.TRUE;
               }
             });
       }

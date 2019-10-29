@@ -18,6 +18,12 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
@@ -74,6 +80,7 @@ import javax.security.auth.Subject;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -291,10 +298,15 @@ public class HiveConnection implements java.sql.Connection {
       executeInitSql();
     } else {
       int maxRetries = 1;
+      long retryInterval = 1000L;
       try {
         String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
         if (StringUtils.isNotBlank(strRetries)) {
           maxRetries = Integer.parseInt(strRetries);
+        }
+        String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
+        if(StringUtils.isNotBlank(strRetryInterval)){
+          retryInterval = Long.parseLong(strRetryInterval);
         }
       } catch(NumberFormatException e) { // Ignore the exception
       }
@@ -336,7 +348,12 @@ public class HiveConnection implements java.sql.Connection {
           if (numRetries >= maxRetries) {
             throw new SQLException(errMsg + e.getMessage(), " 08S01", e);
           } else {
-            LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries);
+            LOG.warn(warnMsg + e.getMessage() + " Retrying " + numRetries + " of " + maxRetries+" with retry interval "+retryInterval+"ms");
+            try {
+              Thread.sleep(retryInterval);
+            } catch (InterruptedException ex) {
+              //Ignore
+            }
           }
         }
       }
@@ -678,23 +695,24 @@ public class HiveConnection implements java.sql.Connection {
           saslProps.put(Sasl.QOP, "auth-conf,auth-int,auth");
         }
         saslProps.put(Sasl.SERVER_AUTH, "true");
-        if (sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)) {
-          transport = KerberosSaslHelper.getKerberosTransport(
-              sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
-              socketTransport, saslProps, assumeSubject);
-        } else {
+        String tokenStr = null;
+        if (JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
           // If there's a delegation token available then use token based connection
-          String tokenStr = getClientDelegationToken(sessConfMap);
-          if (tokenStr != null) {
-            transport = KerberosSaslHelper.getTokenTransport(tokenStr,
-                host, socketTransport, saslProps);
-          } else {
-            // we are using PLAIN Sasl connection with user/password
-            String userName = getUserName();
-            String passwd = getPassword();
-            // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
-            transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
-          }
+          tokenStr = getClientDelegationToken(sessConfMap);
+        }
+        if (tokenStr != null) {
+          transport = KerberosSaslHelper.getTokenTransport(tokenStr,
+                  host, socketTransport, saslProps);
+        } else if(sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL)){
+          transport = KerberosSaslHelper.getKerberosTransport(
+                  sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host,
+                  socketTransport, saslProps, assumeSubject);
+        } else {
+          // we are using PLAIN Sasl connection with user/password
+          String userName = getUserName();
+          String passwd = getPassword();
+          // Overlay the SASL transport on top of the base socket transport (SSL or non-SSL)
+          transport = PlainSaslHelper.getPlainTransport(userName, passwd, socketTransport);
         }
       } else {
         // Raw socket connection (non-sasl)
@@ -753,18 +771,54 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   // Lookup the delegation token. First in the connection URL, then Configuration
-  private String getClientDelegationToken(Map<String, String> jdbcConnConf)
-      throws SQLException {
+  private String getClientDelegationToken(Map<String, String> jdbcConnConf) throws SQLException {
     String tokenStr = null;
-    if (JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
-      // check delegation token in job conf if any
+    if (!JdbcConnectionParams.AUTH_TOKEN.equalsIgnoreCase(jdbcConnConf.get(JdbcConnectionParams.AUTH_TYPE))) {
+      return null;
+    }
+    DelegationTokenFetcher fetcher = new DelegationTokenFetcher();
+    try {
+      tokenStr = fetcher.getTokenStringFromFile();
+    } catch (IOException e) {
+      LOG.warn("Cannot get token from environment variable $HADOOP_TOKEN_FILE_LOCATION=" +
+              System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION));
+    }
+    if (tokenStr == null) {
       try {
-        tokenStr = SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
+        return fetcher.getTokenFromSession();
       } catch (IOException e) {
         throw new SQLException("Error reading token ", e);
       }
     }
     return tokenStr;
+  }
+
+  static class DelegationTokenFetcher {
+    String getTokenStringFromFile() throws IOException {
+      if (System.getenv(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION) == null) {
+        return null;
+      }
+      Credentials cred = new Credentials();
+      try (DataInputStream dis = new DataInputStream(new FileInputStream(System.getenv(UserGroupInformation
+              .HADOOP_TOKEN_FILE_LOCATION)))) {
+        cred.readTokenStorageStream(dis);
+      }
+      return getTokenFromCredential(cred, "hive");
+    }
+
+    String getTokenFromCredential(Credentials cred, String key) throws IOException {
+      Token<? extends TokenIdentifier> token = cred.getToken(new Text(key));
+      if (token == null) {
+        LOG.warn("Delegation token with key: [hive] cannot be found.");
+        return null;
+      }
+      return token.encodeToUrlString();
+    }
+
+    String getTokenFromSession() throws IOException {
+      LOG.debug("Fetching delegation token from session.");
+      return SessionUtils.getTokenStrForm(HiveAuthConstants.HS2_CLIENT_TOKEN);
+    }
   }
 
   private void openSession() throws SQLException {
@@ -850,6 +904,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private boolean isKerberosAuthMode() {
     return !JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
+        && !JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL);
   }
 

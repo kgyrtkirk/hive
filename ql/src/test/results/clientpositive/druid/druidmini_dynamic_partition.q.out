@@ -166,17 +166,16 @@ STAGE PLANS:
     Dependency Collection
 
   Stage: Stage-4
-      Create Table Operator:
-        Create Table
-          columns: __time timestamp with local time zone, cstring1 string, cstring2 string, cdouble double, cfloat float, ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cboolean1 boolean, cboolean2 boolean
-          storage handler: org.apache.hadoop.hive.druid.DruidStorageHandler
-          name: default.druid_partitioned_table
-          table properties:
-            druid.query.granularity MINUTE
-            druid.segment.granularity HOUR
-            druid.segment.targetShardsPerGranularity 6
-            external.table.purge true
-          isExternal: true
+    Create Table
+      columns: __time timestamp with local time zone, cstring1 string, cstring2 string, cdouble double, cfloat float, ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cboolean1 boolean, cboolean2 boolean
+      storage handler: org.apache.hadoop.hive.druid.DruidStorageHandler
+      name: default.druid_partitioned_table
+      table properties:
+        druid.query.granularity MINUTE
+        druid.segment.granularity HOUR
+        druid.segment.targetShardsPerGranularity 6
+        external.table.purge true
+      isExternal: true
 
   Stage: Stage-3
     Stats Work
@@ -345,16 +344,13 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: drop props
-          old name: default.druid_partitioned_table
-          properties:
-            COLUMN_STATS_ACCURATE 
+    Unset Properties
+      properties:
+        COLUMN_STATS_ACCURATE 
+      table name: default.druid_partitioned_table
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-2
     Tez
@@ -406,8 +402,7 @@ STAGE PLANS:
                       name: default.druid_partitioned_table
 
   Stage: Stage-4
-      Insert operator:
-        Commit-Insert-Hook
+    Commit Insert Hook
 
 PREHOOK: query: INSERT INTO TABLE druid_partitioned_table
 SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
@@ -490,16 +485,13 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-      Alter Table Operator:
-        Alter Table
-          type: drop props
-          old name: default.druid_partitioned_table
-          properties:
-            COLUMN_STATS_ACCURATE 
+    Unset Properties
+      properties:
+        COLUMN_STATS_ACCURATE 
+      table name: default.druid_partitioned_table
 
   Stage: Stage-1
-      Pre Insert operator:
-        Pre-Insert task
+    Pre-Insert task
 
   Stage: Stage-2
     Tez
@@ -551,8 +543,8 @@ STAGE PLANS:
                       name: default.druid_partitioned_table
 
   Stage: Stage-4
-      Insert operator:
-        Commit-Insert-Hook
+    Commit Insert Hook
+      is overwrite: true
 
 PREHOOK: query: INSERT OVERWRITE TABLE druid_partitioned_table
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,

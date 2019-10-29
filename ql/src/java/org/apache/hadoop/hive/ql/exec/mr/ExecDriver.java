@@ -24,13 +24,17 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.security.AccessController;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
@@ -305,7 +309,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      job.set(MRJobConfig.JOB_NAME, "JOB" + Utilities.randGen.nextInt());
+      job.set(MRJobConfig.JOB_NAME,
+          "JOB" + ThreadLocalRandom.current().nextInt());
     }
 
     try{
@@ -744,7 +749,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       // see also - code in CliDriver.java
       ClassLoader loader = conf.getClassLoader();
       if (StringUtils.isNotBlank(libjars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(libjars, ","));
+        AddToClassPathAction addAction = new AddToClassPathAction(
+            loader, Arrays.asList(StringUtils.split(libjars, ",")));
+        loader = AccessController.doPrivileged(addAction);
       }
       conf.setClassLoader(loader);
       // Also set this to the Thread ContextClassLoader, so new threads will
@@ -802,8 +809,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // working dirs and system dirs
     // Workaround is to rename map red working dir to a temp dir in such cases
     if (hadoopLocalMode) {
-      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/" + Utilities.randGen.nextInt());
-      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/" + Utilities.randGen.nextInt());
+      tempConf.set(hadoopSysDir, hconf.get(hadoopSysDir) + "/"
+          + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
+      tempConf.set(hadoopWorkDir, hconf.get(hadoopWorkDir) + "/"
+          + ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
     }
 
     try {
