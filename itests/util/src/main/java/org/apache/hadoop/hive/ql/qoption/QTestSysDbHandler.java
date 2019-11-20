@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 /**
  * QTest sysdb directive handler
  *
- * Loads the sysdb schema prior to running the test. 
- * 
+ * Loads the sysdb schema prior to running the test.
+ *
  * Example:
  * --! qt:sysdb
  * 
