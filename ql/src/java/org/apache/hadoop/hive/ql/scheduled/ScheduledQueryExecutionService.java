@@ -108,6 +108,7 @@ public class ScheduledQueryExecutionService implements Closeable {
       try {
         HiveConf conf = new HiveConf(context.conf);
         conf.set(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
+        conf.unset(HiveConf.ConfVars.HIVESESSIONID.varname);
         state = new SessionState(conf, q.getUser());
         SessionState.start(state);
         info = new ScheduledQueryProgressInfo();
