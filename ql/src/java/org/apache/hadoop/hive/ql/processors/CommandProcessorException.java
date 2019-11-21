@@ -77,17 +77,16 @@ public class CommandProcessorException extends Exception {
 
   @Override
   public String toString() {
-    return "(responseCode = " + responseCode + ", errorMessage = " + getErrorMessage() + ", " +
-      (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "") +
-      "SQLState = " + sqlState +
-      (getException() == null ? "" : ", exception = " + getException().getMessage()) + ")";
+    return "(responseCode = " + responseCode + ", errorMessage = " + getErrorMessage() + ", "
+        + (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "") + "SQLState = " + sqlState
+        + (getException() == null ? "" : ", exception = " + getException().getMessage()) + ")";
   }
 
-public void setErrorMessage(String errorMessage) {
-	this.errorMessage = errorMessage;
-}
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 
-public void setException(Throwable exception) {
-	this.exception = exception;
-}
+  public void setException(Throwable exception) {
+    this.exception = exception;
+  }
 }
