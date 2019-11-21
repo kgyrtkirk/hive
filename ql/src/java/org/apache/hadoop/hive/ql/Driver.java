@@ -260,7 +260,7 @@ public class Driver implements IDriver {
   }
 
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnManager) {
-    driverContext = new DriverContext(queryState, queryInfo, userName, new HookRunner(queryState.getConf(), CONSOLE),
+    driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
   }
 
@@ -409,7 +409,7 @@ public class Driver implements IDriver {
       HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
       if (executeHooks) {
         hookCtx.setConf(driverContext.getConf());
-        hookCtx.setUserName(driverContext.getUserName());
+        hookCtx.setUserName(SessionState.get().getUserName());
         hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
         hookCtx.setCommand(command);
         hookCtx.setHiveOperation(driverContext.getQueryState().getHiveOperation());
