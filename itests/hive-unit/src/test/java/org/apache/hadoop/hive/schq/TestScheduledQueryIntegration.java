@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.schq;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -65,8 +67,6 @@ public class TestScheduledQueryIntegration {
       driver.run(cmd);
     }
 
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
-
   }
 
   @AfterClass
@@ -85,15 +85,19 @@ public class TestScheduledQueryIntegration {
     }
   }
 
-  @Test(expected = CommandProcessorException.class)
+  @Test
   public void testBasicImpersonation() throws ParseException, Exception {
-    CommandProcessorResponse ret;
 
     setupAuthorization();
 
-    ret = runAsUser("user1", "create table t1 (a integer)");
-
-    ret = runAsUser("user2", "drop table t1");
+    runAsUser("user1", "create table t1 (a integer)");
+    try {
+      runAsUser("user2", "drop table t1");
+      fail("Exception expected");
+    } catch (CommandProcessorException cpe) {
+      assertThat(cpe.getErrorMessage(), Matchers.containsString("HiveAccessControlException Permission denied"));
+    }
+    runAsUser("user1", "drop table t1");
   }
 
   @Test
@@ -103,13 +107,15 @@ public class TestScheduledQueryIntegration {
         "1s");
     setupAuthorization();
 
-    ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf);
+    try (ScheduledQueryExecutionService schqS =
+        ScheduledQueryExecutionService.startScheduledQueryExecutorService(env_setup.getTestCtx().hiveConf)) {
 
-    runAsUser("user1",
-        "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
+      runAsUser("user1",
+          "create scheduled query s1 cron '* * * * * ? *' defined as create table tx1 as select 12 as i");
 
+      Thread.sleep(20000);
 
-    Thread.sleep(20000);
+    }
 
     // table exists - and owner is able to select from it
     runAsUser("user1", "select * from tx1");
