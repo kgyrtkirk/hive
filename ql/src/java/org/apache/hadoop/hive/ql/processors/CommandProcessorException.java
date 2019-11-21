@@ -60,17 +60,13 @@ public class CommandProcessorException extends Exception {
     return hiveErrorCode;
   }
 
-  public String getErrorMessage() {
-    return getMessage();
-  }
-
   public String getSqlState() {
     return sqlState;
   }
 
   @Override
   public String toString() {
-    return "(responseCode = " + responseCode + ", errorMessage = " + getErrorMessage() + ", "
+    return "(responseCode = " + responseCode + ", errorMessage = " + getMessage() + ", "
         + (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "") + "SQLState = " + sqlState
         + (getCause() == null ? "" : ", exception = " + getCause().getMessage()) + ")";
   }
