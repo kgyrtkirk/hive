@@ -35,10 +35,10 @@ import com.google.common.base.Strings;
 public class DriverFactory {
 
   public static IDriver newDriver(HiveConf conf) {
-    return newDriver(getNewQueryState(conf), null, null);
+    return newDriver(getNewQueryState(conf), null);
   }
 
-  public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+  public static IDriver newDriver(QueryState queryState, QueryInfo queryInfo) {
     boolean enabled = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED);
     if (!enabled) {
       return new Driver(queryState, queryInfo);
@@ -54,7 +54,7 @@ public class DriverFactory {
       plugins.add(buildReExecPlugin(string));
     }
 
-    return new ReExecDriver(queryState, userName, queryInfo, plugins);
+    return new ReExecDriver(queryState, queryInfo, plugins);
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {

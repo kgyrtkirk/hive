@@ -103,8 +103,7 @@ public class ReExecDriver implements IDriver {
     return executionIndex == 0;
   }
 
-  public ReExecDriver(QueryState queryState, String userName, QueryInfo queryInfo,
-      ArrayList<IReExecutionPlugin> plugins) {
+  public ReExecDriver(QueryState queryState, QueryInfo queryInfo, ArrayList<IReExecutionPlugin> plugins) {
     this.queryState = queryState;
     coreDriver = new Driver(queryState, queryInfo, null);
     coreDriver.getHookRunner().addSemanticAnalyzerHook(new HandleReOptimizationExplain());
