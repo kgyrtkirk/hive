@@ -235,7 +235,7 @@ public class Driver implements IDriver {
 
   @VisibleForTesting
   public Driver(HiveConf conf) {
-    this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), null);
+    this(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build());
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
@@ -251,8 +251,8 @@ public class Driver implements IDriver {
     this(getNewQueryState(conf, lineageState), userName, null);
   }
 
-  public Driver(QueryState queryState, String userName) {
-    this(queryState, userName, null, null);
+  public Driver(QueryState queryState) {
+    this(queryState, null, null, null);
   }
 
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
