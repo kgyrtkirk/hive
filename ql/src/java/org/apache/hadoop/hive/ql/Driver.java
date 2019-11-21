@@ -241,22 +241,22 @@ public class Driver implements IDriver {
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
   public Driver(HiveConf conf, Context ctx, LineageState lineageState) {
-    this(getNewQueryState(conf, lineageState), null, null);
+    this(getNewQueryState(conf, lineageState), null);
     this.ctx = ctx;
   }
 
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
   public Driver(HiveConf conf, String userName, LineageState lineageState) {
-    this(getNewQueryState(conf, lineageState), userName, null);
+    this(getNewQueryState(conf, lineageState), null);
   }
 
   public Driver(QueryState queryState) {
     this(queryState, null, null, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    this(queryState, userName, queryInfo, null);
+  public Driver(QueryState queryState, QueryInfo queryInfo) {
+    this(queryState, null, queryInfo, null);
   }
 
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnManager) {

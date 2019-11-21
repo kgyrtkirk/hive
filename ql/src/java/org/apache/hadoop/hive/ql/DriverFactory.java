@@ -41,7 +41,7 @@ public class DriverFactory {
   public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
     boolean enabled = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED);
     if (!enabled) {
-      return new Driver(queryState, userName, queryInfo);
+      return new Driver(queryState, queryInfo);
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
