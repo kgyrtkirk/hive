@@ -2378,9 +2378,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         cmd.append(")");
       }
-      SessionState ss = SessionState.get();
-      // TODO: should this use getUserFromAuthenticator?
-      String uName = (ss == null? null: ss.getUserName());
       Driver driver = new Driver(conf, queryState.getLineageState());
       int rc = driver.compile(cmd.toString(), false);
       if (rc != 0) {
