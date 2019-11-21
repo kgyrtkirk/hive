@@ -46,7 +46,8 @@ public class ScheduledQueryExecutionService implements Closeable {
   private ScheduledQueryExecutionContext context;
   private ScheduledQueryExecutor worker;
 
-  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf) {
+  public static ScheduledQueryExecutionService startScheduledQueryExecutorService(HiveConf conf0) {
+    HiveConf conf = new HiveConf(conf0);
     MetastoreBasedScheduledQueryService qService = new MetastoreBasedScheduledQueryService(conf);
     ExecutorService executor =
         Executors.newCachedThreadPool(
@@ -107,7 +108,8 @@ public class ScheduledQueryExecutionService implements Closeable {
       try {
         HiveConf conf = new HiveConf(context.conf);
         conf.set(Constants.HIVE_QUERY_EXCLUSIVE_LOCK, lockNameFor(q.getScheduleKey()));
-        state = SessionState.start(conf);
+        state = new SessionState(conf, q.getUser());
+        SessionState.start(state);
         info = new ScheduledQueryProgressInfo();
         info.setScheduledExecutionId(q.getExecutionId());
         info.setState(QueryState.EXECUTING);

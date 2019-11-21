@@ -161,7 +161,9 @@ public class TestScheduledQueryIntegration {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
-    SessionState.start(conf);
+    String userName = conf.get("user.name");
+    SessionState ss = new SessionState(conf, userName);
+    SessionState.start(ss);
 
     IDriver driver = DriverFactory.newDriver(conf);
     return driver;
