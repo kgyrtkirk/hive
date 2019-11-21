@@ -2378,7 +2378,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         cmd.append(")");
       }
-      Driver driver = new Driver(conf, queryState.getLineageState());
+      // FIXME: is it ok to have a completely new querystate?
+      QueryState newQueryState = Driver.getNewQueryState(conf, queryState.getLineageState());
+      // FIXME: this driver instance is never closed
+      Driver driver = new Driver(newQueryState);
       int rc = driver.compile(cmd.toString(), false);
       if (rc != 0) {
         throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());

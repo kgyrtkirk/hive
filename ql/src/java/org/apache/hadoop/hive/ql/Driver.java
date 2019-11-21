@@ -270,7 +270,7 @@ public class Driver implements IDriver {
    * @param lineageState a LineageState to be set in the new QueryState object
    * @return The new QueryState object
    */
-  private static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
+  public static QueryState getNewQueryState(HiveConf conf, LineageState lineageState) {
     return new QueryState.Builder()
         .withGenerateNewQueryId(true)
         .withHiveConf(conf)
