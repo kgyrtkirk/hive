@@ -1188,7 +1188,7 @@ public class Driver implements IDriver {
        * the error is a specific/expected one.
        * It's written to stdout for backward compatibility (WebHCat consumes it).*/
       try {
-        if (cpe.getException() == null) {
+        if (cpe.getCause() == null) {
           mdf.error(ss.out, cpe.getErrorMessage(), cpe.getResponseCode(), cpe.getSqlState());
           throw cpe;
         }
@@ -1202,14 +1202,14 @@ public class Driver implements IDriver {
           mdf.error(ss.out, cpe.getErrorMessage(), cpe.getResponseCode(), cpe.getSqlState(), null);
           throw cpe;
         }
-        if (cpe.getException() instanceof HiveException) {
-          HiveException rc = (HiveException)cpe.getException();
+        if (cpe.getCause() instanceof HiveException) {
+          HiveException rc = (HiveException)cpe.getCause();
           mdf.error(ss.out, cpe.getErrorMessage(), rc.getCanonicalErrorMsg().getErrorCode(), cpe.getSqlState(),
               rc.getCanonicalErrorMsg() == ErrorMsg.GENERIC_ERROR ? StringUtils.stringifyException(rc) : null);
         } else {
-          ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpe.getException().getMessage());
+          ErrorMsg canonicalMsg = ErrorMsg.getErrorMsg(cpe.getCause().getMessage());
           mdf.error(ss.out, cpe.getErrorMessage(), canonicalMsg.getErrorCode(), cpe.getSqlState(),
-              StringUtils.stringifyException(cpe.getException()));
+              StringUtils.stringifyException(cpe.getCause()));
         }
       } catch (HiveException ex) {
         CONSOLE.printError("Unable to JSON-encode the error", StringUtils.stringifyException(ex));

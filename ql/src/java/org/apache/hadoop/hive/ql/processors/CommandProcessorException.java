@@ -68,15 +68,11 @@ public class CommandProcessorException extends Exception {
     return sqlState;
   }
 
-  public Throwable getException() {
-    return getCause();
-  }
-
   @Override
   public String toString() {
     return "(responseCode = " + responseCode + ", errorMessage = " + getErrorMessage() + ", "
         + (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "") + "SQLState = " + sqlState
-        + (getException() == null ? "" : ", exception = " + getException().getMessage()) + ")";
+        + (getCause() == null ? "" : ", exception = " + getCause().getMessage()) + ")";
   }
 
 }

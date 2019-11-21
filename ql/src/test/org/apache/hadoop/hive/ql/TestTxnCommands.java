@@ -819,7 +819,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         "WHEN MATCHED THEN UPDATE set b = 1\n" +
         "WHEN MATCHED THEN DELETE\n" +
         "WHEN NOT MATCHED AND a < 1 THEN INSERT VALUES(1,2)");
-    Assert.assertEquals(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ((HiveException)e.getException()).getCanonicalErrorMsg());
+    Assert.assertEquals(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ((HiveException)e.getCause()).getCanonicalErrorMsg());
   }
   @Test
   public void testMergeNegative2() throws Exception {
@@ -828,7 +828,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         " target USING " + Table.NONACIDORCTBL + "\n source ON target.pk = source.pk " +
         "\nWHEN MATCHED THEN UPDATE set b = 1 " +
         "\nWHEN MATCHED THEN UPDATE set b=a");
-    Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)e.getException()).getCanonicalErrorMsg());
+    Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)e.getCause()).getCanonicalErrorMsg());
   }
 
   /**
@@ -1097,11 +1097,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         " source ON target.a = source.a\n" +
         "WHEN MATCHED THEN UPDATE set t = 1");
     Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
-        ((HiveException)e1.getException()).getCanonicalErrorMsg());
+        ((HiveException)e1.getCause()).getCanonicalErrorMsg());
 
     CommandProcessorException e2 = runStatementOnDriverNegative("update " + Table.ACIDTBL + " set t = 1");
     Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
-        ((HiveException)e2.getException()).getCanonicalErrorMsg());
+        ((HiveException)e2.getCause()).getCanonicalErrorMsg());
   }
 
   @Test
