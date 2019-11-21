@@ -26,9 +26,9 @@ public class CommandProcessorException extends Exception {
 
   private final int responseCode;
   private final int hiveErrorCode;
-  private final String errorMessage;
+  private String errorMessage;
   private final String sqlState;
-  private final Throwable exception;
+  private Throwable exception;
 
   public CommandProcessorException(int responseCode) {
     this(responseCode, -1, null, null, null);
@@ -50,9 +50,9 @@ public class CommandProcessorException extends Exception {
       Throwable exception) {
     this.responseCode = responseCode;
     this.hiveErrorCode = hiveErrorCode;
-    this.errorMessage = errorMessage;
+    this.setErrorMessage(errorMessage);
     this.sqlState = sqlState;
-    this.exception = exception;
+    this.setException(exception);
   }
 
   public int getResponseCode() {
@@ -77,9 +77,17 @@ public class CommandProcessorException extends Exception {
 
   @Override
   public String toString() {
-    return "(responseCode = " + responseCode + ", errorMessage = " + errorMessage + ", " +
+    return "(responseCode = " + responseCode + ", errorMessage = " + getErrorMessage() + ", " +
       (hiveErrorCode > 0 ? "hiveErrorCode = " + hiveErrorCode + ", " : "") +
       "SQLState = " + sqlState +
-      (exception == null ? "" : ", exception = " + exception.getMessage()) + ")";
+      (getException() == null ? "" : ", exception = " + getException().getMessage()) + ")";
   }
+
+public void setErrorMessage(String errorMessage) {
+	this.errorMessage = errorMessage;
+}
+
+public void setException(Throwable exception) {
+	this.exception = exception;
+}
 }
