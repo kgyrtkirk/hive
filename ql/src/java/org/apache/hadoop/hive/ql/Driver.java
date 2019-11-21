@@ -247,7 +247,7 @@ public class Driver implements IDriver {
 
   // Pass lineageState when a driver instantiates another Driver to run
   // or compile another query
-  public Driver(HiveConf conf, String userName, LineageState lineageState) {
+  public Driver(HiveConf conf, LineageState lineageState) {
     this(getNewQueryState(conf, lineageState), null);
   }
 
