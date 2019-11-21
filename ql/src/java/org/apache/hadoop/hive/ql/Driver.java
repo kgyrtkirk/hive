@@ -252,14 +252,14 @@ public class Driver implements IDriver {
   }
 
   public Driver(QueryState queryState) {
-    this(queryState, null, null, null);
+    this(queryState, null, null);
   }
 
   public Driver(QueryState queryState, QueryInfo queryInfo) {
-    this(queryState, null, queryInfo, null);
+    this(queryState, queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnManager) {
+  public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
   }
