@@ -16,26 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.lock;
+package org.apache.hive.jdbc;
 
-import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.ddl.DDLOperation;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.junit.BeforeClass;
 
 /**
- * Operation process of locking a table.
+ * TestNewGetSplitsFormatReturnPath.
  */
-public class LockTableOperation extends DDLOperation<LockTableDesc> {
-  public LockTableOperation(DDLOperationContext context, LockTableDesc desc) {
-    super(context, desc);
-  }
+public class TestNewGetSplitsFormatReturnPath extends TestNewGetSplitsFormat {
 
-  @Override
-  public int execute() throws HiveException {
-    Context ctx = context.getContext();
-    HiveTxnManager txnManager = ctx.getHiveTxnManager();
-    return txnManager.lockTable(context.getDb(), desc);
+  @BeforeClass public static void beforeTest() throws Exception {
+    HiveConf conf = defaultConf();
+    conf.setBoolVar(HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, true);
+    BaseJdbcWithMiniLlap.beforeTest(conf);
   }
 }
