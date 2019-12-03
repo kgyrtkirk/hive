@@ -251,7 +251,6 @@ public class CliConfigs {
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
         excludeQuery("load_dyn_part3.q"); // Disabled in HIVE-20662. Enable in HIVE-20663.
-        excludeQuery("cbo_limit.q"); //Disabled in HIVE-20860. Enable in HIVE-20972
         excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
         excludeQuery("cbo_rp_limit.q"); // Disabled in HIVE-21657
 
