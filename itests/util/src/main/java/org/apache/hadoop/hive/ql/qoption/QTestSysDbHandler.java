@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 /**
  * QTest sysdb directive handler
  *
@@ -33,20 +34,25 @@ import org.slf4j.LoggerFactory;
  */
 public class QTestSysDbHandler implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestSysDbHandler.class.getName());
+  private boolean enabled;
 
   @Override
   public void processArguments(String arguments) {
+    enabled = true;
   }
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
-    String stsdbPath = HiveTestEnvSetup.HIVE_ROOT + "/metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql";
-    qt.getCliDriver().processLine("source " + stsdbPath);
+    if (enabled) {
+      String stsdbPath = HiveTestEnvSetup.HIVE_ROOT + "/metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql";
+      qt.getCliDriver().processLine("source " + stsdbPath);
+      qt.getCliDriver().processLine("use default");
+    }
   }
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
-
+    enabled = false;
   }
 
 }
