@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -109,7 +110,11 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
               value = rs.getBigDecimal(i + 1);
               break;
             case BOOLEAN:
-              value = rs.getBoolean(i + 1);
+              if (rs.getMetaData().getColumnType(i + 1) == Types.CHAR) {
+                value = "Y".equals(rs.getString(i + 1));
+              } else {
+                value = rs.getBoolean(i + 1);
+              }
               break;
             case CHAR:
             case VARCHAR:
