@@ -28,7 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -1267,8 +1268,11 @@ public final class ConstantPropagateProcFactory {
       }
       FileSinkDesc fsdesc = op.getConf();
       DynamicPartitionCtx dpCtx = fsdesc.getDynPartCtx();
-      if (dpCtx != null) {
 
+      // HIVE-22595: For Avro tables with external schema URL, Utilities.getDPColOffset() gives
+      // wrong results unless AvroSerDe.initialize() is called to update the table properties.
+      // To be safe just disable this check for Avro tables.
+      if (dpCtx != null && fsdesc.getTableInfo().getSerdeClassName().equals(AvroSerDe.class.getName())) {
         // Assume only 1 parent for FS operator
         Operator<? extends Serializable> parent = op.getParentOperators().get(0);
         Map<ColumnInfo, ExprNodeDesc> parentConstants = cppCtx.getPropagatedConstants(parent);

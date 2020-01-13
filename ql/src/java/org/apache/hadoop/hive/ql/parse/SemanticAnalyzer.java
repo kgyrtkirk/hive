@@ -60,7 +60,7 @@ import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -2029,7 +2029,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } catch (HiveException e) {
       // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang3.StringUtils
+      // org.apache.commons.lang.StringUtils
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
@@ -6885,8 +6885,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nullOrder.append(sortOrder == DirectionUtils.ASCENDING_CODE ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
-          maxReducers, (AcidUtils.isFullAcidTable(dest_tab) ?
-              getAcidType(table_desc.getOutputFileFormatClass(), dest) : AcidUtils.Operation.NOT_ACID));
+          maxReducers,
+          (AcidUtils.isFullAcidTable(dest_tab) ? getAcidType(table_desc.getOutputFileFormatClass(),
+              dest, AcidUtils.isInsertOnlyTable(dest_tab)) : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
@@ -7409,9 +7410,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
         AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
-        if (destTableIsFullAcid) {
-          acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest);
-          //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM
+        if (destTableIsTransactional) {
+          acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
           checkAcidConstraints();
         }
         try {
@@ -7531,9 +7531,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           destinationPartition.getSkewedColValues(), destinationPartition.getSkewedColValueLocationMaps(),
           destinationPartition.isStoredAsSubDirectories());
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
-      if (destTableIsFullAcid) {
-        acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest);
-        //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM?
+      if (destTableIsTransactional) {
+        acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
         checkAcidConstraints();
       }
       try {
@@ -7620,7 +7619,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tblProps = viewDesc.getTblProps();
       }
 
-      if (tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps)) {
+      destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
+      if (destTableIsTransactional) {
         try {
           if (ctx.getExplainConfig() != null) {
             writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
@@ -7790,9 +7790,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         boolean isNonNativeTable = tableDescriptor.isNonNative();
         if (!isNonNativeTable) {
           AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
-          if (destTableIsFullAcid) {
-            acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest);
-            //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM
+          if (destTableIsTransactional) {
+            acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
             checkAcidConstraints();
           }
           // isReplace = false in case concurrent operation is executed
@@ -8839,8 +8838,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Table dest_tab = qb.getMetaData().getDestTableForAlias(dest);
     AcidUtils.Operation acidOp = Operation.NOT_ACID;
-    if (AcidUtils.isFullAcidTable(dest_tab)) {
-      acidOp = getAcidType(Utilities.getTableDesc(dest_tab).getOutputFileFormatClass(), dest);
+    if (AcidUtils.isTransactionalTable(dest_tab)) {
+      acidOp = getAcidType(Utilities.getTableDesc(dest_tab).getOutputFileFormatClass(), dest,
+          AcidUtils.isInsertOnlyTable(dest_tab));
     }
     Operator result = genReduceSinkPlan(
         input, partCols, sortCols, order.toString(), nullOrder.toString(),
@@ -12464,7 +12464,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isCacheEnabled = isResultsCacheEnabled();
     QueryResultsCache.LookupInfo lookupInfo = null;
     if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(ast);
+      lookupInfo = createLookupInfoForQuery(astToAnalyze);
       if (checkResultsCache(lookupInfo, false)) {
         return;
       }
@@ -12476,9 +12476,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // If we use CBO and we may apply masking/filtering policies, we create a copy of the ast.
       // The reason is that the generation of the operator tree may modify the initial ast,
       // but if we need to parse for a second time, we would like to parse the unmodified ast.
-      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(ast);
+      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(astToAnalyze);
     } else {
-      astForMasking = ast;
+      astForMasking = astToAnalyze;
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
@@ -12510,7 +12510,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // In the case that row or column masking/filtering was required, we do not support caching.
     // TODO: Enable caching for queries with masking/filtering
     if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(ast);
+      lookupInfo = createLookupInfoForQuery(astToAnalyze);
       if (checkResultsCache(lookupInfo, false)) {
         return;
       }
@@ -14907,7 +14907,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             AcidUtils.Operation.INSERT);
   }
 
-  private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of, String dest) {
+  private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of, String dest,
+      boolean isMM) {
+
+    // no need for any checks in the case of insert-only
+    if (isMM) {
+      return getAcidType(dest);
+    }
+
     if (SessionState.get() == null || !getTxnMgr().supportsAcid()) {
       return AcidUtils.Operation.NOT_ACID;
     } else if (isAcidOutputFormat(of)) {

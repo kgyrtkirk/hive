@@ -79,7 +79,8 @@ import java.util.zip.InflaterInputStream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -258,11 +259,6 @@ public final class Utilities {
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
-
-  // all common whitespaces as defined in Character.isWhitespace(char)
-  // Used primarily as a workaround until TEXT-175 is released
-  public static final char[] COMMON_WHITESPACE_CHARS =
-      { '\t', '\n', '\u000B', '\f', '\r', '\u001C', '\u001D', '\u001E', '\u001F', ' ' };
 
   private static final Object INPUT_SUMMARY_LOCK = new Object();
   private static final Object ROOT_HDFS_DIR_LOCK  = new Object();
@@ -869,7 +865,7 @@ public final class Utilities {
     String rev = StringUtils.reverse(str);
 
     // get the last few words
-    String suffix = StringUtils.abbreviate(rev, suffixlength);
+    String suffix = WordUtils.abbreviate(rev, 0, suffixlength, StringUtils.EMPTY);
     suffix = StringUtils.reverse(suffix);
 
     // first few ..
@@ -2143,6 +2139,13 @@ public final class Utilities {
     return names;
   }
 
+  /**
+   * Note: This will not return the correct number of columns in the case of
+   * Avro serde using an external schema URL, unless these properties have been
+   * used to initialize the Avro SerDe (which updates these properties).
+   * @param props TableDesc properties
+   * @return list of column names based on the table properties
+   */
   public static List<String> getColumnNames(Properties props) {
     List<String> names = new ArrayList<String>();
     String colNames = props.getProperty(serdeConstants.LIST_COLUMNS);
