@@ -1,9 +1,3 @@
-PREHOOK: query: use sys
-PREHOOK: type: SWITCHDATABASE
-PREHOOK: Input: database:sys
-POSTHOOK: query: use sys
-POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Input: database:sys
 PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
@@ -12,6 +6,12 @@ PREHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as selec
 PREHOOK: type: QUERY
 POSTHOOK: query: create scheduled query asd cron '* * * * * ? *' defined as select 1
 POSTHOOK: type: QUERY
+PREHOOK: query: use sys
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: use sys
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
 PREHOOK: query: desc formatted scheduled_queries
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@scheduled_queries

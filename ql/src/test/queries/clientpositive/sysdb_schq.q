@@ -2,21 +2,19 @@
 --! qt:dataset:src
 --! qt:sysdb
 
-
-use sys;
-
-set hive.users.in.admin.role=hive_admin_user;
-
 set hive.test.authz.sstd.hs2.mode=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
 set hive.security.authorization.enabled=true;
 set user.name=hive_admin_user;
+
 set role admin;
 
 create scheduled query asd cron '* * * * * ? *' defined as select 1;
 
 !sleep 10;
+
+use sys;
 
 desc formatted scheduled_queries;
 
