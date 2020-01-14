@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 import org.apache.hadoop.io.Writable;
 
@@ -60,7 +61,13 @@ public class DBRecordWritable implements Writable,
       throw new SQLException("No data available to be written");
     }
     for (int i = 0; i < columnValues.length; i++) {
-      statement.setObject(i + 1, columnValues[i]);
+      
+      Object value = columnValues[i];
+      if(statement.getParameterMetaData().getParameterType(i) == Types.CHAR && value instanceof Boolean) {
+        value = ((Boolean)value).booleanValue() ? "1" : "0";
+//        value=null;
+      }
+      statement.setObject(i + 1, value);
     }
   }
 
