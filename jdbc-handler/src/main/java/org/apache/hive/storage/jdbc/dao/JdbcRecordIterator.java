@@ -110,11 +110,12 @@ public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
               value = rs.getBigDecimal(i + 1);
               break;
             case BOOLEAN:
-              if (rs.getMetaData().getColumnType(i + 1) == Types.CHAR) {
-                value = "Y".equals(rs.getString(i + 1));
-              } else {
-                value = rs.getBoolean(i + 1);
+              boolean b = rs.getBoolean(i + 1);
+              if (b && rs.getMetaData().getColumnType(i + 1) == Types.CHAR) {
+                // also accept Y/N in case of CHAR(1) - datanucleus stores booleans in CHAR(1) fields for derby 
+                b = !"N".equals(rs.getString(i + 1));
               }
+              value = b;
               break;
             case CHAR:
             case VARCHAR:

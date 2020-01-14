@@ -61,14 +61,14 @@ public class DBRecordWritable implements Writable,
     if (columnValues == null) {
       throw new SQLException("No data available to be written");
     }
-//    ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+    ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
       
       Object value = columnValues[i];
-/*      if(parameterMetaData.getParameterType(i) == Types.CHAR && value instanceof Boolean) {
-//        value = ((Boolean)value).booleanValue() ? "1" : "0";
-//        value=null;
-      }*/
+      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) {
+        value = ((Boolean) value).booleanValue() ? "1" : "0";
+        //        value=null;
+      }
       statement.setObject(i + 1, value);
     }
   }
