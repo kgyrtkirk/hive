@@ -368,7 +368,7 @@ PREHOOK: query: FROM src
 
 #### A masked pattern was here ####
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
-                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(1))' )
+                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(10))' )
 
 limit 1
 PREHOOK: type: QUERY
@@ -378,7 +378,7 @@ POSTHOOK: query: FROM src
 
 #### A masked pattern was here ####
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
-                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(1))' )
+                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(10))' )
 
 limit 1
 POSTHOOK: type: QUERY
@@ -531,6 +531,8 @@ POSTHOOK: query: select * from insert_to_ext_derby_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_to_ext_derby_table
 #### A masked pattern was here ####
+true	10	100	2.63	999.9999	2019-01-11	test	test1	z 	2019-01-01 00:00:00	1.7899	1	2	false
+true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2	false
 PREHOOK: query: INSERT INTO insert_to_ext_derby_table VALUES(false, 324, 53465, 2.6453, 599.9999, '2019-04-11', 'fgeg', 'asda', 'k', '2019-03-01 10:00:00', 1.7899, 1, 2, false)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -567,3 +569,10 @@ POSTHOOK: query: select * from insert_to_ext_derby_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_to_ext_derby_table
 #### A masked pattern was here ####
+true	10	100	2.63	999.9999	2019-01-11	test	test1	z 	2019-01-01 00:00:00	1.7899	1	2	false
+true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2	false
+false	324	53465	2.6453	599.9999	2019-04-11	fgeg	asda	k 	2019-03-01 10:00:00	1.7899	1	2	false
+false	10	100	2.63	999.9999	2019-11-11	test	test1	a 	2019-01-01 00:00:00	1.7899	1	2	false
+true	100	1000	2.632	9999.99999	2019-12-11	test_1	test1_1	b 	2019-02-01 01:00:01	5.7899	3	4	false
+false	10	999	23.632	99999.99999	2019-09-11	test_2	test1_2	c 	2019-03-01 11:00:01	9.7899	5	6	false
+true	342	8900	9.63	1099.9999	2019-04-11	abcd	efgh	k 	2019-05-01 00:00:00	1.8899	1	2	false

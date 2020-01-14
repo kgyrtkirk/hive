@@ -98,7 +98,7 @@ FROM src
 
 SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_insert_derby_as_external_table_db;create=true','','',
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
-                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(1))' )
+                                  h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(10))' )
 
 limit 1;
 

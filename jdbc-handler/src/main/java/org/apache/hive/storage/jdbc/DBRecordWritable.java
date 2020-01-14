@@ -20,6 +20,7 @@ package org.apache.hive.storage.jdbc;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,13 +61,14 @@ public class DBRecordWritable implements Writable,
     if (columnValues == null) {
       throw new SQLException("No data available to be written");
     }
+//    ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
       
       Object value = columnValues[i];
-      if(statement.getParameterMetaData().getParameterType(i) == Types.CHAR && value instanceof Boolean) {
-        value = ((Boolean)value).booleanValue() ? "1" : "0";
+/*      if(parameterMetaData.getParameterType(i) == Types.CHAR && value instanceof Boolean) {
+//        value = ((Boolean)value).booleanValue() ? "1" : "0";
 //        value=null;
-      }
+      }*/
       statement.setObject(i + 1, value);
     }
   }
