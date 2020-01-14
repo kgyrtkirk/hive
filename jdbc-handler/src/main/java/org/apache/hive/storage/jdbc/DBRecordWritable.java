@@ -64,7 +64,7 @@ public class DBRecordWritable implements Writable,
     ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
       Object value = columnValues[i];
-      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) { 
+      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) {
         value = ((Boolean) value).booleanValue() ? "1" : "0";
       }
       statement.setObject(i + 1, value);
