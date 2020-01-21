@@ -1,6 +1,7 @@
 --! qt:scheduledqueryservice
 --! qt:dataset:src
 --! qt:sysdb
+-- NO_SESSION_REUSE
 
 set user.name=hive_admin_user;
 set hive.test.authz.sstd.hs2.mode=true;
