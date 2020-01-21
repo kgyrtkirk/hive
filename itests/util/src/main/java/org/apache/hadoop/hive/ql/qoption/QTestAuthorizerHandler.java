@@ -19,9 +19,6 @@
 package org.apache.hadoop.hive.ql.qoption;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hive.testutils.HiveTestEnvSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * QTest authorizer option
@@ -29,11 +26,9 @@ import org.slf4j.LoggerFactory;
  * Enables authorization for the qtest.
  *
  * Example:
- * --! qt:authorizer:hive_admin_user
- * 
+ * --! qt:authorizer
  */
 public class QTestAuthorizerHandler implements QTestOptionHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(QTestAuthorizerHandler.class.getName());
   private boolean enabled;
 
   @Override
