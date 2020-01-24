@@ -16,8 +16,3 @@ alter table auth_import_ptn drop partition (j=42);
 
 set user.name=user1;
 import table auth_import_ptn partition (j=42) from 'pfile://${system:test.tmp.dir}/hive-12875-import';
-
-set hive.security.authorization.enabled=false;
-
-drop table auth_import_ptn;
-

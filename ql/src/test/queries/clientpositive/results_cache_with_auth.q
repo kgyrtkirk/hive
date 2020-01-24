@@ -25,5 +25,3 @@ select count(*) from results_cache_with_auth_t1;
 
 select count(*) from results_cache_with_auth_t1;
 
-set hive.security.authorization.enabled=false;
-drop table results_cache_with_auth_t1;
