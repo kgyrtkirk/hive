@@ -1,11 +1,8 @@
-set hive.test.authz.sstd.hs2.mode=true;
-set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
-set hive.security.authenticator.manager=org.apache.hadoop.hive.ql.security.SessionStateConfigUserAuthenticator;
+--! qt:authorizer
 set user.name=hive_admin_user;
 
 create table src_autho_test (key STRING, value STRING) ;
 
-set hive.security.authorization.enabled=true;
 
 --select dummy table
 select 1;
