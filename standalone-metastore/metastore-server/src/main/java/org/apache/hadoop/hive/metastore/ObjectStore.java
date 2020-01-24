@@ -12643,7 +12643,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) {
+  public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
+    ensureScheduledQueriesEnabled();
     String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
@@ -12691,7 +12692,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException {
+  public void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws InvalidOperationException, MetaException {
+    ensureScheduledQueriesEnabled();
     boolean commited = false;
     try {
       openTransaction();
@@ -12727,6 +12729,13 @@ public class ObjectStore implements RawStore, Configurable {
       if (!commited) {
         rollbackTransaction();
       }
+    }
+  }
+
+  private void ensureScheduledQueriesEnabled() throws MetaException {
+    if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
+      throw new MetaException(
+          "Scheduled query request processing is disabled via " + ConfVars.SCHEDULED_QUERIES_ENABLED.getVarname());
     }
   }
 
@@ -12769,6 +12778,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request)
       throws MetaException, NoSuchObjectException, AlreadyExistsException, InvalidInputException {
+    ensureScheduledQueriesEnabled();
     switch (request.getType()) {
     case CREATE:
       scheduledQueryInsert(request.getScheduledQuery());
@@ -12913,7 +12923,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException {
+  public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     if (timeoutSecs < 0) {
       LOG.debug("scheduled executions - time_out mark is disabled");
       return 0;
