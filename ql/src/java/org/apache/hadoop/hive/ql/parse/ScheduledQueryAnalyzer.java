@@ -86,7 +86,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   private ScheduledQuery buildEmptySchq() {
     ScheduledQuery ret = new ScheduledQuery();
-    ret.setEnabled(true);
+    ret.setEnabled(conf.getBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_CREATE_AS_ENABLED));
     ret.setUser(getUserName());
     return ret;
   }
