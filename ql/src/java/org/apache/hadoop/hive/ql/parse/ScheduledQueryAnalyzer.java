@@ -184,7 +184,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
         String currentUser = getUserName();
         if (!Objects.equal(currentUser, schq.getUser())) {
           throw new HiveAccessControlException(
-              "authorization of scheduled queries is not enabled - only owners may change scheduled queries");
+              "Authorization of scheduled queries is not enabled - only owners may change scheduled queries (currentUser: "
+                  + currentUser + ", owner: " + schq.getUser() + ")");
         }
       } else {
         HiveOperationType opType = toHiveOpType(type);
