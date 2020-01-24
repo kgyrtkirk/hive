@@ -120,6 +120,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         try (
           IDriver driver = DriverFactory.newDriver(DriverFactory.getNewQueryState(conf), null)) {
           info.setExecutorQueryId(driver.getQueryState().getQueryId());
+          reportQueryProgress();
           driver.run(q.getQuery());
           info.setState(QueryState.FINISHED);
         }
