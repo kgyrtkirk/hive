@@ -30,12 +30,9 @@ public class Mssql extends DatabaseRule {
   @Override
   public String[] getDockerAdditionalArgs() {
     return buildArray(
-        "-p",
-        "1433:1433",
-        "-e",
-        "ACCEPT_EULA=Y",
-        "-e",
-        "SA_PASSWORD=" + getDbRootPassword(),
+        "-p", "1433:1433",
+        "-e", "ACCEPT_EULA=Y",
+        "-e", "SA_PASSWORD=" + getDbRootPassword(),
         "-d"
     );
   }
