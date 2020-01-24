@@ -64,7 +64,7 @@ public class ScheduledQueryExecutionService implements Closeable {
   }
 
   static boolean isTerminalState(QueryState state) {
-    return state == QueryState.FINISHED || state == QueryState.ERRORED;
+    return state == QueryState.FINISHED || state == QueryState.FAILED;
   }
 
   class ScheduledQueryExecutor implements Runnable {
@@ -125,7 +125,7 @@ public class ScheduledQueryExecutionService implements Closeable {
         }
       } catch (Throwable t) {
         info.setErrorMessage(getErrorStringForException(t));
-        info.setState(QueryState.ERRORED);
+        info.setState(QueryState.FAILED);
       } finally {
         if (state != null) {
           try {

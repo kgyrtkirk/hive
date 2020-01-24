@@ -12714,7 +12714,7 @@ public class ObjectStore implements RawStore, Configurable {
       case EXECUTING:
         execution.setLastUpdateTime((int) (System.currentTimeMillis() / 1000));
         break;
-      case ERRORED:
+      case FAILED:
       case FINISHED:
       case TIMED_OUT:
         execution.setEndTime((int) (System.currentTimeMillis() / 1000));
@@ -12746,7 +12746,7 @@ public class ObjectStore implements RawStore, Configurable {
     case EXECUTING:
       return to == QueryState.FINISHED
           || to == QueryState.EXECUTING
-          || to == QueryState.ERRORED;
+          || to == QueryState.FAILED;
     default:
       return false;
     }

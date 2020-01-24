@@ -338,13 +338,13 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     Thread.sleep(1000);
 
     info = new ScheduledQueryProgressInfo(
-        pollResult.getExecutionId(), QueryState.ERRORED, "executor-query-id");
+        pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
     //    info.set
     client.scheduledQueryProgress(info);
 
     try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
       MScheduledExecution q = pm.getObjectById(MScheduledExecution.class, pollResult.getExecutionId());
-      assertEquals(QueryState.ERRORED, q.getState());
+      assertEquals(QueryState.FAILED, q.getState());
       assertEquals("executor-query-id", q.getExecutorQueryId());
       assertNull(q.getLastUpdateTime());
       assertTrue(q.getEndTime() <= getEpochSeconds());
