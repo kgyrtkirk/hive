@@ -157,13 +157,17 @@ public class ScheduledQueryExecutionService implements Closeable {
 
     @Override
     public void run() {
-      while (!Thread.interrupted()) {
+      while (true) {
         try {
           Thread.sleep(context.getProgressReporterSleepTime());
         } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
+          // Thread.currentThread().interrupt();
         }
-        worker.reportQueryProgress();
+        try {
+          worker.reportQueryProgress();
+        } catch (Exception e) {
+          LOG.error("ProgressReporter encountered exception ", e);
+        }
       }
     }
   }
