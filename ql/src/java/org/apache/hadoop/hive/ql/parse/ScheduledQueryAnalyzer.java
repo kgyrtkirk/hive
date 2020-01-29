@@ -173,7 +173,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
     case HiveParser.TOK_SCHEDULE:
-      schq.setSchedule(interpretEveryNode(node.getChild(0).getChild(0), node.getChild(1).getType(), node.getChild(2)));
+      schq.setSchedule(interpretEveryNode(parseInteger(node.getChild(0).getChild(0), 1), node.getChild(1).getType(), parseTimeStamp(node.getChild(2))));
       return;
     case HiveParser.TOK_EXECUTED_AS:
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
@@ -186,16 +186,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private String interpretEveryNode(Tree everyN, int intervalToken, Tree offsetNode) throws SemanticException {
-
-    int every;
-    if (everyN == null) {
-      every = 1;
-    } else {
-      every = Integer.parseInt(everyN.getText());
-    }
-    Timestamp ts = parseTimeStamp(offsetNode);
-
+  private String interpretEveryNode(int every, int intervalToken, Timestamp ts) throws SemanticException {
     CronBuilder b = getDefaultCronBuilder();
     switch (intervalToken) {
     case HiveParser.TOK_INTERVAL_DAY_LITERAL:
@@ -230,6 +221,14 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
       return always();
     } else {
       return on(n);
+    }
+  }
+
+  private int parseInteger(Tree node, int def) {
+    if (node == null) {
+      return def;
+    } else {
+      return Integer.parseInt(node.getText());
     }
   }
 

@@ -2135,7 +2135,7 @@ scheduleSpec
 @after { popMsg(state); }
         : KW_CRON cronString=StringLiteral -> ^(TOK_CRON $cronString)
         | KW_EVERY value=Number? qualifier=intervalQualifiers
-        	((KW_AT|KW_OFFSET KW_BY) offsetTs=StringLiteral)? -> ^(TOK_SCHEDULE ^(TOK_EVERY $value?) $qualifier $offsetTs?) 
+        ((KW_AT|KW_OFFSET KW_BY) offsetTs=StringLiteral)? -> ^(TOK_SCHEDULE ^(TOK_EVERY $value?) $qualifier $offsetTs?) 
         ;
 
 executedAsSpec
