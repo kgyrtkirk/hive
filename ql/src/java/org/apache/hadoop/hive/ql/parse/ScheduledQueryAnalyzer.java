@@ -18,9 +18,15 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.cronutils.builder.CronBuilder;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.field.expression.FieldExpression;
 import com.google.common.base.Objects;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
@@ -35,9 +41,12 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.common.util.TimestampParser;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.cronutils.model.field.expression.FieldExpressionFactory.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -163,6 +172,9 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_CRON:
       schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
+    case HiveParser.TOK_EVERY:
+      schq.setSchedule(interpretEveryNode(node.getChild(0), node.getChild(1).getType(), node.getChild(2)));
+      return;
     case HiveParser.TOK_EXECUTED_AS:
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
       return;
@@ -172,6 +184,74 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     default:
       throw new SemanticException("Unexpected token: " + node.getType());
     }
+  }
+
+  // every N minute
+  @Deprecated
+  private String interpretEveryNode(Tree everyN, int intervalToken, Tree offsetNode) {
+
+    int every;
+    if (everyN == null) {
+      every = 1;
+    } else {
+      every = Integer.parseInt(everyN.getText());
+    }
+    Timestamp ts = parseTimeStamp(offsetNode);
+
+    CronBuilder b = getDefaultCronBuilder();
+    switch (intervalToken) {
+    case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
+      b.withSecond(on(ts.getSeconds()));
+      b.withMinute(on(ts.getMinutes()));
+      b.withHour(every(on0(ts.getHours()), every));
+      break;
+    case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
+      b.withSecond(on(ts.getSeconds()));
+      b.withMinute(every(on0(ts.getMinutes()), every));
+      break;
+    case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
+      b.withSecond(every(on0(ts.getSeconds()), every));
+      break;
+    }
+
+    return b.instance().asString();
+  }
+
+  private FieldExpression on0(int n) {
+    if (n == 0) {
+      return always();
+    } else {
+      return on(n);
+    }
+  }
+
+  private Timestamp parseTimeStamp(Tree offsetNode) {
+    if (offsetNode == null) {
+      return new Timestamp();
+    }
+    List<String> s = new ArrayList<>();
+    s.add(TimestampParser.ISO_8601_FORMAT_STR);
+    s.add(TimestampParser.RFC_1123_FORMAT_STR);
+    s.add("MM:dd:ss");
+    s.add("HH:mm");
+
+    TimestampParser p = new TimestampParser(s);
+    return p.parseTimestamp(offsetNode.getText());
+  }
+
+
+  private CronBuilder getDefaultCronBuilder() {
+    CronDefinition definition = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
+    CronBuilder b = CronBuilder.cron(definition)
+        .withYear(always())
+        .withDoM(always())
+        .withMonth(always())
+        .withDoW(questionMark())
+        .withHour(always())
+        .withMinute(always())
+        .withMinute(always())
+        .withSecond(always());
+    return b;
   }
 
   private void checkAuthorization(ScheduledQueryMaintenanceRequestType type, ScheduledQuery schq)
