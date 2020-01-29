@@ -172,8 +172,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_CRON:
       schq.setSchedule(unescapeSQLString(node.getChild(0).getText()));
       return;
-    case HiveParser.TOK_EVERY:
-      schq.setSchedule(interpretEveryNode(node.getChild(0), node.getChild(1).getType(), node.getChild(2)));
+    case HiveParser.TOK_SCHEDULE:
+      schq.setSchedule(interpretEveryNode(node.getChild(0).getChild(0), node.getChild(1).getType(), node.getChild(2)));
       return;
     case HiveParser.TOK_EXECUTED_AS:
       schq.setUser(unescapeSQLString(node.getChild(0).getText()));
@@ -186,9 +186,7 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  // every N minute
-  @Deprecated
-  private String interpretEveryNode(Tree everyN, int intervalToken, Tree offsetNode) {
+  private String interpretEveryNode(Tree everyN, int intervalToken, Tree offsetNode) throws SemanticException {
 
     int every;
     if (everyN == null) {
@@ -200,6 +198,14 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
     CronBuilder b = getDefaultCronBuilder();
     switch (intervalToken) {
+    case HiveParser.TOK_INTERVAL_DAY_LITERAL:
+      if (every != 1) {
+        throw new SemanticException("EVERY " + every + " DAY is not supported; only EVERY DAY is supported");
+      }
+      b.withSecond(on(ts.getSeconds()));
+      b.withMinute(on(ts.getMinutes()));
+      b.withHour(on(ts.getHours()));
+      break;
     case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
       b.withSecond(on(ts.getSeconds()));
       b.withMinute(on(ts.getMinutes()));
@@ -212,6 +218,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
       b.withSecond(every(on0(ts.getSeconds()), every));
       break;
+    default:
+      throw new SemanticException("not supported schedule interval(only HOUR/MINUTE/SECOND is supported)");
     }
 
     return b.instance().asString();
@@ -232,11 +240,12 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     List<String> s = new ArrayList<>();
     s.add(TimestampParser.ISO_8601_FORMAT_STR);
     s.add(TimestampParser.RFC_1123_FORMAT_STR);
-    s.add("MM:dd:ss");
+    s.add("HH:mm:ss");
+    s.add("H:mm:ss");
     s.add("HH:mm");
 
     TimestampParser p = new TimestampParser(s);
-    return p.parseTimestamp(offsetNode.getText());
+    return p.parseTimestamp(unescapeSQLString(offsetNode.getText()));
   }
 
 

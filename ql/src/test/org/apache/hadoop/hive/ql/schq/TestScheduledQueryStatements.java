@@ -109,7 +109,7 @@ public class TestScheduledQueryStatements {
 
   @Test
   public void testMinutes() throws ParseException, Exception {
-    checkScheduleCreation(getMethodName(), "every minute", "0 */1 * * * ? *");
+    checkScheduleCreation(getMethodName(), "every minute", "0 * * * * ? *");
   }
 
   @Test
@@ -117,6 +117,30 @@ public class TestScheduledQueryStatements {
     checkScheduleCreation(getMethodName(), "every 10 minutes", "0 */10 * * * ? *");
   }
 
+  @Test
+  public void test10Seconds() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 10 seconds", "*/10 * * * * ? *");
+  }
+
+  @Test
+  public void test4Hours() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 4 hours", "0 0 */4 * * ? *");
+  }
+
+  @Test
+  public void test4Hours2() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every 4 hours offset by '2:03:04'", "4 3 2/4 * * ? *");
+  }
+
+  @Test
+  public void testDay() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every day offset by '2:03:04'", "4 3 2 * * ? *");
+  }
+
+  @Test
+  public void testDay2() throws ParseException, Exception {
+    checkScheduleCreation(getMethodName(), "every day at '2:03:04'", "4 3 2 * * ? *");
+  }
 
   @Test(expected = CommandProcessorException.class)
   public void testNonExistentTable1() throws ParseException, Exception {
