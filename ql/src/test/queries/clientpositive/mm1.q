@@ -1,4 +1,4 @@
-set hive.optimize.point.lookup=false;
+
 drop materialized view if exists mv1;
 drop materialized view if exists mv2;
 
