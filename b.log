@@ -1,0 +1,17 @@
+waiting for port 10000 to be open...done!
++--------------------------------------+
+|               Explain                |
++--------------------------------------+
+| Plan optimized by CBO.               |
+|                                      |
+| Stage-0                              |
+|   Fetch Operator                     |
+|     limit:-1                         |
+|     Select Operator [SEL_2]          |
+|       Output:["_col0"]               |
+|       Filter Operator [FIL_4]        |
+|         predicate:(deptno > 20)      |
+|         TableScan [TS_0]             |
+|           Output:["empid","deptno"]  |
+|                                      |
++--------------------------------------+
