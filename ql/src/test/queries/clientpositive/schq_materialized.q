@@ -45,9 +45,9 @@ SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01';
 
--- create a schedule to rebuild
+-- create a schedule to rebuild mv
 create scheduled query d every 10 minute at '00:56:00' defined as 
   alter materialized view mv1 rebuild;
 
--- make the MV view outdated
-insert into emps values (1330, 10, 'Bill', 10000, '2020-01-02');
+-- expected result to have it created
+select * from sys.scheduled_queries;
