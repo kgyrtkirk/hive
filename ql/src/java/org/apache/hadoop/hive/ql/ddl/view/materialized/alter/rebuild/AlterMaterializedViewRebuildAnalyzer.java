@@ -53,6 +53,9 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       super.analyzeInternal(root);
       return;
     }
+    if (ctx.enableUnparse()) {
+      return;
+    }
 
     TableName tableName = getQualifiedTableName((ASTNode) root.getChild(0));
     ASTNode rewrittenAST = getRewrittenAST(tableName);
