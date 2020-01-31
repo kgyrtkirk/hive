@@ -1,3 +1,5 @@
+--! qt:sysdb
+
 drop materialized view if exists mv1;
 drop table if exists emps;
 drop table if exists depts;
@@ -46,7 +48,7 @@ JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01';
 
 -- create a schedule to rebuild mv
-create scheduled query d every 10 minute at '00:56:00' defined as 
+create scheduled query d cron '0 */10 * * * ? *' defined as 
   alter materialized view mv1 rebuild;
 
 -- expected result to have it created
