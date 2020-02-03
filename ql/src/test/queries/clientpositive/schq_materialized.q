@@ -51,5 +51,7 @@ WHERE hire_date >= '2018-01-01';
 create scheduled query d cron '0 */10 * * * ? *' defined as 
   alter materialized view mv1 rebuild;
 
+
+set hive.support.quoted.identifiers=none;
 -- expected result to have it created
-select * from sys.scheduled_queries;
+select `(NEXT_EXECUTION)?+.+` from sys.scheduled_queries;
