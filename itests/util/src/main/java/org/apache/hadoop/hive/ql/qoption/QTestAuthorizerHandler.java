@@ -39,6 +39,7 @@ public class QTestAuthorizerHandler implements QTestOptionHandler {
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
+			qt.newSession(false);
       qt.getConf().set("hive.test.authz.sstd.hs2.mode", "true");
       qt.getConf().set("hive.security.authorization.manager",
           "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest");
