@@ -24,13 +24,13 @@ import java.util.Set;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.TableFunctionScan;
+import org.apache.calcite.rel.logical.LogicalTableFunctionScan;
 import org.apache.calcite.rel.metadata.RelColumnMapping;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 
-public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelNode {
+public class HiveTableFunctionScan extends LogicalTableFunctionScan implements HiveRelNode {
 
   /**
    * @param cluster
@@ -61,7 +61,7 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
   }
 
   @Override
-  public TableFunctionScan copy(RelTraitSet traitSet, List<RelNode> inputs, RexNode rexCall,
+  public LogicalTableFunctionScan copy(RelTraitSet traitSet, List<RelNode> inputs, RexNode rexCall,
       Type elementType, RelDataType rowType, Set<RelColumnMapping> columnMappings) {
     return new HiveTableFunctionScan(getCluster(), traitSet, inputs, rexCall,
         elementType, rowType, columnMappings);
