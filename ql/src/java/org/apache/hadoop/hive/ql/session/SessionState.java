@@ -260,8 +260,6 @@ public class SessionState {
    */
   private Map<URI, HadoopShims.HdfsErasureCodingShim> erasureCodingShims;
 
-  private final String userName;
-
   /**
    *  scratch path to use for all non-local (ie. hdfs) file system tmp folders
    *  @return Path for Scratch path for the current session
@@ -401,16 +399,8 @@ public class SessionState {
   }
 
   public SessionState(HiveConf conf) {
-    this(conf, null);
-  }
-
-  public SessionState(HiveConf conf, String userName) {
     this.sessionConf = conf;
-    this.userName = userName;
     this.registry = new Registry(false);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("SessionState user: " + userName);
-    }
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
@@ -1909,10 +1899,6 @@ public class SessionState {
     }
   }
 
-  public String getUserName() {
-    return userName;
-  }
-
   /**
    * If authorization mode is v2, then pass it through authorizer so that it can apply
    * any security configuration changes.
@@ -2077,6 +2063,10 @@ public class SessionState {
 
   public String getNewSparkSessionId() {
     return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
+  }
+
+  public String getUserName1() {
+    return getUserFromAuthenticator();
   }
 }
 

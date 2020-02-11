@@ -618,12 +618,13 @@ public class TestStatsUpdaterThread {
   }
 
   private void drainWorkQueue(StatsUpdaterThread su) throws InterruptedException {
-    while (su.runOneWorkerIteration(ss, ss.getUserName(), ss.getConf(), false)) {}
+    while (su.runOneWorkerIteration(ss, ss.getUserName1(), ss.getConf(), false)) {
+    }
   }
 
   private void drainWorkQueue(StatsUpdaterThread su, int expectedReqs) throws InterruptedException {
     int actualReqs = 0;
-    while (su.runOneWorkerIteration(ss, ss.getUserName(), ss.getConf(), false)) {
+    while (su.runOneWorkerIteration(ss, ss.getUserName1(), ss.getConf(), false)) {
       ++actualReqs;
     }
     assertEquals(expectedReqs, actualReqs);
@@ -716,7 +717,7 @@ public class TestStatsUpdaterThread {
   }
 
   private void executeQuery(String query) throws HiveException {
-    DriverUtils.runOnDriver(hiveConf, ss.getUserName(), ss, query);
+    DriverUtils.runOnDriver(hiveConf, ss.getUserName1(), ss, query);
   }
 
   private StatsUpdaterThread createUpdater() throws MetaException {

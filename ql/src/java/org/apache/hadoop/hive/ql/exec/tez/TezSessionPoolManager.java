@@ -251,8 +251,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
         SessionState ss = SessionState.get();
         String userName = null;
         if (ss != null) {
+          //FIXME remove crap
           userName = ss.getAuthenticator() != null
-              ? ss.getAuthenticator().getUserName() : ss.getUserName();
+            ? ss.getAuthenticator().getUserName() : ss.getUserName1();
         }
         if (userName == null) {
           userName = Utils.getUGI().getShortUserName();
@@ -451,7 +452,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       return (queueName == null) ? confQueueName == null : queueName.equals(confQueueName);
     } else {
       // this session should never be a default session unless something has messed up.
-      throw new HiveException("The pool session " + session + " should have been returned to the pool"); 
+      throw new HiveException("The pool session " + session + " should have been returned to the pool");
     }
   }
 

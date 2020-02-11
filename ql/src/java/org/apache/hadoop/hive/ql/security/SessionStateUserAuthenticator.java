@@ -29,24 +29,28 @@ import org.apache.hadoop.security.UserGroupInformation;
  * Authenticator that returns the userName set in SessionState. For use when authorizing with HS2
  * so that HS2 can set the user for the session through SessionState
  */
+@Deprecated
 public class SessionStateUserAuthenticator implements HiveAuthenticationProvider {
 
   protected Configuration conf;
   private SessionState sessionState;
   private List<String> groups;
 
+  public SessionStateUserAuthenticator() {
+    throw new RuntimeException("dont use this!");
+  }
+
   @Override
   public List<String> getGroupNames() {
-       // In case of embedded hs2, sessionState.getUserName()=null
-    if (groups == null && sessionState.getUserName() != null) {
-      groups = UserGroupInformation.createRemoteUser(sessionState.getUserName()).getGroups();
+    if (groups == null) {
+      groups = UserGroupInformation.createRemoteUser(sessionState.getUserName1()).getGroups();
     }
     return groups;
   }
 
   @Override
   public String getUserName() {
-    return sessionState.getUserName();
+    return sessionState.getUserName1();
   }
 
   @Override

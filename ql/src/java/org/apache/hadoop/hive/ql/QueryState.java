@@ -135,7 +135,7 @@ public class QueryState {
       jobTag = jobTag.concat("," + queryTag);
     }
     if (SessionState.get() != null) {
-      jobTag = jobTag.concat("," + USERID_TAG + "=" + SessionState.get().getUserName());
+      jobTag = jobTag.concat("," + USERID_TAG + "=" + SessionState.get().getUserName1());
     }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);

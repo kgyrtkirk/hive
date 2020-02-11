@@ -107,10 +107,11 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
 
   private String getUserName() {
     SessionState sessionState = SessionState.get();
+    // FIXME remove crap like this from everywhere:
     if (sessionState.getAuthenticator() != null && sessionState.getAuthenticator().getUserName() != null) {
       return sessionState.getAuthenticator().getUserName();
     }
-    String userName = sessionState.getUserName();
+    String userName = sessionState.getUserName1();
     if(userName == null) {
      throw new RuntimeException("userName is unset; this is unexpected");
     }

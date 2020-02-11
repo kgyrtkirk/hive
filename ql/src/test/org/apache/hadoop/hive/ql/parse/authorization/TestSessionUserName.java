@@ -67,22 +67,6 @@ public class TestSessionUserName {
   }
 
   /**
-   * Test if the authorization factory gets the username set in the SessionState constructor
-   * @throws Exception
-   */
-  @Test
-  public void testSessionConstructorUser() throws Exception {
-    final String USER_NAME = "authtestuser";
-    SessionState ss = new SessionState(getAuthV2HiveConf(), USER_NAME);
-    setupDataNucleusFreeHive(ss.getConf());
-    SessionState.start(ss);
-    ss.getAuthenticator();
-
-    Assert.assertEquals("check username", USER_NAME,
-        HiveAuthorizerStoringUserNameFactory.username);
-  }
-
-  /**
    * Test that the groupNames are retrieved properly from UGI
    * @throws Exception
    */
@@ -92,7 +76,9 @@ public class TestSessionUserName {
     final List<String> testGroups = Arrays.asList("group1", "group2");
     UserGroupInformation.createUserForTesting(testUser, testGroups.toArray(new String[0]));
 
-    SessionState ss = new SessionState(getAuthV2HiveConf(), testUser);
+    HiveConf conf = getAuthV2HiveConf();
+    conf.set("user.name", testUser);
+    SessionState ss = new SessionState(conf);
     setupDataNucleusFreeHive(ss.getConf());
     assertEquals("check groups", testGroups, ss.getAuthenticator().getGroupNames());
   }
@@ -104,7 +90,7 @@ public class TestSessionUserName {
    */
   @Test
   public void testSessionNullUser() throws Exception {
-    SessionState ss = new SessionState(getAuthV2HiveConf(), null);
+		SessionState ss = new SessionState(getAuthV2HiveConf());
     setupDataNucleusFreeHive(ss.getConf());
     SessionState.start(ss);
 

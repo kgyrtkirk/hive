@@ -366,7 +366,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   @Override
   public List<String> getCurrentRoleNames() throws HiveAuthzPluginException {
 
-    String userName = SessionState.get().getUserName();
+    String userName = SessionState.get().getUserName1();
     if (userName == null) {
       userName = SessionState.getUserFromAuthenticator();
     }

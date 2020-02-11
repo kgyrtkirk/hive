@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.scheduled.XL1;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
@@ -94,7 +95,8 @@ public final class DriverUtils {
     if (sessionState == null) {
       // Note: we assume that workers run on the same threads repeatedly, so we can set up
       //       the session here and it will be reused without explicitly storing in the worker.
-      sessionState = new SessionState(conf, user);
+      XL1.setupCC(conf, user);
+      sessionState = new SessionState(conf);
       if (doStart) {
         // TODO: Required due to SessionState.getHDFSSessionPath. Why wasn't it required before?
         sessionState.setIsHiveServerQuery(true);

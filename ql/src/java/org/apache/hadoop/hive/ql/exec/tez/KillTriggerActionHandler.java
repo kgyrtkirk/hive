@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.scheduled.XL1;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.Trigger;
@@ -43,8 +44,9 @@ public class KillTriggerActionHandler implements TriggerActionHandler<TezSession
         TezSessionState sessionState = entry.getKey();
         String queryId = sessionState.getWmContext().getQueryId();
         try {
-          UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-          SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
+          HiveConf sessionConf = new HiveConf();
+          XL1.setupCC(sessionConf, UserGroupInformation.getCurrentUser().getShortUserName());
+          SessionState ss = new SessionState(sessionConf);
           ss.setIsHiveServerQuery(true);
           SessionState.start(ss);
           KillQuery killQuery = sessionState.getKillQuery();

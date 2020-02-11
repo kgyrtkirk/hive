@@ -193,7 +193,7 @@ public class Compiler {
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
     if (executeHooks) {
       hookCtx.setConf(driverContext.getConf());
-      hookCtx.setUserName(SessionState.get().getUserName());
+      hookCtx.setUserName(SessionState.get().getUserName1());
       hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
       hookCtx.setCommand(context.getCmd());
       hookCtx.setHiveOperation(driverContext.getQueryState().getHiveOperation());

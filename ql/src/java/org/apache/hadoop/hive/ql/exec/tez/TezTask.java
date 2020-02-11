@@ -329,9 +329,12 @@ public class TezTask extends Task<TezWork> {
     // This should be removed when authenticator and the 2-username mess is cleaned up.
     if (ss.getAuthenticator() != null) {
       String userName = ss.getAuthenticator().getUserName();
-      if (userName != null) return userName;
+      if (userName != null) {
+        return userName;
+      }
     }
-    return ss.getUserName();
+    //FIXME crap
+    return ss.getUserName1();
   }
 
   private void closeDagClientOnCancellation(DAGClient dagClient) {
@@ -347,7 +350,9 @@ public class TezTask extends Task<TezWork> {
 
   private void logResources(List<LocalResource> additionalLr) {
     // log which resources we're adding (apart from the hive exec)
-    if (!LOG.isDebugEnabled()) return;
+    if (!LOG.isDebugEnabled()) {
+      return;
+    }
     if (additionalLr == null || additionalLr.size() == 0) {
       LOG.debug("No local resources to process (other than hive-exec)");
     } else {
@@ -686,7 +691,9 @@ public class TezTask extends Task<TezWork> {
     }
     LOG.info("Shutting down Tez task " + this + " "
         + ((dagClient == null) ? " before submit" : ""));
-    if (dagClient == null) return;
+    if (dagClient == null) {
+      return;
+    }
     closeDagClientOnCancellation(dagClient);
   }
 

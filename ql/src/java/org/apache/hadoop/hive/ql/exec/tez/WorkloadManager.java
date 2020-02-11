@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import org.apache.hadoop.hive.ql.exec.tez.WmEvent.EventType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.scheduled.XL1;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
@@ -248,7 +249,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private static int determineQueryParallelism(WMFullResourcePlan plan) {
-    if (plan == null) return 0;
+    if (plan == null) {
+      return 0;
+    }
     int result = 0;
     for (WMPool pool : plan.getPools()) {
       result += pool.getQueryParallelism();
@@ -440,8 +443,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             WmEvent wmEvent = new WmEvent(WmEvent.EventType.KILL);
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
-              UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-              SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
+              HiveConf sessionConf = new HiveConf();
+              XL1.setupCC(sessionConf, UserGroupInformation.getCurrentUser().getShortUserName());
+              SessionState ss = new SessionState(sessionConf);
               ss.setIsHiveServerQuery(true);
               SessionState.start(ss);
               kq.killQuery(queryId, reason, toKill.getConf());
@@ -1069,7 +1073,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     LOG.info("Updating with " + totalQueryParallelism + " total query parallelism");
     int deltaSessions = totalQueryParallelism - this.totalQueryParallelism;
     this.totalQueryParallelism = totalQueryParallelism;
-    if (deltaSessions == 0) return; // Nothing to do.
+    if (deltaSessions == 0)
+     {
+      return; // Nothing to do.
+    }
     if (deltaSessions < 0) {
       // First, see if we have sessions that we were planning to restart/kill; get rid of those.
       deltaSessions = transferSessionsToDestroy(
@@ -1086,7 +1093,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       List<WmTezSession> toDestroy, int deltaSessions) {
     // We were going to kill some queries and reuse the sessions, or maybe restart and put the new
     // ones back into the AM pool. However, the AM pool has shrunk, so we will close them instead.
-    if (deltaSessions >= 0) return deltaSessions;
+    if (deltaSessions >= 0) {
+      return deltaSessions;
+    }
     int toTransfer = Math.min(-deltaSessions, source.size());
     Iterator<WmTezSession> iter = source.iterator();
     for (int i = 0; i < toTransfer; ++i) {
@@ -1175,7 +1184,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private void processPoolChangesOnMasterThread(
       String poolName, boolean hasRequeues, WmThreadSyncWork syncWork) throws Exception {
     PoolState pool = pools.get(poolName);
-    if (pool == null) return; // Might be from before the new resource plan.
+    if (pool == null)
+     {
+      return; // Might be from before the new resource plan.
+    }
 
     // 1. First, start the queries from the queue.
     int queriesToStart = Math.min(pool.queue.size(),
@@ -1231,7 +1243,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private void returnSessionOnFailedReuse(
       GetRequest req, WmThreadSyncWork syncWork, HashSet<String> poolsToRedistribute) {
     WmTezSession session = req.sessionToReuse;
-    if (session == null) return;
+    if (session == null) {
+      return;
+    }
     req.sessionToReuse = null;
     session.setQueryId(null);
     if (poolsToRedistribute != null) {
@@ -1241,7 +1255,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       // the current iteration, so we would have cleared sessionToReuse when killing this.
       boolean isOk = (rr == RemoveSessionResult.OK);
       assert isOk || rr == RemoveSessionResult.IGNORE;
-      if (!isOk) return;
+      if (!isOk) {
+        return;
+      }
     }
     WmEvent wmEvent = new WmEvent(WmEvent.EventType.RETURN);
     if (!tezAmPool.returnSessionAsync(session)) {
@@ -1383,7 +1399,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   private final static class GetRequest {
     public static final Comparator<GetRequest> ORDER_COMPARATOR = (o1, o2) -> {
-      if (o1.order == o2.order) return 0;
+      if (o1.order == o2.order) {
+        return 0;
+      }
       return o1.order < o2.order ? -1 : 1;
     };
     private final long order;
@@ -1506,7 +1524,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     try {
       Integer existing = current.updateErrors.get(wmTezSession);
       // Only store the latest error, if there are multiple.
-      if (existing != null && existing >= endpointVersion) return;
+      if (existing != null && existing >= endpointVersion) {
+        return;
+      }
       current.updateErrors.put(wmTezSession, endpointVersion);
       notifyWmThreadUnderLock();
     } finally {
@@ -1616,13 +1636,17 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   // ======= VARIOUS UTILITY METHOD
 
   private void notifyWmThreadUnderLock() {
-    if (hasChanges) return;
+    if (hasChanges) {
+      return;
+    }
     hasChanges = true;
     hasChangesCondition.signalAll();
   }
 
   private WmTezSession checkSessionForReuse(TezSessionState session) throws Exception {
-    if (session == null) return null;
+    if (session == null) {
+      return null;
+    }
     WmTezSession result = null;
     if (session instanceof WmTezSession) {
       result = (WmTezSession) session;
@@ -1811,7 +1835,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       switch (schedulingPolicy) {
       case FAIR:
         int totalSessions = sessions.size() + initializingSessions.size();
-        if (totalSessions == 0) return 0;
+        if (totalSessions == 0) {
+          return 0;
+        }
         double allocation = finalFractionRemaining / totalSessions;
         for (WmTezSession session : sessions) {
           updateSessionAllocationWithEvent(session, allocation);
@@ -1820,7 +1846,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         // we expect init to be fast.
         return finalFractionRemaining - allocation * initializingSessions.size();
       case FIFO:
-        if (sessions.isEmpty()) return 0;
+        if (sessions.isEmpty()) {
+          return 0;
+        }
         boolean isFirst = true;
         for (WmTezSession session : sessions) {
           updateSessionAllocationWithEvent(session, isFirst ? finalFractionRemaining : 0);
@@ -2063,7 +2091,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
 
     public void discardSessionOnFailure(WmTezSession session) {
-      if (session == null) return;
+      if (session == null) {
+        return;
+      }
       session.clearWm();
       session.setQueryId(null);
       // We can just restart the session if we have received one.
@@ -2106,7 +2136,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         List<WmTezSession> results, List<Path> toDelete) {
       lock.lock();
       try {
-        if (state != SessionInitState.DONE) return false;
+        if (state != SessionInitState.DONE) {
+          return false;
+        }
         this.state = SessionInitState.CANCELED;
         if (pathToDelete != null) {
           toDelete.add(pathToDelete);
@@ -2189,7 +2221,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         session.setIsIrrelevantForWm(reason);
         return KillQueryResult.RESTART_REQUIRED;
       }
-      if (!isUserDone || !isKillDone) return KillQueryResult.IN_PROGRESS; // Someone is not done.
+      if (!isUserDone || !isKillDone)
+       {
+        return KillQueryResult.IN_PROGRESS; // Someone is not done.
+      }
       // Both user and the kill have returned.
       if (hasUserFailed && hasKillFailed) {
         // If the kill failed and the user also thinks the session is invalid, restart it.
