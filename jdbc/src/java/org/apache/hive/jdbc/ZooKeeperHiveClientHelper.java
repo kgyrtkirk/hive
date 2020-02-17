@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -49,13 +50,25 @@ class ZooKeeperHiveClientHelper {
     String zooKeeperNamespace = connParams.getSessionVars().get(JdbcConnectionParams.ZOOKEEPER_NAMESPACE);
     if ((zooKeeperNamespace == null) || (zooKeeperNamespace.isEmpty())) {
       // if active passive HA enabled, use default HA namespace
-      if (X0.isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
+      if (isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
         zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_ACTIVE_PASSIVE_HA_DEFAULT_NAMESPACE;
       } else {
         zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_DEFAULT_NAMESPACE;
       }
     }
     return zooKeeperNamespace;
+  }
+
+  /**
+   * Returns true is only if HA service discovery mode is enabled
+   *
+   * @param sessionConf - session configuration
+   * @return true if serviceDiscoveryMode=zooKeeperHA is specified in JDBC URI
+   */
+  public static boolean isZkHADynamicDiscoveryMode(Map<String, String> sessionConf) {
+    final String discoveryMode = sessionConf.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE);
+    return (discoveryMode != null) &&
+      JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode);
   }
 
   /**
@@ -71,7 +84,7 @@ class ZooKeeperHiveClientHelper {
       JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode));
   }
 
-  static CuratorFramework getZkClient(JdbcConnectionParams connParams) throws Exception {
+  private static CuratorFramework getZkClient(JdbcConnectionParams connParams) throws Exception {
     String zooKeeperEnsemble = connParams.getZooKeeperEnsemble();
     CuratorFramework zooKeeperClient =
         CuratorFrameworkFactory.builder().connectString(zooKeeperEnsemble)
@@ -80,7 +93,7 @@ class ZooKeeperHiveClientHelper {
     return zooKeeperClient;
   }
 
-  static List<String> getServerHosts(JdbcConnectionParams connParams, CuratorFramework
+  private static List<String> getServerHosts(JdbcConnectionParams connParams, CuratorFramework
       zooKeeperClient) throws Exception {
     List<String> serverHosts = zooKeeperClient.getChildren().forPath("/" + getZooKeeperNamespace(connParams));
     // Remove the znodes we've already tried from this list
@@ -92,7 +105,7 @@ class ZooKeeperHiveClientHelper {
     return serverHosts;
   }
 
-  static void updateParamsWithZKServerNode(JdbcConnectionParams connParams,
+  private static void updateParamsWithZKServerNode(JdbcConnectionParams connParams,
       CuratorFramework zooKeeperClient, String serverNode) throws Exception {
     String zooKeeperNamespace = getZooKeeperNamespace(connParams);
     connParams.setCurrentHostZnodePath(serverNode);
@@ -120,7 +133,7 @@ class ZooKeeperHiveClientHelper {
   }
 
   static void configureConnParams(JdbcConnectionParams connParams) throws ZooKeeperHiveClientException {
-    if (X0.isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
+    if (isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
       configureConnParamsHA(connParams);
     } else {
       CuratorFramework zooKeeperClient = null;
@@ -185,6 +198,30 @@ class ZooKeeperHiveClientHelper {
       }
     } catch (Exception e) {
       throw new ZooKeeperHiveClientException("Unable to read HiveServer2 configs from ZooKeeper", e);
+    }
+  }
+
+  static List<JdbcConnectionParams> getDirectParamsList(JdbcConnectionParams connParams)
+      throws ZooKeeperHiveClientException {
+    CuratorFramework zooKeeperClient = null;
+    try {
+      zooKeeperClient = getZkClient(connParams);
+      List<String> serverHosts = getServerHosts(connParams, zooKeeperClient);
+      final List<JdbcConnectionParams> directParamsList = new ArrayList<>();
+      // For each node
+      for (String serverNode : serverHosts) {
+        JdbcConnectionParams directConnParams = new JdbcConnectionParams(connParams);
+        directParamsList.add(directConnParams);
+        updateParamsWithZKServerNode(directConnParams, zooKeeperClient, serverNode);
+      }
+      return directParamsList;
+    } catch (Exception e) {
+      throw new ZooKeeperHiveClientException("Unable to read HiveServer2 configs from ZooKeeper", e);
+    } finally {
+      // Close the client connection with ZooKeeper
+      if (zooKeeperClient != null) {
+        zooKeeperClient.close();
+      }
     }
   }
 

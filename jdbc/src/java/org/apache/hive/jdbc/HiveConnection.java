@@ -160,10 +160,10 @@ public class HiveConnection implements java.sql.Connection {
     // if zk is disabled or if HA service discovery is enabled we return the already populated params.
     // in HA mode, params is already populated with Active server host info.
     if (params.getZooKeeperEnsemble() == null ||
-      X0.isZkHADynamicDiscoveryMode(params.getSessionVars())) {
+      ZooKeeperHiveClientHelper.isZkHADynamicDiscoveryMode(params.getSessionVars())) {
       return Collections.singletonList(params);
     }
-    return X0.getDirectParamsList(params);
+    return ZooKeeperHiveClientHelper.getDirectParamsList(params);
   }
 
   public static List<String> getAllUrlStrings(String zookeeperBasedHS2Url) throws Exception {
