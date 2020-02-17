@@ -345,7 +345,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname));
     // Transport specific confs
-    if (HiveServer2.isHTTPTransportMode(conf)) {
+    if (HiveServer2ClientUtils.isHTTPTransportMode(conf)) {
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname,
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname));
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname,
@@ -359,7 +359,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     // Auth specific confs
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname));
-    if (HiveServer2.isKerberosAuthMode(conf)) {
+    if (HiveServer2ClientUtils.isKerberosAuthMode(conf)) {
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname));
     }

@@ -51,7 +51,6 @@ import org.apache.curator.framework.api.CuratorEventType;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
@@ -222,7 +221,7 @@ public class HiveServer2 extends CompositeService {
         hiveServer2.stop();
       }
     };
-    if (isHTTPTransportMode(hiveConf)) {
+    if (HiveServer2ClientUtils.isHTTPTransportMode(hiveConf)) {
       thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
     } else {
       thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
@@ -450,25 +449,6 @@ public class HiveServer2 extends CompositeService {
     return resourcePlan;
   }
 
-  public static boolean isHTTPTransportMode(Configuration hiveConf) {
-    String transportMode = System.getenv("HIVE_SERVER2_TRANSPORT_MODE");
-    if (transportMode == null) {
-      transportMode = hiveConf.get(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
-    }
-    if (transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean isKerberosAuthMode(Configuration hiveConf) {
-    String authMode = hiveConf.get(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname);
-    if (authMode != null && (authMode.equalsIgnoreCase("KERBEROS"))) {
-      return true;
-    }
-    return false;
-  }
-
   /**
    * ACLProvider for providing appropriate ACLs to CuratorFrameworkFactory
    */
@@ -515,7 +495,7 @@ public class HiveServer2 extends CompositeService {
     confsToPublish.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE));
     // Transport specific confs
-    if (isHTTPTransportMode(hiveConf)) {
+    if (HiveServer2ClientUtils.isHTTPTransportMode(hiveConf)) {
       confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.varname,
           Integer.toString(hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT)));
       confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname,
@@ -529,7 +509,7 @@ public class HiveServer2 extends CompositeService {
     // Auth specific confs
     confsToPublish.put(ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION));
-    if (isKerberosAuthMode(hiveConf)) {
+    if (HiveServer2ClientUtils.isKerberosAuthMode(hiveConf)) {
       confsToPublish.put(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
           hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
     }

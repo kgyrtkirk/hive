@@ -112,7 +112,7 @@ import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
-import org.apache.hive.service.server.HiveServer2;
+import org.apache.hive.service.server.HiveServer2ClientUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
@@ -182,7 +182,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     // Initialize common server configs needed in both binary & http modes
     String portString;
     // HTTP mode
-    if (HiveServer2.isHTTPTransportMode(hiveConf)) {
+    if (HiveServer2ClientUtils.isHTTPTransportMode(hiveConf)) {
       workerKeepAliveTime =
           hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_WORKER_KEEPALIVE_TIME,
               TimeUnit.SECONDS);
