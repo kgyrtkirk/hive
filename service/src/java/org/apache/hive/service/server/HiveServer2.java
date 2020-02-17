@@ -568,23 +568,6 @@ public class HiveServer2 extends CompositeService {
     return cliService != null ? cliService.getSessionManager().getOpenSessionCount() : 0;
   }
 
-  interface FailoverHandler {
-    void failover() throws Exception;
-  }
-
-  public static class FailoverHandlerCallback implements FailoverHandler {
-    private HS2ActivePassiveHARegistry hs2HARegistry;
-
-    FailoverHandlerCallback(HS2ActivePassiveHARegistry hs2HARegistry) {
-      this.hs2HARegistry = hs2HARegistry;
-    }
-
-    @Override
-    public void failover() throws Exception {
-      hs2HARegistry.failover();
-    }
-  }
-
   /**
    * The watcher class shuts down the server if there are no more active client
    * sessions at the time of receiving a 'NodeDeleted' notification from ZooKeeper.

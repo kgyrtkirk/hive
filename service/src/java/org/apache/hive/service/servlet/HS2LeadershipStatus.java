@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hive.http.HttpConstants;
 import org.apache.hive.http.HttpServer;
-import org.apache.hive.service.server.HiveServer2;
+import org.apache.hive.service.server.FailoverHandlerCallback;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +123,7 @@ public class HS2LeadershipStatus extends HttpServlet {
       return;
     }
 
-    HiveServer2.FailoverHandlerCallback failoverHandler = (HiveServer2.FailoverHandlerCallback) context
+    FailoverHandlerCallback failoverHandler = (FailoverHandlerCallback) context
       .getAttribute("hs2.failover.callback");
     try {
       String msg = "Failover successful!";

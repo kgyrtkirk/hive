@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instance> implements
-  ServiceRegistry<HiveServer2Instance>, HiveServer2HAInstanceSet, HiveServer2.FailoverHandler {
+  ServiceRegistry<HiveServer2Instance>, HiveServer2HAInstanceSet, FailoverHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HS2ActivePassiveHARegistry.class);
   static final String ACTIVE_ENDPOINT = "activeEndpoint";
   static final String PASSIVE_ENDPOINT = "passiveEndpoint";
