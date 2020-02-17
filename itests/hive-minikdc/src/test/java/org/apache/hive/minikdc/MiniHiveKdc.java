@@ -36,7 +36,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 
 import com.google.common.io.Files;
-import org.apache.hive.service.server.HiveServer2;
+import org.apache.hive.service.server.HiveServer2ClientUtils;
 
 /**
  * Wrapper around Hadoop's MiniKdc for use in hive tests.
@@ -194,7 +194,7 @@ public class MiniHiveKdc {
                                               .withConf(hiveConf)
                                               .withMiniKdc(hivePrincipal, hiveKeytab)
                                               .withAuthenticationType(authType);
-    if (HiveServer2.isHTTPTransportMode(hiveConf)) {
+    if (HiveServer2ClientUtils.isHTTPTransportMode(hiveConf)) {
       miniHS2Builder.withHTTPTransport();
     }
     return miniHS2Builder.build();
