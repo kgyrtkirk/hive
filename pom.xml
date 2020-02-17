@@ -51,6 +51,7 @@
     <module>ql</module>
     <module>serde</module>
     <module>service-rpc</module>
+    <module>service-client</module>
     <module>service</module>
     <module>streaming</module>
     <module>llap-common</module>
@@ -1072,7 +1073,7 @@
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>${maven.eclipse.plugin.version}</version>
           <configuration>
-            <downloadJavadocs>true</downloadJavadocs>
+            <downloadJavadocs>false</downloadJavadocs>
             <downloadSources>true</downloadSources>
             <buildOutputDirectory>target/eclipse/classes</buildOutputDirectory>
             <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
