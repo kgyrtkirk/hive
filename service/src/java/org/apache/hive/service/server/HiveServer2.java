@@ -99,6 +99,7 @@ import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -136,7 +137,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveServer2 extends CompositeService {
   private static CountDownLatch deleteSignal;
   private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
-  public static final String INSTANCE_URI_CONFIG = "hive.server2.instance.uri";
   private static final int SHUTDOWN_TIME = 60;
   private CLIService cliService;
   private ThriftCLIService thriftCLIService;
@@ -294,7 +294,7 @@ public class HiveServer2 extends CompositeService {
         serviceUri = getServerInstanceURI();
         addConfsToPublish(hiveConf, confsToPublish, serviceUri);
         if (activePassiveHA) {
-          hiveConf.set(INSTANCE_URI_CONFIG, serviceUri);
+          hiveConf.set(HiveAuthConstants.INSTANCE_URI_CONFIG, serviceUri);
           leaderLatchListener = new HS2LeaderLatchListener(this, SessionState.get());
           leaderActionsExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setDaemon(true)
             .setNameFormat("Leader Actions Handler Thread").build());
@@ -510,7 +510,7 @@ public class HiveServer2 extends CompositeService {
     confsToPublish.put(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST));
     // Hostname:port
-    confsToPublish.put(INSTANCE_URI_CONFIG, serviceUri);
+    confsToPublish.put(HiveAuthConstants.INSTANCE_URI_CONFIG, serviceUri);
     // Transport mode
     confsToPublish.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
         hiveConf.getVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE));

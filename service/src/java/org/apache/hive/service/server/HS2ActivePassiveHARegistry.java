@@ -18,7 +18,6 @@
 
 package org.apache.hive.service.server;
 
-import static org.apache.hive.service.server.HiveServer2.INSTANCE_URI_CONFIG;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -42,9 +41,9 @@ import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.Endpoint;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,7 +170,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
   }
 
   private void updateEndpoint(final ServiceRecord srv, final String endpointName) {
-    final String instanceUri = srv.get(INSTANCE_URI_CONFIG);
+    final String instanceUri = srv.get(HiveAuthConstants.INSTANCE_URI_CONFIG);
     final String[] tokens = instanceUri.split(":");
     final String hostname = tokens[0];
     final int port = Integer.parseInt(tokens[1]);
@@ -340,7 +339,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT.varname));
     // Hostname:port
-    confsToPublish.put(INSTANCE_URI_CONFIG, conf.get(INSTANCE_URI_CONFIG));
+    confsToPublish.put(HiveAuthConstants.INSTANCE_URI_CONFIG, conf.get(HiveAuthConstants.INSTANCE_URI_CONFIG));
     confsToPublish.put(UNIQUE_IDENTIFIER, uniqueId);
     // Transport mode
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
