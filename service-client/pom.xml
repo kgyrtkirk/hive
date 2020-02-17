@@ -51,6 +51,11 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-registry</artifactId>
+      <version>${hadoop.version}</version>
+    </dependency>
+    <dependency>
       <groupId>net.sf.jpam</groupId>
       <artifactId>jpam</artifactId>
       <version>${jpam.version}</version>
