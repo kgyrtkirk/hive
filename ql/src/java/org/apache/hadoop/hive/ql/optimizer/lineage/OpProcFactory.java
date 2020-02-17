@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -27,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo.DependencyType;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Predicate;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.TableAliasInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -85,7 +85,7 @@ public class OpProcFactory {
   /**
    * Processor for Script and UDTF Operators.
    */
-  public static class TransformLineage extends DefaultLineage implements NodeProcessor {
+  public static class TransformLineage extends DefaultLineage implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -144,7 +144,7 @@ public class OpProcFactory {
   /**
    * Processor for TableScan Operator. This actually creates the base column mappings.
    */
-  public static class TableScanLineage extends DefaultLineage implements NodeProcessor {
+  public static class TableScanLineage extends DefaultLineage implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -201,7 +201,10 @@ public class OpProcFactory {
   /**
    * Processor for Join Operator.
    */
-  public static class JoinLineage extends DefaultLineage implements NodeProcessor {
+  public static class JoinLineage extends DefaultLineage implements SemanticNodeProcessor {
+
+    private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -237,7 +240,7 @@ public class OpProcFactory {
 
         // Otherwise look up the expression corresponding to this ci
         ExprNodeDesc expr = exprs.get(cnt++);
-        Dependency dependency = ExprProcFactory.getExprDependency(lCtx, inpOp, expr);
+        Dependency dependency = ExprProcFactory.getExprDependency(lCtx, inpOp, expr, outputMap);
         lCtx.getIndex().mergeDependency(op, ci, dependency);
       }
 
@@ -267,9 +270,9 @@ public class OpProcFactory {
         }
         int left = conds[i].getLeft();
         int right = conds[i].getRight();
-        if (joinKeys.length < left
+        if (joinKeys.length <= left
             || joinKeys[left].length == 0
-            || joinKeys.length < right
+            || joinKeys.length <= right
             || joinKeys[right].length == 0
             || parents < left
             || parents < right) {
@@ -302,7 +305,7 @@ public class OpProcFactory {
   /**
    * Processor for Join Operator.
    */
-  public static class LateralViewJoinLineage extends DefaultLineage implements NodeProcessor {
+  public static class LateralViewJoinLineage extends DefaultLineage implements SemanticNodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -316,7 +319,7 @@ public class OpProcFactory {
       LateralViewJoinOperator op = (LateralViewJoinOperator)nd;
       boolean isUdtfPath = true;
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
-      ArrayList<ColumnInfo> cols = inpOp.getSchema().getSignature();
+      List<ColumnInfo> cols = inpOp.getSchema().getSignature();
       lCtx.getIndex().copyPredicates(inpOp, op);
 
       if (inpOp instanceof SelectOperator) {
@@ -327,7 +330,7 @@ public class OpProcFactory {
       // For the select path the columns are the ones at the beginning of the
       // current operators schema and for the udtf path the columns are
       // at the end of the operator schema.
-      ArrayList<ColumnInfo> out_cols = op.getSchema().getSignature();
+      List<ColumnInfo> out_cols = op.getSchema().getSignature();
       int out_cols_size = out_cols.size();
       int cols_size = cols.size();
       int outColOffset = isUdtfPath ? out_cols_size - cols_size : 0;
@@ -347,7 +350,10 @@ public class OpProcFactory {
   /**
    * Processor for Select operator.
    */
-  public static class SelectLineage extends DefaultLineage implements NodeProcessor {
+  public static class SelectLineage extends DefaultLineage implements SemanticNodeProcessor {
+
+    private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -369,10 +375,10 @@ public class OpProcFactory {
       lctx.getIndex().copyPredicates(inpOp, sop);
 
       RowSchema rs = sop.getSchema();
-      ArrayList<ColumnInfo> col_infos = rs.getSignature();
+      List<ColumnInfo> col_infos = rs.getSignature();
       int cnt = 0;
       for(ExprNodeDesc expr : sop.getConf().getColList()) {
-        Dependency dep = ExprProcFactory.getExprDependency(lctx, inpOp, expr);
+        Dependency dep = ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap);
         if (dep != null && dep.getExpr() == null && (dep.getBaseCols().isEmpty()
             || dep.getType() != LineageInfo.DependencyType.SIMPLE)) {
           dep.setExpr(ExprProcFactory.getExprString(rs, expr, lctx, inpOp, null));
@@ -400,21 +406,24 @@ public class OpProcFactory {
   /**
    * Processor for GroupBy operator.
    */
-  public static class GroupByLineage extends DefaultLineage implements NodeProcessor {
+  public static class GroupByLineage extends DefaultLineage implements SemanticNodeProcessor {
+
+    private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       LineageCtx lctx = (LineageCtx)procCtx;
       GroupByOperator gop = (GroupByOperator)nd;
-      ArrayList<ColumnInfo> col_infos = gop.getSchema().getSignature();
+      List<ColumnInfo> col_infos = gop.getSchema().getSignature();
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lctx.getIndex().copyPredicates(inpOp, gop);
       int cnt = 0;
 
       for(ExprNodeDesc expr : gop.getConf().getKeys()) {
         lctx.getIndex().putDependency(gop, col_infos.get(cnt++),
-            ExprProcFactory.getExprDependency(lctx, inpOp, expr));
+            ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap));
       }
 
       // If this is a reduce side GroupBy operator, check if there is
@@ -438,7 +447,7 @@ public class OpProcFactory {
           } else {
             sb.append(", ");
           }
-          Dependency expr_dep = ExprProcFactory.getExprDependency(lctx, inpOp, expr);
+          Dependency expr_dep = ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap);
           if (expr_dep != null && !expr_dep.getBaseCols().isEmpty()) {
             new_type = LineageCtx.getNewDependencyType(expr_dep.getType(), new_type);
             bci_set.addAll(expr_dep.getBaseCols());
@@ -446,7 +455,7 @@ public class OpProcFactory {
               BaseColumnInfo col = expr_dep.getBaseCols().iterator().next();
               Table t = col.getTabAlias().getTable();
               if (t != null) {
-                sb.append(t.getDbName()).append(".").append(t.getTableName()).append(".");
+                sb.append(Warehouse.getQualifiedName(t)).append(".");
               }
               sb.append(col.getColumn().getName());
             }
@@ -522,7 +531,7 @@ public class OpProcFactory {
    * In this case we call mergeDependency as opposed to putDependency
    * in order to account for visits from different parents.
    */
-  public static class UnionLineage extends DefaultLineage implements NodeProcessor {
+  public static class UnionLineage extends DefaultLineage implements SemanticNodeProcessor {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -541,11 +550,14 @@ public class OpProcFactory {
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lCtx.getIndex().copyPredicates(inpOp, op);
       RowSchema rs = op.getSchema();
-      ArrayList<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
-      int cnt = 0;
-      for(ColumnInfo ci : rs.getSignature()) {
-        Dependency inp_dep = lCtx.getIndex().getDependency(inpOp, inp_cols.get(cnt++));
+      List<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
+
+      // check only for input cols
+      for(ColumnInfo input : inp_cols) {
+        Dependency inp_dep = lCtx.getIndex().getDependency(inpOp, input);
         if (inp_dep != null) {
+          //merge it with rs colInfo
+          ColumnInfo ci = rs.getColumnInfo(input.getInternalName());
           lCtx.getIndex().mergeDependency(op, ci, inp_dep);
         }
       }
@@ -556,7 +568,9 @@ public class OpProcFactory {
   /**
    * ReduceSink processor.
    */
-  public static class ReduceSinkLineage implements NodeProcessor {
+  public static class ReduceSinkLineage implements SemanticNodeProcessor {
+
+    private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -581,20 +595,20 @@ public class OpProcFactory {
       }
 
       if (op instanceof GroupByOperator) {
-        ArrayList<ColumnInfo> col_infos = rop.getSchema().getSignature();
+        List<ColumnInfo> col_infos = rop.getSchema().getSignature();
         for(ExprNodeDesc expr : rop.getConf().getKeyCols()) {
           lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
-              ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
+              ExprProcFactory.getExprDependency(lCtx, inpOp, expr, outputMap));
         }
         for(ExprNodeDesc expr : rop.getConf().getValueCols()) {
           lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
-              ExprProcFactory.getExprDependency(lCtx, inpOp, expr));
+              ExprProcFactory.getExprDependency(lCtx, inpOp, expr, outputMap));
         }
       } else {
         RowSchema schema = rop.getSchema();
         ReduceSinkDesc desc = rop.getConf();
         List<ExprNodeDesc> keyCols = desc.getKeyCols();
-        ArrayList<String> keyColNames = desc.getOutputKeyColumnNames();
+        List<String> keyColNames = desc.getOutputKeyColumnNames();
         for (int i = 0; i < keyCols.size(); i++) {
           // order-bys, joins
           ColumnInfo column = schema.getColumnInfo(Utilities.ReduceField.KEY + "." + keyColNames.get(i));
@@ -602,10 +616,10 @@ public class OpProcFactory {
             continue;   // key in values
           }
           lCtx.getIndex().putDependency(rop, column,
-              ExprProcFactory.getExprDependency(lCtx, inpOp, keyCols.get(i)));
+              ExprProcFactory.getExprDependency(lCtx, inpOp, keyCols.get(i), outputMap));
         }
         List<ExprNodeDesc> valCols = desc.getValueCols();
-        ArrayList<String> valColNames = desc.getOutputValueColumnNames();
+        List<String> valColNames = desc.getOutputValueColumnNames();
         for (int i = 0; i < valCols.size(); i++) {
           // todo: currently, bucketing,etc. makes RS differently with those for order-bys or joins
           ColumnInfo column = schema.getColumnInfo(valColNames.get(i));
@@ -614,7 +628,7 @@ public class OpProcFactory {
             column = schema.getColumnInfo(Utilities.ReduceField.VALUE + "." + valColNames.get(i));
           }
           lCtx.getIndex().putDependency(rop, column,
-              ExprProcFactory.getExprDependency(lCtx, inpOp, valCols.get(i)));
+              ExprProcFactory.getExprDependency(lCtx, inpOp, valCols.get(i), outputMap));
         }
       }
 
@@ -625,7 +639,7 @@ public class OpProcFactory {
   /**
    * Filter processor.
    */
-  public static class FilterLineage implements NodeProcessor {
+  public static class FilterLineage implements SemanticNodeProcessor {
 
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
@@ -651,7 +665,7 @@ public class OpProcFactory {
         lCtx.getIndex().addPredicate(fop, cond);
       }
 
-      ArrayList<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
+      List<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
       int cnt = 0;
       for(ColumnInfo ci : rs.getSignature()) {
         lCtx.getIndex().putDependency(fop, ci,
@@ -666,7 +680,7 @@ public class OpProcFactory {
    * Default processor. This basically passes the input dependencies as such
    * to the output dependencies.
    */
-  public static class DefaultLineage implements NodeProcessor {
+  public static class DefaultLineage implements SemanticNodeProcessor {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -685,7 +699,7 @@ public class OpProcFactory {
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lCtx.getIndex().copyPredicates(inpOp, op);
       RowSchema rs = op.getSchema();
-      ArrayList<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
+      List<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
       int cnt = 0;
       for(ColumnInfo ci : rs.getSignature()) {
         lCtx.getIndex().putDependency(op, ci,
@@ -695,43 +709,43 @@ public class OpProcFactory {
     }
   }
 
-  public static NodeProcessor getJoinProc() {
+  public static SemanticNodeProcessor getJoinProc() {
     return new JoinLineage();
   }
 
-  public static NodeProcessor getLateralViewJoinProc() {
+  public static SemanticNodeProcessor getLateralViewJoinProc() {
     return new LateralViewJoinLineage();
   }
 
-  public static NodeProcessor getTSProc() {
+  public static SemanticNodeProcessor getTSProc() {
     return new TableScanLineage();
   }
 
-  public static NodeProcessor getTransformProc() {
+  public static SemanticNodeProcessor getTransformProc() {
     return new TransformLineage();
   }
 
-  public static NodeProcessor getSelProc() {
+  public static SemanticNodeProcessor getSelProc() {
     return new SelectLineage();
   }
 
-  public static NodeProcessor getGroupByProc() {
+  public static SemanticNodeProcessor getGroupByProc() {
     return new GroupByLineage();
   }
 
-  public static NodeProcessor getUnionProc() {
+  public static SemanticNodeProcessor getUnionProc() {
     return new UnionLineage();
   }
 
-  public static NodeProcessor getReduceSinkProc() {
+  public static SemanticNodeProcessor getReduceSinkProc() {
     return new ReduceSinkLineage();
   }
 
-  public static NodeProcessor getDefaultProc() {
+  public static SemanticNodeProcessor getDefaultProc() {
     return new DefaultLineage();
   }
 
-  public static NodeProcessor getFilterProc() {
+  public static SemanticNodeProcessor getFilterProc() {
     return new FilterLineage();
   }
 }

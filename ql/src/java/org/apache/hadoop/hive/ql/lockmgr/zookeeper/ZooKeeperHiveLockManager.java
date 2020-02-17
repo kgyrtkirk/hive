@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,9 +24,8 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver.DriverState;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.lockmgr.*;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
@@ -38,7 +37,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -148,7 +156,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    **/
   @Override
   public List<HiveLock> lock(List<HiveLockObj> lockObjects,
-      boolean keepAlive, LockedDriverState lDrvState) throws LockException
+      boolean keepAlive, DriverState driverState) throws LockException
   {
     // Sort the objects first. You are guaranteed that if a partition is being locked,
     // the table has already been locked
@@ -187,12 +195,12 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
       HiveLock lock = null;
       boolean isInterrupted = false;
-      if (lDrvState != null) {
-        lDrvState.stateLock.lock();
-        if (lDrvState.driverState == DriverState.INTERRUPT) {
+      if (driverState != null) {
+        driverState.lock();
+        if (driverState.isAborted()) {
           isInterrupted = true;
         }
-        lDrvState.stateLock.unlock();
+        driverState.unlock();
       }
       if (!isInterrupted) {
         try {
@@ -279,7 +287,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   private ZooKeeperHiveLock lock (HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, boolean parentCreated) throws LockException {
-    LOG.debug("Acquiring lock for {} with mode {}", key.getName(),
+    LOG.debug("Acquiring lock for {} with mode {} {}", key.getName(), mode,
         key.getData().getLockMode());
 
     int tryNum = 0;
@@ -483,8 +491,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       } catch (Exception e) {
         if (tryNum >= numRetriesForUnLock) {
           String name = ((ZooKeeperHiveLock)hiveLock).getPath();
-          LOG.error("Node " + name + " can not be deleted after " + numRetriesForUnLock + " attempts.");
-          throw new LockException(e);
+          throw new LockException("Node " + name + " can not be deleted after " + numRetriesForUnLock + " attempts.",
+              e);
         }
       }
     } while (tryNum < numRetriesForUnLock);
@@ -730,7 +738,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   private int getSequenceNumber(String resPath, String path) {
     String tst = resPath.substring(path.length());
     try {
-      return (new Integer(tst)).intValue();
+      return Integer.parseInt(tst);
     } catch (Exception e) {
       return -1; // invalid number
     }

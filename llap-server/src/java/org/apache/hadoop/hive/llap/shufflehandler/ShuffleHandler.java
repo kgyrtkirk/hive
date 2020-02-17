@@ -49,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
@@ -130,6 +131,10 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   public static final String SHUFFLE_MANAGE_OS_CACHE = "llap.shuffle.manage.os.cache";
   public static final boolean DEFAULT_SHUFFLE_MANAGE_OS_CACHE = true;
 
+  public static final String SHUFFLE_OS_CACHE_ALWAYS_EVICT =
+      "llap.shuffle.os.cache.always.evict";
+  public static final boolean DEFAULT_SHUFFLE_OS_CACHE_ALWAYS_EVICT = false;
+
   public static final String SHUFFLE_READAHEAD_BYTES = "llap.shuffle.readahead.bytes";
   public static final int DEFAULT_SHUFFLE_READAHEAD_BYTES = 4 * 1024 * 1024;
 
@@ -156,6 +161,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
    * sendfile
    */
   private final boolean manageOsCache;
+  private final boolean shouldAlwaysEvictOsCache;
   private final int readaheadLength;
   private final int maxShuffleConnections;
   private final int shuffleBufferSize;
@@ -164,6 +170,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   /* List of registered applications */
   private final ConcurrentMap<String, Integer> registeredApps = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Integer> registeredDirectories = new ConcurrentHashMap<>();
   /* Maps application identifiers (jobIds) to the associated user for the app */
   private final ConcurrentMap<String,String> userRsrc;
   private JobTokenSecretManager secretManager;
@@ -235,7 +242,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     MutableCounterLong shuffleOutputBytes;
     @Metric("# of failed shuffle outputs")
     MutableCounterInt shuffleOutputsFailed;
-    @Metric("# of succeeeded shuffle outputs")
+    @Metric("# of succeeded shuffle outputs")
     MutableCounterInt shuffleOutputsOK;
     @Metric("# of current shuffle connections")
     MutableGaugeInt shuffleConnections;
@@ -255,6 +262,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     this.conf = conf;
     manageOsCache = conf.getBoolean(SHUFFLE_MANAGE_OS_CACHE,
         DEFAULT_SHUFFLE_MANAGE_OS_CACHE);
+    shouldAlwaysEvictOsCache = conf.getBoolean(SHUFFLE_OS_CACHE_ALWAYS_EVICT,
+        DEFAULT_SHUFFLE_OS_CACHE_ALWAYS_EVICT);
 
     readaheadLength = conf.getInt(SHUFFLE_READAHEAD_BYTES,
         DEFAULT_SHUFFLE_READAHEAD_BYTES);
@@ -316,6 +325,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       LOG.info("DirWatcher disabled by config");
       dirWatcher = null;
     }
+    LOG.info("manageOsCache:{}, shouldAlwaysEvictOsCache:{}, readaheadLength:{}"
+        + ", maxShuffleConnections:{}, localDirs:{}"
+        + ", shuffleBufferSize:{}, shuffleTransferToAllowed:{}"
+        + ", connectionKeepAliveEnabled:{}, connectionKeepAliveTimeOut:{}"
+        + ", mapOutputMetaInfoCacheSize:{}, sslFileBufferSize:{}",
+        manageOsCache, shouldAlwaysEvictOsCache,readaheadLength, maxShuffleConnections, localDirs,
+        shuffleBufferSize, shuffleTransferToAllowed, connectionKeepAliveEnabled,
+        connectionKeepAliveTimeOut, mapOutputMetaInfoCacheSize, sslFileBufferSize);
   }
 
 
@@ -418,18 +435,21 @@ public class ShuffleHandler implements AttemptRegistrationListener {
    * Register an application and it's associated credentials and user information.
    *
    * This method and unregisterDag must be synchronized externally to prevent races in shuffle token registration/unregistration
+   * This method may be called several times but we can only set the registeredDirectories once which will be
+   * in the first call in which they are not null.
    *
    * @param applicationIdString
    * @param dagIdentifier
    * @param appToken
    * @param user
+   * @param appDirs
    */
   public void registerDag(String applicationIdString, int dagIdentifier,
                           Token<JobTokenIdentifier> appToken,
                           String user, String[] appDirs) {
     Integer registeredDagIdentifier = registeredApps.putIfAbsent(applicationIdString, dagIdentifier);
     // App never seen, or previous dag has been unregistered.
-    if (registeredDagIdentifier == null) {
+    if (registeredDagIdentifier == null && appToken != null ) {
       recordJobShuffleInfo(applicationIdString, user, appToken);
     }
     // Register the new dag identifier, if that's not the one currently registered.
@@ -438,6 +458,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       registeredApps.put(applicationIdString, dagIdentifier);
       // Don't need to recordShuffleInfo since the out of sync unregister will not remove the
       // credentials
+    }
+
+    if (appDirs == null) {
+      return;
+    }
+    registeredDagIdentifier  = registeredDirectories.put(applicationIdString, dagIdentifier);
+    if (registeredDagIdentifier != null && !registeredDagIdentifier.equals(dagIdentifier)) {
+      registeredDirectories.put(applicationIdString, dagIdentifier);
     }
     // First time registration, or new register comes in before the previous unregister.
     if (registeredDagIdentifier == null || !registeredDagIdentifier.equals(dagIdentifier)) {
@@ -472,6 +500,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     // be synchronized, hence the following check is sufficient.
     if (currentDagIdentifier != null && currentDagIdentifier.equals(dagIdentifier)) {
       registeredApps.remove(applicationIdString);
+      registeredDirectories.remove(applicationIdString);
       removeJobShuffleInfo(applicationIdString);
     }
     // Unregister for the dirWatcher for the specific dagIdentifier in either case.
@@ -497,6 +526,16 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     if (dirWatcher != null) {
       dirWatcher.stop();
     }
+  }
+
+  @VisibleForTesting
+  public Map getRegisteredApps() {
+    return new HashMap<>(registeredApps);
+  }
+
+  @VisibleForTesting
+  public Map getRegisteredDirectories() {
+    return new HashMap<>(registeredDirectories);
   }
 
   protected Shuffle getShuffle(Configuration conf) {
@@ -683,9 +722,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       }
       // Check whether the shuffle version is compatible
       if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(
-          request.getHeader(ShuffleHeader.HTTP_HEADER_NAME))
+          request.headers().get(ShuffleHeader.HTTP_HEADER_NAME))
           || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(
-              request.getHeader(ShuffleHeader.HTTP_HEADER_VERSION))) {
+              request.headers().get(ShuffleHeader.HTTP_HEADER_VERSION))) {
         sendError(ctx, "Incompatible shuffle request version", BAD_REQUEST);
       }
       final Map<String,List<String>> q =
@@ -889,12 +928,12 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         boolean keepAliveParam, long contentLength) {
       if (!connectionKeepAliveEnabled && !keepAliveParam) {
         LOG.info("Setting connection close header...");
-        response.setHeader(HttpHeaders.Names.CONNECTION, CONNECTION_CLOSE);
+        response.headers().add(HttpHeaders.Names.CONNECTION, CONNECTION_CLOSE);
       } else {
-        response.setHeader(HttpHeaders.Names.CONTENT_LENGTH,
+        response.headers().add(HttpHeaders.Names.CONTENT_LENGTH,
           String.valueOf(contentLength));
-        response.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        response.setHeader(HttpHeaders.Values.KEEP_ALIVE, "timeout="
+        response.headers().add(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        response.headers().add(HttpHeaders.Values.KEEP_ALIVE, "timeout="
             + connectionKeepAliveTimeOut);
         LOG.debug("Content Length in shuffle : " + contentLength);
       }
@@ -922,7 +961,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       String enc_str = SecureShuffleUtils.buildMsgFrom(requestUri);
       // hash from the fetcher
       String urlHashStr =
-        request.getHeader(SecureShuffleUtils.HTTP_HEADER_URL_HASH);
+        request.headers().get(SecureShuffleUtils.HTTP_HEADER_URL_HASH);
       if (urlHashStr == null) {
         LOG.info("Missing header hash for " + appid);
         throw new IOException("fetcher cannot be authenticated");
@@ -938,15 +977,15 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       String reply =
         SecureShuffleUtils.generateHash(urlHashStr.getBytes(Charsets.UTF_8), 
             tokenSecret);
-      response.setHeader(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH, reply);
+      response.headers().add(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH, reply);
       // Put shuffle version into http header
-      response.setHeader(ShuffleHeader.HTTP_HEADER_NAME,
+      response.headers().add(ShuffleHeader.HTTP_HEADER_NAME,
           ShuffleHeader.DEFAULT_HTTP_HEADER_NAME);
-      response.setHeader(ShuffleHeader.HTTP_HEADER_VERSION,
+      response.headers().add(ShuffleHeader.HTTP_HEADER_VERSION,
           ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION);
       if (LOG.isDebugEnabled()) {
         int len = reply.length();
-        LOG.debug("Fetcher request verfied. enc_str=" + enc_str + ";reply=" +
+        LOG.debug("Fetcher request verified. enc_str=" + enc_str + ";reply=" +
             reply.substring(len-len/2, len-1));
       }
     }
@@ -971,10 +1010,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       }
       ChannelFuture writeFuture;
       if (ch.getPipeline().get(SslHandler.class) == null) {
+        boolean canEvictAfterTransfer = true;
+        if (!shouldAlwaysEvictOsCache) {
+          canEvictAfterTransfer = (reduce > 0); // e.g broadcast data
+        }
         final FadvisedFileRegion partition = new FadvisedFileRegion(spill,
             info.getStartOffset(), info.getPartLength(), manageOsCache, readaheadLength,
             readaheadPool, spillfile.getAbsolutePath(), 
-            shuffleBufferSize, shuffleTransferToAllowed);
+            shuffleBufferSize, shuffleTransferToAllowed, canEvictAfterTransfer);
         writeFuture = ch.write(partition);
         writeFuture.addListener(new ChannelFutureListener() {
             // TODO error handling; distinguish IO/connection failures,
@@ -1006,11 +1049,11 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     protected void sendError(ChannelHandlerContext ctx, String message,
         HttpResponseStatus status) {
       HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
-      response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
+      response.headers().add(CONTENT_TYPE, "text/plain; charset=UTF-8");
       // Put shuffle version into http header
-      response.setHeader(ShuffleHeader.HTTP_HEADER_NAME,
+      response.headers().add(ShuffleHeader.HTTP_HEADER_NAME,
           ShuffleHeader.DEFAULT_HTTP_HEADER_NAME);
-      response.setHeader(ShuffleHeader.HTTP_HEADER_VERSION,
+      response.headers().add(ShuffleHeader.HTTP_HEADER_VERSION,
           ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION);
       response.setContent(
         ChannelBuffers.copiedBuffer(message, CharsetUtil.UTF_8));

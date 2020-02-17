@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -203,11 +203,11 @@ public final class LazyBinaryUtils {
         break;
       case TIMESTAMP:
         recordInfo.elementOffset = 0;
-        recordInfo.elementSize = TimestampWritable.getTotalLength(bytes, offset);
+        recordInfo.elementSize = TimestampWritableV2.getTotalLength(bytes, offset);
         break;
-      case TIMESTAMPTZ:
+      case TIMESTAMPLOCALTZ:
         recordInfo.elementOffset = 0;
-        recordInfo.elementSize = TimestampTZWritable.getTotalLength(bytes, offset);
+        recordInfo.elementSize = TimestampLocalTZWritable.getTotalLength(bytes, offset);
         break;
       case INTERVAL_YEAR_MONTH:
         recordInfo.elementOffset = 0;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
-
-
 public class ColStatistics {
 
   private String colName;
@@ -32,11 +29,14 @@ public class ColStatistics {
   private long numFalses;
   private Range range;
   private boolean isPrimaryKey;
+  private boolean isEstimated;
+  private boolean isFilteredColumn;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
     this.setColumnType(colType);
     this.setPrimaryKey(false);
+    this.setIsEstimated(false);
   }
 
   public ColStatistics() {
@@ -134,11 +134,14 @@ public class ColStatistics {
     }
     sb.append(" isPrimaryKey: ");
     sb.append(isPrimaryKey);
+
+    sb.append(" isEstimated: ");
+    sb.append(isEstimated);
     return sb.toString();
   }
 
   @Override
-  public ColStatistics clone() throws CloneNotSupportedException {
+  public ColStatistics clone() {
     ColStatistics clone = new ColStatistics(colName, colType);
     clone.setAvgColLen(avgColLen);
     clone.setCountDistint(countDistint);
@@ -146,6 +149,8 @@ public class ColStatistics {
     clone.setNumTrues(numTrues);
     clone.setNumFalses(numFalses);
     clone.setPrimaryKey(isPrimaryKey);
+    clone.setIsEstimated(isEstimated);
+    clone.setIsFilteredColumn(isFilteredColumn);
     if (range != null ) {
       clone.setRange(range.clone());
     }
@@ -159,6 +164,12 @@ public class ColStatistics {
   public void setPrimaryKey(boolean isPrimaryKey) {
     this.isPrimaryKey = isPrimaryKey;
   }
+
+  public void setIsEstimated(boolean isEstimated) {
+    this.isEstimated= isEstimated;
+  }
+
+  public boolean isEstimated() { return isEstimated; }
 
   public static class Range {
     public final Number minValue;
@@ -188,4 +199,17 @@ public class ColStatistics {
     }
   }
 
+  public void setFilterColumn() {
+    isFilteredColumn = true;
+  }
+
+  private void setIsFilteredColumn(boolean isFilteredColumn2) {
+    isFilteredColumn=isFilteredColumn2;
+    
+  }
+  
+  public boolean isFilteredColumn() {
+    return isFilteredColumn;
+  }
+  
 }

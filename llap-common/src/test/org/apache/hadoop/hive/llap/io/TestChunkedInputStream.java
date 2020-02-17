@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.llap.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -31,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -150,8 +148,8 @@ public class TestChunkedInputStream {
       pout = new PipedOutputStream();
       pin = new PipedInputStream(pout);
       if (useChunkedStream) {
-        out = new ChunkedOutputStream(pout, bufferSize);
-        in = new ChunkedInputStream(pin);
+        out = new ChunkedOutputStream(pout, bufferSize, "test");
+        in = new ChunkedInputStream(pin, "test");
       } else {
         // Test behavior with non-chunked streams
         out = new FilterOutputStream(pout);
@@ -209,7 +207,7 @@ public class TestChunkedInputStream {
     chunkedStreams.values = values;
     BasicUsageWriter writer2 = new BasicUsageWriter(chunkedStreams, false, false);
     BasicUsageReader reader2 = new BasicUsageReader(chunkedStreams);
-    runTest(writer2, reader2, nonChunkedStreams);
+    runTest(writer2, reader2, chunkedStreams);
     assertTrue(reader2.allValuesRead);
     assertTrue(((ChunkedInputStream) chunkedStreams.in).isEndOfData());
     assertNull(writer2.getError());

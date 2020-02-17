@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.io.FileExistsException;
 import org.apache.hadoop.conf.Configuration;
@@ -49,10 +50,12 @@ public class SparkHashTableSinkOperator
   private final String CLASS_NAME = this.getClass().getName();
   private final transient PerfLogger perfLogger = SessionState.getPerfLogger();
   protected static final Logger LOG = LoggerFactory.getLogger(SparkHashTableSinkOperator.class.getName());
-  public static final String DFS_REPLICATION_MAX = "dfs.replication.max";
-  private int minReplication = 10;
+  private static final String MAPRED_FILE_REPLICATION = "mapreduce.client.submit.file.replication";
+  private static final int DEFAULT_REPLICATION = 10;
 
   private final HashTableSinkOperator htsOperator;
+
+  private short numReplication;
 
   /** Kryo ctor. */
   protected SparkHashTableSinkOperator() {
@@ -72,9 +75,7 @@ public class SparkHashTableSinkOperator
     byte tag = conf.getTag();
     inputOIs[tag] = inputObjInspectors[0];
     conf.setTagOrder(new Byte[]{ tag });
-    int dfsMaxReplication = hconf.getInt(DFS_REPLICATION_MAX, minReplication);
-    // minReplication value should not cross the value of dfs.replication.max
-    minReplication = Math.min(minReplication, dfsMaxReplication);
+    numReplication = (short) hconf.getInt(MAPRED_FILE_REPLICATION, DEFAULT_REPLICATION);
     htsOperator.setConf(conf);
     htsOperator.initialize(hconf, inputOIs);
   }
@@ -136,12 +137,11 @@ public class SparkHashTableSinkOperator
     String dumpFilePrefix = conf.getDumpFilePrefix();
     Path path = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
     FileSystem fs = path.getFileSystem(htsOperator.getConfiguration());
-    short replication = fs.getDefaultReplication(path);
 
     fs.mkdirs(path);  // Create the folder and its parents if not there
     while (true) {
       path = new Path(path, getOperatorId()
-        + "-" + Math.abs(Utilities.randGen.nextInt()));
+        + "-" + Math.abs(ThreadLocalRandom.current().nextInt()));
       try {
         // This will guarantee file name uniqueness.
         if (fs.createNewFile(path)) {
@@ -151,9 +151,7 @@ public class SparkHashTableSinkOperator
         // No problem, use a new name
       }
     }
-    // TODO find out numOfPartitions for the big table
-    int numOfPartitions = replication;
-    replication = (short) Math.max(minReplication, numOfPartitions);
+
     htsOperator.console.printInfo(Utilities.now() + "\tDump the side-table for tag: " + tag
       + " with group count: " + tableContainer.size() + " into file: " + path);
     try {
@@ -162,7 +160,7 @@ public class SparkHashTableSinkOperator
       ObjectOutputStream out = null;
       MapJoinTableContainerSerDe mapJoinTableSerde = htsOperator.mapJoinTableSerdes[tag];
       try {
-        os = fs.create(path, replication);
+        os = fs.create(path, numReplication);
         out = new ObjectOutputStream(new BufferedOutputStream(os, 4096));
         mapJoinTableSerde.persist(out, tableContainer);
       } finally {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,12 +22,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 public class TezEdgeProperty {
 
-  public enum EdgeType {
-    SIMPLE_EDGE,
+  public enum EdgeType {//todo: HIVE-15549
+    SIMPLE_EDGE,//SORT_PARTITION_EDGE
     BROADCAST_EDGE,
-    CONTAINS,
-    CUSTOM_EDGE,
-    CUSTOM_SIMPLE_EDGE,
+    CONTAINS,//used for union (all?)
+    CUSTOM_EDGE,//CO_PARTITION_EDGE
+    CUSTOM_SIMPLE_EDGE,//PARTITION_EDGE
+    ONE_TO_ONE_EDGE,
+    XPROD_EDGE
   }
 
   private HiveConf hiveConf;
@@ -39,6 +41,7 @@ public class TezEdgeProperty {
   private int minReducer;
   private int maxReducer;
   private long inputSizePerReducer;
+  private Integer bufferSize;
 
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType,
       int buckets) {
@@ -51,6 +54,7 @@ public class TezEdgeProperty {
       boolean isSlowStart, int minReducer, int maxReducer, long bytesPerReducer) {
     this(hiveConf, edgeType, -1);
     setAutoReduce(hiveConf, isAutoReduce, minReducer, maxReducer, bytesPerReducer);
+    this.isSlowStart = isSlowStart;
   }
 
   public void setAutoReduce(HiveConf hiveConf, boolean isAutoReduce, int minReducer,
@@ -60,7 +64,6 @@ public class TezEdgeProperty {
     this.maxReducer = maxReducer;
     this.isAutoReduce = isAutoReduce;
     this.inputSizePerReducer = bytesPerReducer;
-    this.isSlowStart = isSlowStart;
   }
 
   public TezEdgeProperty(EdgeType edgeType) {
@@ -102,4 +105,17 @@ public class TezEdgeProperty {
   public void setSlowStart(boolean slowStart) {
     this.isSlowStart = slowStart;
   }
+
+  public void setBufferSize(Integer bufferSize) {
+    this.bufferSize = bufferSize;
+  }
+
+  public Integer getBufferSize() {
+    return bufferSize;
+  }
+
+  public void setEdgeType(EdgeType type) {
+    this.edgeType = type;
+  }
+
 }

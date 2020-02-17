@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -97,7 +97,7 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
     try {
       thriftFormatter.initialize(conf, tbl);
     } catch (Exception e) {
-      new SerDeException(e);
+      throw new SerDeException(e);
     }
   }
 

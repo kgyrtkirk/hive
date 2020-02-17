@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
@@ -47,7 +48,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -307,8 +308,8 @@ public final class LazyUtils {
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
-    case TIMESTAMPTZ: {
-      LazyTimestampTZ.writeUTF8(out, ((TimestampTZObjectInspector) oi).
+    case TIMESTAMPLOCALTZ: {
+      LazyTimestampLocalTZ.writeUTF8(out, ((TimestampLocalTZObjectInspector) oi).
           getPrimitiveWritableObject(o));
       break;
     }
@@ -390,6 +391,12 @@ public final class LazyUtils {
       case BINARY: {
         BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
         out.write(bw.getBytes(), 0, bw.getLength());
+        break;
+      }
+
+      case DECIMAL: {
+        HiveDecimalWritable hdw = ((HiveDecimalObjectInspector) oi).getPrimitiveWritableObject(o);
+        hdw.write(dos);
         break;
       }
 

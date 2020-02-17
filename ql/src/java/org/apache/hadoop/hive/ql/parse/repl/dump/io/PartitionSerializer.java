@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.thrift.TException;
@@ -41,13 +42,21 @@ public class PartitionSerializer implements JsonWriter.Serializer {
       throws SemanticException, IOException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
+      // Remove all the entries from the parameters which are added by repl tasks internally.
+      Map<String, String> parameters = partition.getParameters();
+      if (parameters != null) {
+        parameters.entrySet()
+                .removeIf(e -> e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY));
+      }
+
       if (additionalPropertiesProvider.isInReplicationScope()) {
-        partition.putToParameters(
-            ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-            additionalPropertiesProvider.getCurrentReplicationState());
-        if (isPartitionExternal()) {
-          // Replication destination will not be external
-          partition.putToParameters("EXTERNAL", "FALSE");
+        // Current replication state must be set on the Partition object only for bootstrap dump.
+        // Event replication State will be null in case of bootstrap dump.
+        if (additionalPropertiesProvider.getReplSpecType()
+                != ReplicationSpec.Type.INCREMENTAL_DUMP) {
+          partition.putToParameters(
+                  ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                  additionalPropertiesProvider.getCurrentReplicationState());
         }
       }
       writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
@@ -41,6 +40,12 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
  * CLI qtest results.
  */
 public final class LogDivertAppenderForTest {
+
+  /**
+   * Name of the test query routine appender.
+   */
+  public static final String TEST_QUERY_ROUTING_APPENDER = "test-query-routing";
+
   private LogDivertAppenderForTest() {
     // Prevent instantiation
   }
@@ -109,13 +114,13 @@ public final class LogDivertAppenderForTest {
     PluginEntry nullAppenderEntry = new PluginEntry();
     nullAppenderEntry.setClassName(NullAppender.class.getName());
     PluginType<NullAppender> nullAppenderType =
-        new PluginType<NullAppender>(nullAppenderEntry, NullAppender.class, "appender");
+        new PluginType<>(nullAppenderEntry, NullAppender.class, "appender");
     Node nullAppenderChildNode = new Node(null, "test-null-appender", nullAppenderType);
 
     // Create default route where events go without queryId
     PluginEntry defaultRouteEntry = new PluginEntry();
     defaultRouteEntry.setClassName(Route.class.getName());
-    PluginType<Route> defaultRouteType = new PluginType<Route>(defaultRouteEntry, Route.class, "");
+    PluginType<Route> defaultRouteType = new PluginType<>(defaultRouteEntry, Route.class, "");
     Node defaultRouteNode = new Node(null, "test-route-default", defaultRouteType);
     // Add the test-null-appender to the default route
     defaultRouteNode.getChildren().add(nullAppenderChildNode);
@@ -123,15 +128,15 @@ public final class LogDivertAppenderForTest {
     // Create queryId based route
     PluginEntry queryIdRouteEntry = new PluginEntry();
     queryIdRouteEntry.setClassName(Route.class.getName());
-    PluginType<Route> queryIdRouteType = new PluginType<Route>(queryIdRouteEntry, Route.class, "");
+    PluginType<Route> queryIdRouteType = new PluginType<>(queryIdRouteEntry, Route.class, "");
     Node queryIdRouteNode = new Node(null, "test-route-mdc", queryIdRouteType);
 
     // Create the queryId appender for the queryId route
     PluginEntry queryIdAppenderEntry = new PluginEntry();
-    queryIdAppenderEntry.setClassName(RandomAccessFileAppender.class.getName());
-    PluginType<RandomAccessFileAppender> queryIdAppenderType =
-        new PluginType<RandomAccessFileAppender>(queryIdAppenderEntry,
-            RandomAccessFileAppender.class, "appender");
+    queryIdAppenderEntry.setClassName(HushableRandomAccessFileAppender.class.getName());
+    PluginType<HushableRandomAccessFileAppender> queryIdAppenderType =
+        new PluginType<>(queryIdAppenderEntry,
+            HushableRandomAccessFileAppender.class, "appender");
     Node queryIdAppenderNode =
         new Node(queryIdRouteNode, "test-query-file-appender", queryIdAppenderType);
     queryIdAppenderNode.getAttributes().put("fileName", logLocation
@@ -144,7 +149,7 @@ public final class LogDivertAppenderForTest {
     PluginEntry filterEntry = new PluginEntry();
     filterEntry.setClassName(TestFilter.class.getName());
     PluginType<TestFilter> filterType =
-        new PluginType<TestFilter>(filterEntry, TestFilter.class, "");
+        new PluginType<>(filterEntry, TestFilter.class, "");
     Node filterNode = new Node(queryIdAppenderNode, "test-filter", filterType);
     // Add the filter to the queryId appender
     queryIdAppenderNode.getChildren().add(filterNode);
@@ -153,7 +158,7 @@ public final class LogDivertAppenderForTest {
     PluginEntry layoutEntry = new PluginEntry();
     layoutEntry.setClassName(PatternLayout.class.getName());
     PluginType<PatternLayout> layoutType =
-        new PluginType<PatternLayout>(layoutEntry, PatternLayout.class, "");
+        new PluginType<>(layoutEntry, PatternLayout.class, "");
     Node layoutNode = new Node(queryIdAppenderNode, "PatternLayout", layoutType);
     layoutNode.getAttributes().put("pattern", LogDivertAppender.nonVerboseLayout);
     // Add the layout to the queryId appender
@@ -169,7 +174,7 @@ public final class LogDivertAppenderForTest {
     Configuration configuration = context.getConfiguration();
 
     // Create the appender
-    RoutingAppender routingAppender = RoutingAppender.createAppender("test-query-routing",
+    RoutingAppender routingAppender = RoutingAppender.createAppender(TEST_QUERY_ROUTING_APPENDER,
         "true",
         routes,
         configuration,

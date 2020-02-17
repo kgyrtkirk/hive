@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,5 +37,10 @@ public class SemiJoinHint {
   }
   public Integer getNumEntries() {
     return numEntries != null ? numEntries : -1;
+  }
+
+  @Override
+  public String toString() {
+    return "colName=" + colName + ", target=" + target + ", numEntries=" + numEntries;
   }
 }

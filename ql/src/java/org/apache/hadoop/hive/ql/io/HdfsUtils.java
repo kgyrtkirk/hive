@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,20 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import org.apache.hadoop.hdfs.server.namenode.NameNode;
+
+import java.net.URI;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -31,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
@@ -38,10 +47,14 @@ public class HdfsUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
   private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
 
-  public static Object getFileId(
-      FileSystem fileSystem, Path path, boolean allowSynthetic) throws IOException {
-    if (fileSystem instanceof DistributedFileSystem) {
-      return SHIMS.getFileId(fileSystem, path.toUri().getPath());
+  public static Object getFileId(FileSystem fileSystem, Path path,
+      boolean allowSynthetic, boolean checkDefaultFs, boolean forceSyntheticIds) throws IOException {
+    if (forceSyntheticIds == false && fileSystem instanceof DistributedFileSystem) {
+      DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
+      if ((!checkDefaultFs) || isDefaultFs(dfs)) {
+        Object result = SHIMS.getFileId(dfs, path.toUri().getPath());
+        if (result != null) return result;
+      }
     }
     if (!allowSynthetic) {
       LOG.warn("Cannot get unique file ID from "
@@ -52,7 +65,10 @@ public class HdfsUtils {
     return new SyntheticFileId(path, fs.getLen(), fs.getModificationTime());
   }
 
-  public static long createFileId(String pathStr, FileStatus fs, boolean doLog, String fsName) {
+  // This is not actually used for production.
+  @VisibleForTesting
+  public static long createTestFileId(
+      String pathStr, FileStatus fs, boolean doLog, String fsName) {
     int nameHash = pathStr.hashCode();
     long fileSize = fs.getLen(), modTime = fs.getModificationTime();
     int fileSizeHash = (int)(fileSize ^ (fileSize >>> 32)),
@@ -90,5 +106,33 @@ public class HdfsUtils {
       FileSystem fileSystem, Path path, long fileId) {
     return ((fileSystem instanceof DistributedFileSystem))
         ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
+  }
+
+  public static boolean isDefaultFs(DistributedFileSystem fs) {
+    URI uri = fs.getUri();
+
+    String scheme = uri.getScheme();
+    if (scheme == null) return true; // Assume that relative URI resolves to default FS.
+    URI defaultUri = FileSystem.getDefaultUri(fs.getConf());
+    if (!defaultUri.getScheme().equalsIgnoreCase(scheme)) return false; // Mismatch.
+ 
+    String defaultAuthority = defaultUri.getAuthority(), authority = uri.getAuthority();
+    if (authority == null) return true; // Schemes match, no authority - assume default.
+    if (defaultAuthority == null) return false; // TODO: What does this even mean?
+    if (!defaultUri.getHost().equalsIgnoreCase(uri.getHost())) return false; // Mismatch.
+
+    int defaultPort = defaultUri.getPort(), port = uri.getPort();
+    if (port == -1) return true; // No port, assume default.
+    // Note - this makes assumptions that are DFS-specific; DFS::getDefaultPort is not visible.
+    return (defaultPort == -1) ? (port == NameNode.DEFAULT_PORT) : (port == defaultPort);
+  }
+
+  public static boolean pathExists(Path p, Configuration conf) throws HiveException {
+    try {
+      FileSystem fs = p.getFileSystem(conf);
+      return fs.exists(p);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
   }
 }

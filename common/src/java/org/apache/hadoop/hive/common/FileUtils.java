@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -44,8 +47,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.GlobFilter;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -64,6 +69,8 @@ import org.slf4j.LoggerFactory;
 public final class FileUtils {
   private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class.getName());
   private static final Random random = new Random();
+  public static final int MAX_IO_ERROR_RETRY = 5;
+  public static final int IO_ERROR_SLEEP_TIME = 100;
 
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
     @Override
@@ -324,13 +331,45 @@ public final class FileUtils {
    */
   public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
       List<FileStatus> results) throws IOException {
+    if (isS3a(fs)) {
+      // S3A file system has an optimized recursive directory listing implementation however it doesn't support filtering.
+      // Therefore we filter the result set afterwards. This might be not so optimal in HDFS case (which does a tree walking) where a filter could have been used.
+      listS3FilesRecursive(fileStatus, fs, results);
+    } else {
+      generalListStatusRecursively(fs, fileStatus, results);
+    }
+  }
 
+  private static void generalListStatusRecursively(FileSystem fs, FileStatus fileStatus, List<FileStatus> results) throws IOException {
     if (fileStatus.isDir()) {
       for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
-        listStatusRecursively(fs, stat, results);
+        generalListStatusRecursively(fs, stat, results);
       }
     } else {
       results.add(fileStatus);
+    }
+  }
+
+  private static void listS3FilesRecursive(FileStatus base, FileSystem fs, List<FileStatus> results) throws IOException {
+    if (!base.isDirectory()) {
+      results.add(base);
+      return;
+    }
+    RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base.getPath(), true);
+    while (remoteIterator.hasNext()) {
+      LocatedFileStatus each = remoteIterator.next();
+      Path relativePath = new Path(each.getPath().toString().replace(base.toString(), ""));
+      if (org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
+        results.add(each);
+      }
+    }
+  }
+
+  public static boolean isS3a(FileSystem fs) {
+    try {
+      return "s3a".equalsIgnoreCase(fs.getScheme());
+    } catch (UnsupportedOperationException ex) {
+      return false;
     }
   }
 
@@ -546,7 +585,13 @@ public final class FileUtils {
       return true;
     }
     // check all children
-    FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
+    FileStatus[] childStatuses = null;
+    try {
+      childStatuses = fs.listStatus(fileStatus.getPath());
+    } catch (FileNotFoundException fe) {
+      LOG.debug("Skipping child access check since the directory is already removed");
+      return true;
+    }
     for (FileStatus childStatus : childStatuses) {
       // check children recursively - recurse is true if we're here.
       if (!checkIsOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
@@ -588,16 +633,6 @@ public final class FileUtils {
     return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims());
   }
 
-  /**
-   * Copies files between filesystems as a fs super user using distcp, and runs
-   * as a privileged user.
-   */
-  public static boolean privilegedCopy(FileSystem srcFS, List<Path> srcPaths, Path dst,
-      HiveConf conf) throws IOException {
-    String privilegedUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
-    return distCp(srcFS, srcPaths, dst, false, privilegedUser, conf, ShimLoader.getHadoopShims());
-  }
-
   @VisibleForTesting
   static boolean copy(FileSystem srcFS, Path src,
     FileSystem dstFS, Path dst,
@@ -634,15 +669,22 @@ public final class FileUtils {
   }
 
   public static boolean distCp(FileSystem srcFS, List<Path> srcPaths, Path dst,
-      boolean deleteSource, String doAsUser,
+      boolean deleteSource, UserGroupInformation proxyUser,
       HiveConf conf, HadoopShims shims) throws IOException {
+    LOG.debug("copying srcPaths : {}, to DestPath :{} ,with doAs: {}",
+        StringUtils.join(",", srcPaths), dst.toString(), proxyUser);
     boolean copied = false;
-    if (doAsUser == null){
+    if (proxyUser == null){
       copied = shims.runDistCp(srcPaths, dst, conf);
     } else {
-      copied = shims.runDistCpAs(srcPaths, dst, conf, doAsUser);
+      copied = shims.runDistCpAs(srcPaths, dst, conf, proxyUser);
     }
     if (copied && deleteSource) {
+      if (proxyUser != null) {
+        // if distcp is done using doAsUser, delete also should be done using same user.
+        //TODO : Need to change the delete execution within doAs if doAsUser is given.
+        throw new IOException("Distcp is called with doAsUser and delete source set as true");
+      }
       for (Path path : srcPaths) {
         srcFS.delete(path, true);
       }
@@ -891,11 +933,11 @@ public final class FileUtils {
     }
     return false;
   }
-  
-  
+
+
   /**
    * Return whenever all paths in the collection are schemaless
-   * 
+   *
    * @param paths
    * @return
    */
@@ -910,16 +952,16 @@ public final class FileUtils {
 
   /**
    * Returns the deepest candidate path for the given path.
-   * 
+   *
    * prioritizes on paths including schema / then includes matches without schema
-   * 
+   *
    * @param path
    * @param candidates  the candidate paths
    * @return
    */
   public static Path getParentRegardlessOfScheme(Path path, Collection<Path> candidates) {
     Path schemalessPath = Path.getPathWithoutSchemeAndAuthority(path);
-    
+
     for(;path!=null && schemalessPath!=null; path=path.getParent(),schemalessPath=schemalessPath.getParent()){
       if(candidates.contains(path))
         return path;
@@ -932,13 +974,13 @@ public final class FileUtils {
 
   /**
    * Checks whenever path is inside the given subtree
-   * 
+   *
    * return true iff
    *  * path = subtree
    *  * subtreeContains(path,d) for any descendant of the subtree node
    * @param path    the path in question
    * @param subtree
-   * 
+   *
    * @return
    */
   public static boolean isPathWithinSubtree(Path path, Path subtree) {
@@ -992,34 +1034,73 @@ public final class FileUtils {
    * @return            the list of the file names in the format of URI formats.
    */
   public static Set<String> getJarFilesByPath(String pathString, Configuration conf) {
-    Set<String> result = new HashSet<String>();
-    if (pathString == null || org.apache.commons.lang.StringUtils.isBlank(pathString)) {
-        return result;
+    if (org.apache.commons.lang3.StringUtils.isBlank(pathString)) {
+      return Collections.emptySet();
     }
-
+    Set<String> result = new HashSet<>();
     String[] paths = pathString.split(",");
-    for(String path : paths) {
+    for (final String path : paths) {
       try {
         Path p = new Path(getURI(path));
         FileSystem fs = p.getFileSystem(conf);
-        if (!fs.exists(p)) {
-          LOG.error("The jar file path " + path + " doesn't exist");
-          continue;
-        }
-        if (fs.isDirectory(p)) {
+        FileStatus fileStatus = fs.getFileStatus(p);
+        if (fileStatus.isDirectory()) {
           // add all jar files under the folder
           FileStatus[] files = fs.listStatus(p, new GlobFilter("*.jar"));
-          for(FileStatus file : files) {
+          for (FileStatus file : files) {
             result.add(file.getPath().toUri().toString());
           }
         } else {
           result.add(p.toUri().toString());
         }
-      } catch(URISyntaxException | IOException e) {
-        LOG.error("Invalid file path " + path, e);
+      } catch (FileNotFoundException fnfe) {
+        LOG.error("The jar file path {} does not exist", path);
+      } catch (URISyntaxException | IOException e) {
+        LOG.error("Invalid file path {}", path, e);
       }
     }
     return result;
+  }
+
+  /**
+   * Reads length bytes of data from the stream into the byte buffer.
+   * @param stream Stream to read from.
+   * @param length The number of bytes to read.
+   * @param bb The buffer to read into; the data is written at current position and then the
+   *           position is incremented by length.
+   * @throws EOFException the length bytes cannot be read. The buffer position is not modified.
+   */
+  public static void readFully(InputStream stream, int length, ByteBuffer bb) throws IOException {
+    byte[] b = null;
+    int offset = 0;
+    if (bb.hasArray()) {
+      b = bb.array();
+      offset = bb.arrayOffset() + bb.position();
+    } else {
+      b = new byte[bb.remaining()];
+    }
+    int fullLen = length;
+    while (length > 0) {
+      int result = stream.read(b, offset, length);
+      if (result < 0) {
+        throw new EOFException("Reading " + fullLen + " bytes");
+      }
+      offset += result;
+      length -= result;
+    }
+    if (!bb.hasArray()) {
+      bb.put(b);
+    } else {
+      bb.position(bb.position() + fullLen);
+    }
+  }
+
+  /**
+   * Returns the incremented sleep time in milli seconds.
+   * @param repeatNum number of retry done so far.
+   */
+  public static int getSleepTime(int repeatNum) {
+    return IO_ERROR_SLEEP_TIME * (int)(Math.pow(2.0, repeatNum));
   }
 
 }

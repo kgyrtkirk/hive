@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,16 +40,51 @@ public class DiskRangeList extends DiskRange {
     other.prev = this.prev;
     other.next = this.next;
     if (this.prev != null) {
+      checkOrder(this.prev, other, this);
       this.prev.next = other;
     }
     if (this.next != null) {
+      checkOrder(other, this.next, this);
       this.next.prev = other;
     }
     this.next = this.prev = null;
     return other;
   }
 
-  private void checkArg(DiskRangeList other) throws AssertionError {
+  private final static void checkOrder(DiskRangeList prev, DiskRangeList next, DiskRangeList ref) {
+    if (prev.getEnd() <= next.getOffset()) return;
+    assertInvalidOrder(ref.prev == null ? ref : ref.prev, prev, next);
+  }
+
+  private final static void assertInvalidOrder(
+      DiskRangeList ref, DiskRangeList prev, DiskRangeList next) {
+    String error = "Elements not in order " + prev + " and " + next
+        + "; trying to insert into " + stringifyDiskRanges(ref);
+    LOG.error(error);
+    throw new AssertionError(error);
+  }
+
+  // TODO: this duplicates a method in ORC, but the method should actually be here.
+  public final static String stringifyDiskRanges(DiskRangeList range) {
+    StringBuilder buffer = new StringBuilder();
+    buffer.append("[");
+    boolean isFirst = true;
+    while (range != null) {
+      if (!isFirst) {
+        buffer.append(", {");
+      } else {
+        buffer.append("{");
+      }
+      isFirst = false;
+      buffer.append(range.toString());
+      buffer.append("}");
+      range = range.next;
+    }
+    buffer.append("]");
+    return buffer.toString();
+  }
+
+  private void checkArg(DiskRangeList other) {
     if (other == this) {
       // The only case where duplicate elements matter... the others are handled by the below.
       throw new AssertionError("Inserting self into the list [" + other + "]");
@@ -67,11 +102,14 @@ public class DiskRangeList extends DiskRange {
    */
   public DiskRangeList insertPartBefore(DiskRangeList other) {
     checkArg(other);
-    assert other.end >= this.offset;
+    if (other.end <= this.offset || other.end > this.end) {
+      assertInvalidOrder(this.prev == null ? this : this.prev, other, this);
+    }
     this.offset = other.end;
     other.prev = this.prev;
     other.next = this;
     if (this.prev != null) {
+      checkOrder(this.prev, other, this.prev);
       this.prev.next = other;
     }
     this.prev = other;
@@ -85,9 +123,15 @@ public class DiskRangeList extends DiskRange {
    * */
   public DiskRangeList insertAfter(DiskRangeList other) {
     checkArg(other);
+    checkOrder(this, other, this);
+    return insertAfterInternal(other);
+  }
+
+  private DiskRangeList insertAfterInternal(DiskRangeList other) {
     other.next = this.next;
     other.prev = this;
     if (this.next != null) {
+      checkOrder(other, this.next, this);
       this.next.prev = other;
     }
     this.next = other;
@@ -100,7 +144,10 @@ public class DiskRangeList extends DiskRange {
    * @return the new element.
    */
   public DiskRangeList insertPartAfter(DiskRangeList other) {
-    assert other.offset <= this.end;
+    // The only allowed non-overlapping option is extra bytes at the end.
+    if (other.offset > this.end || other.offset <= this.offset || other.end <= this.offset) {
+      assertInvalidOrder(this.prev == null ? this : this.prev, this, other);
+    }
     this.end = other.offset;
     return insertAfter(other);
   }
@@ -137,8 +184,10 @@ public class DiskRangeList extends DiskRange {
    * @return the split list
    */
   public final DiskRangeList split(long cOffset) {
-    insertAfter((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
-    return replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));
+    DiskRangeList right = insertAfterInternal((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
+    DiskRangeList left = replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));
+    checkOrder(left, right, left); // Prev/next are already checked in the calls.
+    return left;
   }
 
   public boolean hasContiguousNext() {
@@ -241,5 +290,8 @@ public class DiskRangeList extends DiskRange {
     assert newEnd >= this.offset;
     assert this.next == null || this.next.offset >= newEnd;
     this.end = newEnd;
+    if (this.next != null) {
+      checkOrder(this, this.next, this);
+    }
   }
 }

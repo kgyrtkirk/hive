@@ -1,13 +1,16 @@
+--! qt:dataset:alltypesorc
+
+-- MASK_STATS
+
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
 
-SET hive.llap.io.enabled=false;
+SET hive.llap.io.enabled=true;
 SET hive.exec.orc.default.buffer.size=32768;
 SET hive.exec.orc.default.row.index.stride=1000;
 SET hive.optimize.index.filter=true;
 set hive.fetch.task.conversion=none;
 
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 DROP TABLE orc_a;
 DROP TABLE orc_b;
@@ -34,7 +37,7 @@ select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q;
 
 
 
-SET hive.llap.io.enabled=false;
+SET hive.llap.io.enabled=true;
 set hive.enforce.sortmergebucketmapjoin=false;
 set hive.optimize.bucketmapjoin=true;
 set hive.optimize.bucketmapjoin.sortedmerge=true;

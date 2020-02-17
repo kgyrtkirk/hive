@@ -14,14 +14,16 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService.NodeInfo;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.io.Writable;
-
+import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.BooleanArray;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +39,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
 import com.google.protobuf.ServiceException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,12 +52,16 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryCompleteRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.RegisterDagResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateUpdatedResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -61,7 +69,7 @@ import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.SourceStateTracker;
-import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.ipc.RPC;
@@ -113,6 +121,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final SourceStateTracker sourceStateTracker;
   private final Set<LlapNodeId> nodesForQuery = new HashSet<>();
 
+  private LlapTaskSchedulerService scheduler;
   private LlapProtocolClientProxy communicator;
   private long deleteDelayOnDagComplete;
   private final LlapTaskUmbilicalProtocol umbilical;
@@ -130,6 +139,13 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private volatile QueryIdentifierProto currentQueryIdentifierProto;
   private volatile String currentHiveQueryId;
+
+  // TODO: this is an ugly hack because Tez plugin isolation does not make sense for LLAP plugins.
+  //       We are going to register a thread-local here for now, so that the scheduler, initializing
+  //       in the same thread after the communicator, will pick up. Or the other way around.
+  //       This only lives for the duration of the service init.
+  static final Object pluginInitLock = new Object();
+  static LlapTaskCommunicator instance = null;
 
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
@@ -158,13 +174,32 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     credentialMap = new ConcurrentHashMap<>();
     sourceStateTracker = new SourceStateTracker(getContext(), this);
+    synchronized (pluginInitLock) {
+      LlapTaskSchedulerService peer = LlapTaskSchedulerService.instance;
+      if (peer != null) {
+        // We are the last to initialize.
+        peer.setTaskCommunicator(this);
+        this.setScheduler(peer);
+        LlapTaskSchedulerService.instance = null;
+      } else {
+        instance = this;
+      }
+    }
+  }
+
+  void setScheduler(LlapTaskSchedulerService peer) {
+    this.scheduler = peer;
   }
 
   private static final String LLAP_TOKEN_NAME = LlapTokenIdentifier.KIND_NAME.toString();
-  private void processSendError(Throwable t) {
+
+  /**
+   * @return true iff the error is fatal and we should give up on everything.
+   */
+  private boolean processSendError(Throwable t) {
     Throwable cause = t;
     while (cause != null) {
-      if (cause instanceof RetriableException) return;
+      if (cause instanceof RetriableException) return false;
       if (((cause instanceof InvalidToken && cause.getMessage() != null)
           || (cause instanceof RemoteException && cause.getCause() == null
               && cause.getMessage() != null && cause.getMessage().contains("InvalidToken")))
@@ -173,9 +208,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       }
       cause = cause.getCause();
     }
-    if (cause == null) return;
+    if (cause == null) return false;
     LOG.error("Reporting fatal error - LLAP token appears to be invalid.", t);
     getContext().reportError(ServicePluginErrorDefaults.OTHER_FATAL, cause.getMessage(), null);
+    return true;
   }
 
   @Override
@@ -219,10 +255,14 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
       int numHandlers =
           HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT);
+      int umbilicalPort = HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
+      if (umbilicalPort <= 0) {
+        umbilicalPort = 0;
+      }
       server = new RPC.Builder(conf)
           .setProtocol(LlapTaskUmbilicalProtocol.class)
           .setBindAddress("0.0.0.0")
-          .setPort(0)
+          .setPort(umbilicalPort)
           .setInstance(umbilical)
           .setNumHandlers(numHandlers)
           .setSecretManager(jobTokenSecretManager).build();
@@ -266,6 +306,87 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     entityTracker.unregisterContainer(containerId);
   }
 
+  public interface OperationCallback<ResultType, CtxType> {
+    void setDone(CtxType ctx, ResultType result);
+    void setError(CtxType ctx, Throwable t);
+  }
+
+  /**
+   * @param node
+   * @param callback
+   * @return if it was possible to attemp the registration. Sometimes it's
+   * not possible because is a dag is not running
+   */
+  public boolean registerDag(NodeInfo node, final OperationCallback<QueryIdentifierProto, Void> callback) {
+    RegisterDagRequestProto.Builder builder = RegisterDagRequestProto.newBuilder();
+    if (currentQueryIdentifierProto == null) {
+      return false;
+    }
+    try {
+      RegisterDagRequestProto request = builder
+          .setQueryIdentifier(currentQueryIdentifierProto)
+          .setUser(user)
+          .setCredentialsBinary(
+              getCredentials(getContext()
+                  .getCurrentDagInfo().getCredentials())).build();
+      communicator.registerDag(request, node.getHost(), node.getRpcPort(),
+          new LlapProtocolClientProxy.ExecuteRequestCallback<RegisterDagResponseProto>() {
+            @Override
+            public void setResponse(RegisterDagResponseProto response) {
+              callback.setDone(null, currentQueryIdentifierProto);
+            }
+
+            @Override
+            public void indicateError(Throwable t) {
+              LOG.info("Error registering dag with"
+                  + " appId=" + currentQueryIdentifierProto.getApplicationIdString()
+                  + " dagId=" + currentQueryIdentifierProto.getDagIndex()
+                  + " to node " + node.getHost());
+              if (!processSendError(t)) {
+                callback.setError(null, t);
+              }
+            }
+          });
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return true;
+  }
+
+  public <T> void startUpdateGuaranteed(TezTaskAttemptID attemptId, NodeInfo assignedNode,
+      boolean newState, final OperationCallback<Boolean, T> callback, final T ctx) {
+    LlapNodeId nodeId = entityTracker.getNodeIdForTaskAttempt(attemptId);
+    if (nodeId == null) {
+      if (assignedNode != null) {
+        nodeId = LlapNodeId.getInstance(assignedNode.getHost(), assignedNode.getRpcPort());
+      }
+      LOG.warn("Untracked node for " + attemptId + "; NodeInfo points to " + nodeId);
+      if (nodeId == null) {
+        callback.setDone(ctx, false); // TODO: danger of stack overflow... needs a retry limit?
+        return;
+      }
+    }
+    UpdateFragmentRequestProto request = UpdateFragmentRequestProto.newBuilder()
+        .setIsGuaranteed(newState).setFragmentIdentifierString(attemptId.toString())
+        .setQueryIdentifier(constructQueryIdentifierProto(
+            attemptId.getTaskID().getVertexID().getDAGId().getId())).build();
+
+    communicator.sendUpdateFragment(request, nodeId.getHostname(), nodeId.getPort(),
+        new LlapProtocolClientProxy.ExecuteRequestCallback<UpdateFragmentResponseProto>() {
+          @Override
+          public void setResponse(UpdateFragmentResponseProto response) {
+            callback.setDone(ctx, response.getResult());
+          }
+
+          @Override
+          public void indicateError(Throwable t) {
+            LOG.warn("Failed to send update fragment request for {}", attemptId.toString());
+            if (!processSendError(t)) {
+              callback.setError(ctx, t);
+            }
+          }
+        });
+  }
 
   @Override
   public void registerRunningTaskAttempt(final ContainerId containerId, final TaskSpec taskSpec,
@@ -289,7 +410,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
       resetCurrentDag(dagId, hiveQueryId);
     }
-
 
     ContainerInfo containerInfo = getContainerInfo(containerId);
     String host;
@@ -362,6 +482,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                   taskSpec.getTaskAttemptID(), response.getUniqueNodeId());
             }
             LOG.info("Successfully launched task: " + taskSpec.getTaskAttemptID());
+            scheduler.notifyStarted(taskSpec.getTaskAttemptID());
           }
 
           @Override
@@ -542,7 +663,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     if (timelineServerUri == null || containerNodeId == null) {
       return null;
     }
-    Set<ServiceInstance> instanceSet;
+    Set<LlapServiceInstance> instanceSet;
     try {
       instanceSet = serviceRegistry.getInstances().getByHost(containerNodeId.getHost());
     } catch (IOException e) {
@@ -554,8 +675,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
     // Once NodeId includes fragmentId - this becomes a lot more reliable.
     if (instanceSet != null) {
-      ServiceInstance matchedInstance = null;
-      for (ServiceInstance instance : instanceSet) {
+      LlapServiceInstance matchedInstance = null;
+      for (LlapServiceInstance instance : instanceSet) {
         if (instance.getRpcPort() == containerNodeId.getPort()) {
           matchedInstance = instance;
           break;
@@ -633,16 +754,21 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
 
-  void nodePinged(String hostname, String uniqueId, int port, TezAttemptArray tasks) {
+  void nodePinged(String hostname, String uniqueId, int port,
+      TezAttemptArray tasks, BooleanArray guaranteed) {
     // TODO: do we ever need the port? we could just do away with nodeId altogether.
     LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
     registerPingingNode(nodeId);
     BiMap<ContainerId, TezTaskAttemptID> biMap =
         entityTracker.getContainerAttemptMapForNode(nodeId);
     if (biMap != null) {
-      HashSet<TezTaskAttemptID> attempts = new HashSet<>();
-      for (Writable w : tasks.get()) {
-        attempts.add((TezTaskAttemptID)w);
+      HashMap<TezTaskAttemptID, Boolean> attempts = new HashMap<>();
+      for (int i = 0; i < tasks.get().length; ++i) {
+        boolean isGuaranteed = false;
+        if (guaranteed != null) {
+          isGuaranteed = ((BooleanWritable)guaranteed.get()[i]).get();
+        }
+        attempts.put((TezTaskAttemptID)tasks.get()[i], isGuaranteed);
       }
       String error = "";
       synchronized (biMap) {
@@ -657,8 +783,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
           // However, the next heartbeat(s) should get the value eventually and mark task as alive.
           // Also, we prefer a missed heartbeat over a stuck query in case of discrepancy in ET.
           if (taskNodeId != null && taskNodeId.equals(uniqueId)) {
-            if (attempts.contains(attemptId)) {
-              getContext().taskAlive(entry.getValue());
+            Boolean isGuaranteed = attempts.get(attemptId);
+            if (isGuaranteed != null) {
+              getContext().taskAlive(attemptId);
+              scheduler.taskInfoUpdated(attemptId, isGuaranteed.booleanValue());
             } else {
               error += (attemptId + ", ");
             }
@@ -714,30 +842,31 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     Preconditions.checkState(currentQueryIdentifierProto.getDagIndex() ==
         taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
-    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
-    if (credentialsBinary == null) {
-      credentialsBinary = serializeCredentials(getContext().getCurrentDagInfo().getCredentials());
-      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
-    } else {
-      credentialsBinary = credentialsBinary.duplicate();
-    }
-    builder.setCredentialsBinary(ByteString.copyFrom(credentialsBinary));
+
+
+    builder.setCredentialsBinary(
+        getCredentials(getContext().getCurrentDagInfo().getCredentials()));
     builder.setWorkSpec(VertexOrBinary.newBuilder().setVertex(Converters.constructSignableVertexSpec(
         taskSpec, currentQueryIdentifierProto, getTokenIdentifier(), user, hiveQueryId)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
+    if (scheduler != null) { // May be null in tests
+      // TODO: see javadoc
+      builder.setIsGuaranteed(scheduler.isInitialGuaranteed(taskSpec.getTaskAttemptID()));
+    }
     return builder.build();
   }
 
-  private ByteBuffer serializeCredentials(Credentials credentials) throws IOException {
-    Credentials containerCredentials = new Credentials();
-    containerCredentials.addAll(credentials);
-    DataOutputBuffer containerTokens_dob = new DataOutputBuffer();
-    containerCredentials.writeTokenStorageToStream(containerTokens_dob);
-    return ByteBuffer.wrap(containerTokens_dob.getData(), 0, containerTokens_dob.getLength());
+  private ByteString getCredentials(Credentials credentials) throws IOException {
+    ByteBuffer credentialsBinary = credentialMap.get(currentQueryIdentifierProto);
+    if (credentialsBinary == null) {
+      credentialsBinary = LlapTezUtils.serializeCredentials(credentials);
+      credentialMap.putIfAbsent(currentQueryIdentifierProto, credentialsBinary.duplicate());
+    } else {
+      credentialsBinary = credentialsBinary.duplicate();
+    }
+    return ByteString.copyFrom(credentialsBinary);
   }
-
-
 
   protected class LlapTaskUmbilicalProtocolImpl implements LlapTaskUmbilicalProtocol {
 
@@ -759,12 +888,12 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     @Override
-    public void nodeHeartbeat(
-        Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
+    public void nodeHeartbeat(Text hostname, Text uniqueId, int port,
+        TezAttemptArray aw, BooleanArray guaranteed) throws IOException {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
       }
-      nodePinged(hostname.toString(), uniqueId.toString(), port, aw);
+      nodePinged(hostname.toString(), uniqueId.toString(), port, aw, guaranteed);
     }
 
     @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,14 +19,14 @@
 package org.apache.hive.service.cli;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.rpc.thrift.TBoolValue;
@@ -201,7 +201,7 @@ public class ColumnValue {
       return dateValue((Date)value);
     case TIMESTAMP_TYPE:
       return timestampValue((Timestamp)value);
-    case TIMESTAMPTZ_TYPE:
+    case TIMESTAMPLOCALTZ_TYPE:
       return timestampTZValue((TimestampTZ) value);
     case INTERVAL_YEAR_MONTH_TYPE:
       return stringValue((HiveIntervalYearMonth) value);
