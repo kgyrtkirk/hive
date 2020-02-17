@@ -30,9 +30,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.RPC;
@@ -120,7 +120,10 @@ public class LlapUtil {
   }
 
   public static String getUserNameFromPrincipal(String principal) {
-    return RegistryUtilities.getUserNameFromPrincipal(principal);
+    // Based on SecurityUtil.
+    if (principal == null) return null;
+    String[] components = principal.split("[/@]");
+    return (components == null || components.length != 3) ? principal : components[0];
   }
 
   public static List<StatisticsData> getStatisticsForScheme(final String scheme,
@@ -255,10 +258,7 @@ public class LlapUtil {
     if (isSecurityEnabled) {
       // Enforce Hive defaults.
       for (ConfVars acl : aclVars) {
-        if (conf.get(acl.varname) != null)
-         {
-          continue; // Some value is set.
-        }
+        if (conf.get(acl.varname) != null) continue; // Some value is set.
         if (serverConf == conf) {
           serverConf = new Configuration(conf);
         }
@@ -321,9 +321,7 @@ public class LlapUtil {
     // Try to find the default db postfix; don't check two last components - at least there
     // should be a table and file (we could also try to throw away partition/bucket/acid stuff).
     for (int i = 0; i < parts.length - 2; ++i) {
-      if (!parts[i].endsWith(DATABASE_PATH_SUFFIX)) {
-        continue;
-      }
+      if (!parts[i].endsWith(DATABASE_PATH_SUFFIX)) continue;
       if (dbIx >= 0) {
         dbIx = -1; // Let's not guess which one is correct.
         break;
@@ -333,13 +331,9 @@ public class LlapUtil {
     if (dbIx >= 0) {
       String dbAndTable = parts[dbIx].substring(
           0, parts[dbIx].length() - 3) + "." + parts[dbIx + 1];
-      if (!includeParts) {
-        return dbAndTable;
-      }
+      if (!includeParts) return dbAndTable;
       for (int i = dbIx + 2; i < parts.length; ++i) {
-        if (!parts[i].contains("=")) {
-          break;
-        }
+        if (!parts[i].contains("=")) break;
         dbAndTable += "/" + parts[i];
       }
       return dbAndTable;
@@ -363,13 +357,9 @@ public class LlapUtil {
         dbName = dbName.substring(0, dbName.length() - 3);
       }
       String dbAndTable = dbName + "." + parts[dbIx + 1];
-      if (!includeParts) {
-        return dbAndTable;
-      }
+      if (!includeParts) return dbAndTable;
       for (int i = dbIx + 2; i < parts.length; ++i) {
-        if (!parts[i].contains("=")) {
-          break;
-        }
+        if (!parts[i].contains("=")) break;
         dbAndTable += "/" + parts[i];
       }
       return dbAndTable;

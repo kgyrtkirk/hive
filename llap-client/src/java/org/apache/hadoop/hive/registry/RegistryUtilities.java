@@ -49,13 +49,4 @@ public class RegistryUtilities {
   public static String getUUID() {
     return String.valueOf(UUID.randomUUID());
   }
-
-  public static String getUserNameFromPrincipal(String principal) {
-    // Based on SecurityUtil.
-    if (principal == null) {
-      return null;
-    }
-    String[] components = principal.split("[/@]");
-    return (components == null || components.length != 3) ? principal : components[0];
-  }
 }

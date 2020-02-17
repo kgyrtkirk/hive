@@ -46,6 +46,7 @@ import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
@@ -286,7 +287,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       // even under connection or session interruption (will automatically handle retries)
       znode = new PersistentEphemeralNode(zooKeeperClient, Mode.EPHEMERAL_SEQUENTIAL,
           workersPath + "/" + workerNodePrefix, encoder.toBytes(srv));
-
+    
       // start the creation of znodes
       znode.start();
 
@@ -453,13 +454,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   protected final void populateCache(PathChildrenCache instancesCache, boolean doInvokeListeners) {
     for (ChildData childData : instancesCache.getCurrentData()) {
       byte[] data = getWorkerData(childData, workerNodePrefix);
-      if (data == null) {
-        continue;
-      }
+      if (data == null) continue;
       String nodeName = extractNodeName(childData);
-      if (!isLlapWorker(nodeName, workerNodePrefix)) {
-        continue;
-      }
+      if (!isLlapWorker(nodeName, workerNodePrefix)) continue;
       int ephSeqVersion = extractSeqNum(nodeName);
       try {
         ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
@@ -484,16 +481,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   protected abstract InstanceType createServiceInstance(ServiceRecord srv) throws IOException;
 
   protected static byte[] getWorkerData(ChildData childData, String workerNodePrefix) {
-    if (childData == null) {
-      return null;
-    }
+    if (childData == null) return null;
     byte[] data = childData.getData();
-    if (data == null) {
-      return null;
-    }
-    if (!isLlapWorker(extractNodeName(childData), workerNodePrefix)) {
-      return null;
-    }
+    if (data == null) return null;
+    if (!isLlapWorker(extractNodeName(childData), workerNodePrefix)) return null;
     return data;
   }
 
@@ -507,16 +498,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
       synchronized (this) {
         ChildData childData = event.getData();
-        if (childData == null) {
-          return;
-        }
+        if (childData == null) return;
         String nodeName = extractNodeName(childData);
         if (nodeName.equals(workerNodePrefix)) {
           LOG.warn("Invalid LLAP worker node name: {} was {}", childData.getPath(), event.getType());
         }
-        if (!isLlapWorker(nodeName, workerNodePrefix)) {
-          return;
-        }
+        if (!isLlapWorker(nodeName, workerNodePrefix)) return;
         LOG.info("{} for zknode {}", event.getType(), childData.getPath());
         InstanceType instance = extractServiceInstance(event, childData);
         if (instance != null) {
@@ -583,9 +570,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private InstanceType extractServiceInstance(
       PathChildrenCacheEvent event, ChildData childData) {
     byte[] data = childData.getData();
-    if (data == null) {
-      return null;
-    }
+    if (data == null) return null;
     try {
       ServiceRecord srv = encoder.fromBytes(event.getData().getPath(), data);
       return createServiceInstance(srv);
@@ -609,9 +594,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
             zooKeeperClient.getState() == CuratorFrameworkState.STARTED, "client is not started");
     // lazily create PathChildrenCache
     PathChildrenCache instancesCache = this.instancesCache;
-    if (instancesCache != null) {
-      return instancesCache;
-    }
+    if (instancesCache != null) return instancesCache;
     ExecutorService tp = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
               .setDaemon(true).setNameFormat("StateChangeNotificationHandler").build());
     long startTimeNs = System.nanoTime(), deltaNs = clusterReadyTimeoutMs * 1000000L;
@@ -652,7 +635,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       String principal = ZookeeperUtils.setupZookeeperAuth(
           conf, saslLoginContextName, zkPrincipal, zkKeytab);
       if (principal != null) {
-        userNameFromPrincipal = RegistryUtilities.getUserNameFromPrincipal(principal);
+        userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(principal);
       }
       zooKeeperClient.start();
     }
