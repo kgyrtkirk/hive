@@ -31,6 +31,6 @@ public interface ISessionAuthState {
 
   Configuration getConf();
 
-  String getUserName();
+  String getUserName1();
 
 }
