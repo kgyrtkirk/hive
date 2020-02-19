@@ -120,7 +120,7 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState {
+public class SessionState implements ISessionAuthState{
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   public static final String TMP_PREFIX = "_tmp_space.db";
@@ -323,6 +323,7 @@ public class SessionState {
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  @Override
   public HiveConf getConf() {
     return sessionConf;
   }
@@ -1898,7 +1899,6 @@ public class SessionState {
       tezSessionState.setKillQuery(getKillQuery());
     }
   }
-
   /**
    * If authorization mode is v2, then pass it through authorizer so that it can apply
    * any security configuration changes.

@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.ISessionAuthState;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -33,7 +33,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 public class SessionStateUserAuthenticator implements HiveAuthenticationProvider {
 
   protected Configuration conf;
-  private SessionState sessionState;
+  private ISessionAuthState sessionState;
   private List<String> groups;
 
   public SessionStateUserAuthenticator() {
@@ -68,7 +68,7 @@ public class SessionStateUserAuthenticator implements HiveAuthenticationProvider
   }
 
   @Override
-  public void setSessionState(SessionState sessionState) {
+  public void setSessionState(ISessionAuthState sessionState) {
     this.sessionState = sessionState;
   }
 
