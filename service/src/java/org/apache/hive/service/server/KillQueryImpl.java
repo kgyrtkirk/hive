@@ -72,7 +72,7 @@ public class KillQueryImpl implements KillQuery {
     List<ApplicationReport> appsList = apps.getApplicationList();
     for(ApplicationReport appReport : appsList) {
       if (isAdmin() || appReport.getApplicationTags().contains(QueryState.USERID_TAG + "=" + SessionState.get()
-              .getUserName())) {
+              .getUserName1())) {
         childYarnJobs.add(appReport.getApplicationId());
       }
     }
