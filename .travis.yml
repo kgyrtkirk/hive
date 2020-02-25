@@ -27,6 +27,9 @@ language: java
 jdk:
   - oraclejdk8
 
+services:
+  - docker
+
 # disabling cache for /home/travis/.m2/repository/org/apache/hive/hive-jdbc/3.0.0-SNAPSHOT/hive-jdbc-3.0.0-SNAPSHOT-standalone.jar (Permission denied)
 #cache:
 #  directories:
@@ -38,9 +41,10 @@ env:
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
+  - docker run --rm -it hello-world
   - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
 
 
 install: true
 
-script: mvn clean install -DskipTests -q -Pitests
+script: xmvn clean install -DskipTests -q -Pitests
