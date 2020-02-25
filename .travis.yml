@@ -47,4 +47,4 @@ before_install:
 
 install: true
 
-script: xmvn clean install -DskipTests -q -Pitests
+script: mvn install verify -DskipTests -q -Pitests -pl standalone-metastore/metastore-server/ -am -Dtest=none -DskipITests=false
