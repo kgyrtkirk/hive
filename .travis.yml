@@ -19,17 +19,12 @@
 # travis performs a shallow clone by default, in case of any issues
 # that requires full git history, enable this
 # before_install: git fetch --unshallow
-language: java
-jdk:
-  - oraclejdk8
-
 services:
   - docker
 
-# disabling cache for /home/travis/.m2/repository/org/apache/hive/hive-jdbc/3.0.0-SNAPSHOT/hive-jdbc-3.0.0-SNAPSHOT-standalone.jar (Permission denied)
 cache:
   directories:
-  - $HOME/cache
+  - $HOME/.cache
 
 env:
   MAVEN_SKIP_RC=true
@@ -37,10 +32,11 @@ env:
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:
-  - docker run --rm -it hello-world
+  - pwd
+  - docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.cache/work:/work -v $HOME/.cache/m2:/home/dev/.m2/repository kgyrtkirk/hive-dev-box docker ps
   - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
 
 
 install: true
 
-script: xmvn clean install -DskipTests -q -Pitests
+script: xmvn install -DskipTests -q -Pitests
