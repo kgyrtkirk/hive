@@ -35,6 +35,7 @@ stage('Prepare') {
     withEnv(["M_OPTS=$params.OPTS"]) {
 
     checkout scm
+    sh '''set'''
     sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
     sh '''cat /home/jenkins/agent/load.props'''
     load '/home/jenkins/agent/load.props'
