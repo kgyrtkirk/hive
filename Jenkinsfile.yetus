@@ -41,9 +41,9 @@ stage('Prepare') {
     load '/home/jenkins/agent/load.props'
     sh '''#!/bin/bash --login
 set -e
-git show 1f27ec54538 > some.patch
 mkdir output
 cd hive
+git show 1f27ec54538 > ../some.patch
 dev-support/test-patch.sh ../some.patch --build-url=$BUILD_URL --patch-dir=$PWD/../output
 '''
     }
