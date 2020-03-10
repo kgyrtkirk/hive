@@ -39,13 +39,12 @@ stage('Prepare') {
     sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
     sh '''cat /home/jenkins/agent/load.props'''
     load '/home/jenkins/agent/load.props'
-    sh 'df -h'
-    sh '''echo S==$S'''
-    sh '''mkdir output'''
-    sh '''git show 1f27ec54538 > some.patch'''
     sh '''#!/bin/bash --login
 set -e
-dev-support/test-patch.sh some.patch --build-url=$BUILD_URL --patch-dir=$PWD/output
+git show 1f27ec54538 > some.patch
+mkdir output
+cd hive
+dev-support/test-patch.sh ../some.patch --build-url=$BUILD_URL --patch-dir=$PWD/../output
 '''
     }
     }
