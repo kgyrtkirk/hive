@@ -43,7 +43,8 @@ stage('Prepare') {
     sh '''echo S==$S'''
     sh '''mkdir output'''
     sh '''git show 1f27ec54538 > some.patch'''
-    sh '''#!/bin/bash -e --login
+    sh '''#!/bin/bash --login
+set -e
 dev-support/test-patch.sh some.patch --build-url=$BUILD_URL --patch-dir=$PWD/output
 '''
     }
