@@ -1,0 +1,50 @@
+
+podTemplate(workspaceVolume: dynamicPVC(requestsSize: "16Gi"), containers: [
+  //cloudbees/jnlp-slave-with-java-build-tools
+  //kgyrtkirk/hive-dev-box:executor
+    containerTemplate(name: 'maven', image: 'kgyrtkirk/tx1:x', ttyEnabled: true, command: 'cat',
+        alwaysPullImage: true,
+        resourceRequestCpu: '1500m',
+        resourceLimitCpu: '4000m',
+        resourceRequestMemory: '3000Mi',
+        resourceLimitMemory: '8000Mi'
+    ),
+//    containerTemplate(name: 'maven', image: 'maven:3.3.9-jdk-8-alpine', ttyEnabled: true, command: 'cat'),
+//    containerTemplate(name: 'golang', image: 'golang:1.8.0', ttyEnabled: true, command: 'cat')
+  ], yaml:'''
+spec:
+  securityContext:
+    fsGroup: 1000
+''') {
+
+properties([
+    parameters([
+        string(name: 'SPLIT', defaultValue: '3', description: 'Number of buckets to split tests into.'),
+        string(name: 'OPTS', defaultValue: '-pl ql -am', description: 'additional maven opts')
+    ])
+])
+
+
+
+
+node(POD_LABEL) {
+stage('Prepare') {
+  container('maven') {
+    // FIXME can this be moved outside?
+    configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
+    withEnv(["M_OPTS=$params.OPTS"]) {
+
+    checkout scm
+    sh '''printf 'env.S="%s"' "`hostname -i`" >> /home/jenkins/agent/load.props'''
+    sh '''cat /home/jenkins/agent/load.props'''
+    load '/home/jenkins/agent/load.props'
+    sh 'df -h'
+    sh '''echo S==$S'''
+    sh '''mkdir output'''
+    sh '''git show 1f27ec54538 > some.patch'''
+    sh '''dev-support/test-patch.sh some.patch --build-url=$BUILD_URL --patch-dir=$PWD/output'''
+    }
+    }
+  }
+}
+}
