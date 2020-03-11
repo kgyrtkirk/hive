@@ -50,5 +50,11 @@ dev-support/test-patch.sh ../some.patch --build-url=$BUILD_URL --patch-dir=$PWD/
     }
   }
 }
+   post {
+        always {
+            archiveArtifacts artifacts: 'output/**', fingerprint: true
+            //junit 'build/reports/**/*.xml'
+        }
+    }
 }
 }
