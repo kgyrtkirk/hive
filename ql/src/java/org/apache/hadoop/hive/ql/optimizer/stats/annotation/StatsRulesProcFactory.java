@@ -367,6 +367,19 @@ public class StatsRulesProcFactory {
 
     protected Xlong evaluateExpression(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
         List<String> neededCols, Operator<?> op, long currNumRows) throws SemanticException {
+      Xlong ret = evaluateExpressionInternal(stats, pred, aspCtx, neededCols, op, currNumRows);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Estimating row count for " + pred + " Original num rows: " + stats.getNumRows() + " New num rows: "
+            + ret.getNumRows());
+      }
+
+      return ret;
+
+    }
+
+    protected Xlong evaluateExpressionInternal(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+        List<String> neededCols, Operator<?> op, long currNumRows) throws SemanticException {
       long newNumRows = 0;
       Statistics andStats = null;
 
@@ -430,14 +443,14 @@ public class StatsRulesProcFactory {
           newNumRows = evaluateInExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFBetween) {
           // for BETWEEN clause
-          newNumRows = evaluateBetweenExpr(stats, pred, currNumRows, aspCtx, neededCols, op).getNumRows();
+          return evaluateBetweenExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFOPNotNull) {
           return Xlong.forDeprecated(stats, evaluateNotNullExpr(stats, aspCtx, genFunc, currNumRows));
         } else {
           // single predicate condition
-          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows).getNumRows();
+          return evaluateChildExpr(stats, pred, aspCtx, neededCols, op, currNumRows);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -467,11 +480,6 @@ public class StatsRulesProcFactory {
         } else {
           newNumRows = stats.getNumRows();
         }
-      }
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Estimating row count for " + pred + " Original num rows: " + stats.getNumRows() + " New num rows: "
-            + newNumRows);
       }
 
       return Xlong.forDeprecated(stats, newNumRows);
