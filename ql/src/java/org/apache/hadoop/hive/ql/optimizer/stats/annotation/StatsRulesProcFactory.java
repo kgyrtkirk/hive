@@ -316,8 +316,14 @@ public class StatsRulesProcFactory {
       return null;
     }
 
+    /**
+     * Describes an expression's stat properties.
+     *
+     * For now it boxes the number of rows and the Statistics object.
+     */
     static class Xlong {
 
+      // FIXME statistics also has a numRows
       private long nr;
       private Statistics stat;
 
