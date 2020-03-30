@@ -1053,7 +1053,8 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                double ratio = (double) (value - minValue) / (maxValue - minValue);
+                return Math.round(ratio * numRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
@@ -1065,7 +1066,8 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                double ratio = (double) (maxValue - value) / (maxValue - minValue);
+                return Math.round(ratio * numRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)
@@ -1266,7 +1268,6 @@ public class StatsRulesProcFactory {
               // constant = constant expressions. We shouldn't be getting this
               // after constant folding
               if (isConst) {
-
                 // special case: if both constants are not equal then return 0
                 if (prevConst != null && !prevConst.equals(((ExprNodeConstantDesc) leaf).getValue())) {
                   return Xlong.forDeprecated(stats, 0);
