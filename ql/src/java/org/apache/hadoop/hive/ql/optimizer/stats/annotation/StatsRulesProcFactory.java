@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -53,9 +54,14 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
@@ -125,6 +131,24 @@ import com.google.common.collect.Sets;
 public class StatsRulesProcFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsRulesProcFactory.class.getName());
+
+  static class Xlong {
+
+    private final long nr;
+
+    private Xlong(long i) {
+      nr = i;
+    }
+
+    public long getNumRows() {
+      return nr;
+    }
+
+    public static Xlong forDeprecated(long i) {
+      return new Xlong(i);
+    }
+
+  }
 
   /**
    * Collect basic statistics like number of rows, data size and column level statistics from the
@@ -280,8 +304,9 @@ public class StatsRulesProcFactory {
 
         // evaluate filter expression and update statistics
         aspCtx.clearAffectedColumns();
-        long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
+        Xlong newNumRows0 = evaluateExpression2(parentStats, pred, aspCtx,
             neededCols, fop, parentStats.getNumRows());
+        long newNumRows = newNumRows0.getNumRows();
         Statistics st = parentStats.clone();
 
         if (satisfyPrecondition(parentStats)) {
@@ -315,6 +340,47 @@ public class StatsRulesProcFactory {
         aspCtx.setAndExprStats(null);
       }
       return null;
+    }
+
+    private Xlong evaluateExpression2(Statistics parentStats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+        List<String> neededCols, FilterOperator fop, long numRows) throws SemanticException {
+
+      // create a walker which walks the tree in a BFS manner while maintaining the
+      // operator stack. The dispatcher generates the plan from the operator tree
+      Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+
+      // The dispatcher fires the processor corresponding to the closest matching
+      // rule and passes the context along
+      SemanticDispatcher disp = new DefaultRuleDispatcher(new DefaultExprEval(), opRules, aspCtx);
+      SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
+
+      HashMap<Node, Object> ret = new HashMap<Node, Object>();
+      // Create a list of topop nodes
+      ogw.startWalking(Lists.newArrayList(pred), ret);
+
+      return (Xlong) (ret.get(pred));
+
+      //      return pctx;
+
+    }
+
+    static class DefaultExprEval implements SemanticNodeProcessor {
+
+      @Override
+      public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+          throws SemanticException {
+
+        if (nodeOutputs != null && nodeOutputs.length > 0) {
+          long ss = 0;
+          for (Object object : nodeOutputs) {
+            ss += ((Xlong) object).getNumRows();
+          }
+          return Xlong.forDeprecated(ss);
+
+        }
+        return Xlong.forDeprecated(1);
+      }
+
     }
 
     protected long evaluateExpression(Statistics stats, ExprNodeDesc pred,
