@@ -1269,7 +1269,7 @@ public class StatsRulesProcFactory {
 
                 // special case: if both constants are not equal then return 0
                 if (prevConst != null && !prevConst.equals(((ExprNodeConstantDesc) leaf).getValue())) {
-                  return Xlong.forDeprecated(stats, numRows);
+                  return Xlong.forDeprecated(stats, 0);
                 }
                 return Xlong.forDeprecated(stats, numRows);
               }
