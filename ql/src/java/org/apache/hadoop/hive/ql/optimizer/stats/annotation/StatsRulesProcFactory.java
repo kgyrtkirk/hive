@@ -345,12 +345,10 @@ public class StatsRulesProcFactory {
     private Xlong evaluateExpression2(Statistics parentStats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
         List<String> neededCols, FilterOperator fop, long numRows) throws SemanticException {
 
-      // create a walker which walks the tree in a BFS manner while maintaining the
-      // operator stack. The dispatcher generates the plan from the operator tree
       Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
 
-      // The dispatcher fires the processor corresponding to the closest matching
-      // rule and passes the context along
+      //      opRules.put(ExprNodeMatchers.forClass(ExprNodeColumnDesc.class), )
+
       SemanticDispatcher disp = new DefaultRuleDispatcher(new DefaultExprEval(), opRules, aspCtx);
       SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
@@ -364,6 +362,33 @@ public class StatsRulesProcFactory {
 
     }
 
+    //    class ExprNodeColumnEval implements SemanticNodeProcessor {
+    //
+    //      @Override
+    //      public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    //          throws SemanticException {
+    //
+    //        // can be boolean column in which case return true count
+    //        ExprNodeColumnDesc encd = (ExprNodeColumnDesc) nd;
+    //        aspCtx.addAffectedColumn(encd);
+    //        String colName = encd.getColumn();
+    //        String colType = encd.getTypeString();
+    //        if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
+    //          ColStatistics cs = inputStats.getColumnStatisticsFromColName(colName);
+    //          if (cs != null) {
+    //            newNumRows = cs.getNumTrues();
+    //          } else {
+    //            // default
+    //            newNumRows = stats.getNumRows() / 2;
+    //          }
+    //        } else {
+    //          // if not boolean column return half the number of rows
+    //          newNumRows = stats.getNumRows() / 2;
+    //        }
+    //
+    //      }
+    //  }
+
     static class DefaultExprEval implements SemanticNodeProcessor {
 
       @Override
@@ -371,9 +396,9 @@ public class StatsRulesProcFactory {
           throws SemanticException {
 
         if (nodeOutputs != null && nodeOutputs.length > 0) {
-          long ss = 0;
+          long ss=0;
           for (Object object : nodeOutputs) {
-            ss += ((Xlong) object).getNumRows();
+             ss+= ((Xlong) object).getNumRows();
           }
           return Xlong.forDeprecated(ss);
 
