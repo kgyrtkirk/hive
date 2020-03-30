@@ -126,6 +126,27 @@ public class StatsRulesProcFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatsRulesProcFactory.class.getName());
 
+  static class Xlong {
+
+    public long getNumRows() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    public static Xlong singleRow() {
+      return Xlong.forDep(1);
+    }
+
+    private static Xlong forDep(long l) {
+      return null;
+    }
+
+    public static Xlong noChanges(long currNumRows) {
+      return null;
+    }
+
+  }
+
   /**
    * Collect basic statistics like number of rows, data size and column level statistics from the
    * table. Also sets the state of the available statistics. Basic and column statistics can have
@@ -280,8 +301,9 @@ public class StatsRulesProcFactory {
 
         // evaluate filter expression and update statistics
         aspCtx.clearAffectedColumns();
-        long newNumRows = evaluateExpression(parentStats, pred, aspCtx,
+        Xlong newNumRows0 = evaluateExpression(parentStats, pred, aspCtx,
             neededCols, fop, parentStats.getNumRows());
+        long newNumRows = newNumRows0.getNumRows();
         Statistics st = parentStats.clone();
 
         if (satisfyPrecondition(parentStats)) {
@@ -317,9 +339,8 @@ public class StatsRulesProcFactory {
       return null;
     }
 
-    protected long evaluateExpression(Statistics stats, ExprNodeDesc pred,
-        AnnotateStatsProcCtx aspCtx, List<String> neededCols,
-        Operator<?> op, long currNumRows) throws SemanticException {
+    protected Xlong evaluateExpression(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+        List<String> neededCols, Operator<?> op, long currNumRows) throws SemanticException {
       long newNumRows = 0;
       Statistics andStats = null;
 
@@ -328,7 +349,7 @@ public class StatsRulesProcFactory {
           LOG.debug("Estimating row count for " + pred + " Original num rows: " + currNumRows +
               " Original data size: " + stats.getDataSize() + " New num rows: 1");
         }
-        return 1;
+        return Xlong.singleRow();
       }
 
       if (pred instanceof ExprNodeGenericFuncDesc) {
@@ -364,8 +385,9 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
           for (ExprNodeDesc child : genFunc.getChildren()) {
+            // FIXME: move into model
             newNumRows = StatsUtils.safeAdd(
-                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows),
+                evaluateChildExpr(stats, child, aspCtx, neededCols, op, currNumRows).getNumRows(),
                 newNumRows);
           }
           // We have to clear the affected columns
@@ -379,7 +401,7 @@ public class StatsRulesProcFactory {
           newNumRows = evaluateInExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFBetween) {
           // for BETWEEN clause
-          newNumRows = evaluateBetweenExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
+          return evaluateBetweenExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFOPNot) {
           newNumRows = evaluateNotExpr(stats, pred, currNumRows, aspCtx, neededCols, op);
         } else if (udf instanceof GenericUDFOPNotNull) {
@@ -423,7 +445,7 @@ public class StatsRulesProcFactory {
             " New num rows: " + newNumRows);
       }
 
-      return newNumRows;
+      return Xlong.forDep(newNumRows);
     }
 
     private long evaluateInExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
@@ -764,7 +786,8 @@ public class StatsRulesProcFactory {
       }
     }
 
-    private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
+    private Xlong evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows,
+        AnnotateStatsProcCtx aspCtx,
         List<String> neededCols, Operator<?> op) throws SemanticException {
       final ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) pred;
       final boolean invert = Boolean.TRUE.equals(
@@ -776,7 +799,7 @@ public class StatsRulesProcFactory {
       // Short circuit and return the current number of rows if this is a
       // synthetic predicate with dynamic values
       if (leftExpression instanceof ExprNodeDynamicValueDesc) {
-        return currNumRows;
+        return Xlong.noChanges(currNumRows);
       }
 
       ExprNodeDesc newExpression = rewriteBetweenToIn(comparisonExpression, leftExpression, rightExpression, invert);
@@ -858,7 +881,7 @@ public class StatsRulesProcFactory {
       return numRows / 2;
     }
 
-    private long evaluateNotNullExpr(Statistics parentStats, AnnotateStatsProcCtx aspCtx, ExprNodeGenericFuncDesc pred,
+    private Xlong evaluateNotNullExpr(Statistics parentStats, AnnotateStatsProcCtx aspCtx, ExprNodeGenericFuncDesc pred,
         long currNumRows) {
       long noOfNulls = getMaxNulls(parentStats, aspCtx, pred);
       long parentCardinality = currNumRows;
@@ -869,8 +892,8 @@ public class StatsRulesProcFactory {
       } else {
         LOG.error("Invalid column stats: No of nulls > cardinality");
       }
-
-      return newPredCardinality;
+      //FIXME: this should be further improved!
+      return Xlong.forDep(newPredCardinality);
     }
 
     private long getMaxNulls(Statistics stats, AnnotateStatsProcCtx aspCtx, ExprNodeDesc pred) {
