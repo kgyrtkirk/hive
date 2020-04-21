@@ -358,7 +358,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
     // wait for other thread to create the stmt handle
     int count = 0;
-    while (count < 10) {
+    while (++count < 10) {
       try {
         tKillHolder.throwable = null;
         Thread.sleep(2000);
@@ -380,10 +380,12 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
         stmt2.close();
         break;
       } catch (SQLException e) {
-        count++;
         LOG.warn("Exception when kill query", e);
         tKillHolder.throwable = e;
       }
+    }
+    if (count >= 10) {
+      throw new RuntimeException("test timed-out", stmtHolder.throwable);
     }
 
     tExecute.join();
