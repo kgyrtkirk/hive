@@ -1,0 +1,5 @@
+
+notifications:
+  commits:      commits@hive.apache.org
+  pullrequests: dev@hive.apache.org
+  jira_options: link label worklog
