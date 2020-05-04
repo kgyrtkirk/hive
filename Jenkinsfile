@@ -23,6 +23,7 @@ def ccLock(lock, n, block) {
       }
       sleep(10);
     }
+  }
 }
 
       ccLock('hive-precommit',2)  {
