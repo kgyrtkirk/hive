@@ -13,17 +13,17 @@ lock(resource: 'some_resource', skipIfLocked: true) {
   echo 'Do something now or never!'
 }
 
-def ccLock(lock, n, block) {
+def ccLock(lockName, n, block) {
   while(true) {
     for(int i=0;i<n;i++) {
-      def lockName = lock + "_" + i;
-      echo "Checking: ${lockName}" 
-      lock(resource: 'lockName', skipIfLocked: true) {
-        echo "Acquired: ${lockName}" 
+      def currentLockName = lockName + "_" + i;
+      echo "Checking: ${currentLockName}" 
+      lock(resource: currentLockName, skipIfLocked: true) {
+        echo "Acquired: ${currentLockName}" 
         try {
           block();
         } finally {
-          echo "Exiting: ${lockName}" 
+          echo "Exiting: ${currentLockName}" 
           return;
         }
       }
