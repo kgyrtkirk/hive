@@ -18,7 +18,7 @@ def ccLock(lock, n, block) {
     for(int i=0;i<n;i++) {
       def lockName = lock + "_" + i;
       echo "Checking: ${lockName}" 
-      lock(resource: lockName, skipIfLocked: true) {
+      lock(resource: 'lockName', skipIfLocked: true) {
         echo "Acquired: ${lockName}" 
         try {
           block();
