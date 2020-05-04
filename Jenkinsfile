@@ -1,6 +1,9 @@
 
 properties([
-   rateLimitBuilds(throttle: [count: 1000, durationName: 'hour', userBoost: true]) 
+   rateLimitBuilds(throttle: [count: 1000, durationName: 'hour', userBoost: true]),
+   pipelineTriggers([
+        issueCommentTrigger('.*test this please.*')
+   ])
  ]
 )
 
