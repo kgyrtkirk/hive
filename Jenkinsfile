@@ -1,8 +1,8 @@
-/*  properties([
-    rateLimitBuilds(throttle: [count: 600, durationName: 'day', userBoost: false])
-	]
-  )
-*/
+properties([
+   rateLimitBuilds(throttle: [count: 1, durationName: 'hour', userBoost: true])
+  ]
+)
+
 // options { disableConcurrentBuilds() }
 
 //throttle(['hive-precommit']) {
