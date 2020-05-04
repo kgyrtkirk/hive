@@ -24,7 +24,7 @@ def ccLock(lockName, n, block) {
           block();
         } finally {
           echo "Exiting: ${currentLockName}" 
-          return;
+          return
         }
       }
       sleep(10);
@@ -32,7 +32,7 @@ def ccLock(lockName, n, block) {
   }
 }
 
-      ccLock('hivePrecommit',2)  {
+ccLock('hivePrecommit',2)  {
 node {
 //	proprtyird
 // properties([rateLimitBuilds: 
@@ -47,3 +47,5 @@ node {
 
 }
 //}
+
+echo 'exit'
