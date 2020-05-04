@@ -48,6 +48,7 @@ node {
    sh "sleep 5"
 }
    sh "sleep 5"
+   sh "set"
 
 def PULL_REQUEST = env.CHANGE_ID
 withCredentials([string(credentialsId: 'github-token2', variable: 'GITHUB_TOKEN')]) {
