@@ -67,3 +67,4 @@ echo 'exit'
 
 
 pullRequest.addLabel('Build Failed')
+pullRequest.comment('This PR is highly illogical..')
