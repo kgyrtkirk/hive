@@ -1,7 +1,7 @@
 
 // options { disableConcurrentBuilds() }
 
-throttle(['test_2']) {
+throttle(['hive-precommit']) {
 node {
    properties([disableConcurrentBuilds()])
    sh "sleep 60"
