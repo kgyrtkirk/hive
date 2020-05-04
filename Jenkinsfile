@@ -44,7 +44,7 @@ node {
 
 node {
 //   properties([disableConcurrentBuilds()])
-   checkout scm
+//   checkout scm
    sh "sleep 5"
 }
    sh "sleep 5"
