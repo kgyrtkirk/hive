@@ -1,9 +1,13 @@
+  options {
+    rateLimitBuilds(throttle: [count: 60, durationName: 'hour', userBoost: false])
+  }
 
 // options { disableConcurrentBuilds() }
 
 //throttle(['hive-precommit']) {
 node {
 //	proprtyird
+// properties([rateLimitBuilds: 
 //   properties([disableConcurrentBuilds()])
 
 node {
