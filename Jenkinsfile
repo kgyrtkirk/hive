@@ -24,12 +24,13 @@ def ccLock(lockName, n, block) {
           block();
         } finally {
           echo "Exiting: ${currentLockName}" 
-          return
+          goto exit:
         }
       }
       sleep(10);
     }
   }
+  exit:
 }
 
 ccLock('hivePrecommit',2)  {
