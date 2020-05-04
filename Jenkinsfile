@@ -1,7 +1,7 @@
 
 properties([
-   rateLimitBuilds(throttle: [count: 1000, durationName: 'hour', userBoost: true])
-  ]
+   rateLimitBuilds(throttle: [count: 1000, durationName: 'hour', userBoost: true]) 
+ ]
 )
 
 
@@ -9,10 +9,14 @@ properties([
 
 //throttle(['hive-precommit']) {
 
+lock(resource: 'some_resource', skipIfLocked: true) {
+  echo 'Do something now or never!'
+}
+
 def ccLock(lock, n, block) {
   while(true) {
     for(int i=0;i<n;i++) {
-      def lockName = lock + "_" + n;
+      def lockName = lock + "_" + i;
       echo "Checking: ${lockName}" 
       lock(resource: lockName, skipIfLocked: true) {
         echo "Acquired: ${lockName}" 
@@ -28,7 +32,7 @@ def ccLock(lock, n, block) {
   }
 }
 
-      ccLock('hive-precommit',2)  {
+      ccLock('hivePrecommit',2)  {
 node {
 //	proprtyird
 // properties([rateLimitBuilds: 
