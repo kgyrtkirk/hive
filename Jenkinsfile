@@ -66,3 +66,4 @@ sh "curl -s -H \"Authorization: token ${GITHUB_TOKEN}\" -X POST -d '{\"body\": \
 echo 'exit'
 
 
+pullRequest.addLabel('Build Failed')
