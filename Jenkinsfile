@@ -50,7 +50,7 @@ node {
    sh "sleep 5"
 
 def PULL_REQUEST = env.CHANGE_ID
-withCredentials([string(credentialsId: 'github3', variable: 'GITHUB_TOKEN')]) {
+withCredentials([string(credentialsId: 'github-token2', variable: 'GITHUB_TOKEN')]) {
 sh "curl -s -H \"Authorization: token ${GITHUB_TOKEN}\" -X POST -d '{\"body\": \"This is my first test comment from jenkins\"}' \"https://github.com/api/v3/repos/kgyrtkirk/hive/${env.GIT_URL.tokenize("/")[-1].tokenize(".")[0]}/issues/${PULL_REQUEST}/comments\""
 }
 
