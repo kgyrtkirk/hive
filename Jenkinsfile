@@ -24,7 +24,7 @@ def ccLock(lockName, n, block) {
           block();
         } finally {
           echo "Exiting: ${currentLockName}" 
-          goto exit:
+          goto exit
         }
       }
       sleep(10);
