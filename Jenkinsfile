@@ -1,6 +1,7 @@
-  options {
+  properties([
     rateLimitBuilds(throttle: [count: 60, durationName: 'hour', userBoost: false])
-  }
+	]
+  )
 
 // options { disableConcurrentBuilds() }
 
