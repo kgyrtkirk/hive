@@ -1,5 +1,5 @@
 
-options { disableConcurrentBuilds() }
+// options { disableConcurrentBuilds() }
 
 node {
    properties([disableConcurrentBuilds()])
