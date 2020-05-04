@@ -431,7 +431,7 @@
       <!-- replaces -Dclustermode=minimr which I am sure sure was used? -->
       <id>minimr</id>
       <properties>
-        <test.warehouse.scheme/>
+        <test.warehouse.scheme></test.warehouse.scheme>
       </properties>
     </profile>
     <profile>
