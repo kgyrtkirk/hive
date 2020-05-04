@@ -1,5 +1,5 @@
   properties([
-    rateLimitBuilds(throttle: [count: 600, durationName: 'second', userBoost: false])
+    rateLimitBuilds(throttle: [count: 600, durationName: 'hour', userBoost: false])
 	]
   )
 
