@@ -14,7 +14,8 @@ lock(resource: 'some_resource', skipIfLocked: true) {
 }
 
 def ccLock(lockName, n, block) {
-  while(true) {
+  def run=true;
+  while(run) {
     for(int i=0;i<n;i++) {
       def currentLockName = lockName + "_" + i;
       echo "Checking: ${currentLockName}" 
@@ -24,13 +25,14 @@ def ccLock(lockName, n, block) {
           block();
         } finally {
           echo "Exiting: ${currentLockName}" 
-          goto exit
+          run=false
         }
       }
-      sleep(10);
+      if(run) {
+        sleep(10);
+      }
     }
   }
-  exit:
 }
 
 ccLock('hivePrecommit',2)  {
