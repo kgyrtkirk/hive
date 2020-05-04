@@ -1,0 +1,28 @@
+
+
+
+pipeline {
+   agent any
+   options { skipDefaultCheckout() }
+   stages {
+      stage('Hello') {
+         steps {
+   sh 'set'
+
+                build job: 'def2', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+                build job: 'def2', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+                build job: 'def', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+                build job: 'def2', parameters: [
+                string(name: 'param1', value: "value1")
+                ]         
+             
+         }
+      }
+   }
+}
