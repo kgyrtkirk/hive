@@ -36,7 +36,7 @@ def ccLock(lockName, n, block) {
 }
 
 //ccLock('hivePrecommit',2)  {
-lock('hive-precommit')  {
+lock(label:'hive-precommit')  {
 node {
 //	proprtyird
 // properties([rateLimitBuilds: 
