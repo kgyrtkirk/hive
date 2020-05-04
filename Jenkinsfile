@@ -10,7 +10,7 @@ properties([
 def ccLock(lock, n, block) {
   while(true) {
     for(int i=0;i<n;i++) {
-      def lockName = label + "_" + n;
+      def lockName = lock + "_" + n;
       echo "Checking: ${lockName}" 
       lock(resource: lockName, skipIfLocked: true) {
         echo "Acquired: ${lockName}" 
