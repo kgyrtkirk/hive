@@ -1,8 +1,9 @@
 
 // options { disableConcurrentBuilds() }
 
-throttle(['hive-precommit']) {
+//throttle(['hive-precommit']) {
 node {
+//	proprtyird
 //   properties([disableConcurrentBuilds()])
 
 node {
@@ -13,4 +14,4 @@ node {
 }
 
 
-}
+//}
