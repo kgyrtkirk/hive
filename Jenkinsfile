@@ -22,7 +22,7 @@ enum PrLabel {
 
 def setPrLabel(PrLabel label) {
    def newLabels = []
-   for( l : pullRequest.labels )
+   for( String l : pullRequest.labels )
      newLabels.add(l) //All(pullRequest.labels.asList())
 //   pullRequest.labels.each { newLabels.add(it) }
    newLabels.removeAll(PrLabel.values()*.label)
