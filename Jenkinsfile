@@ -1,4 +1,3 @@
-
 properties([
    rateLimitBuilds(throttle: [count: 1000, durationName: 'hour', userBoost: true]),
    pipelineTriggers([
@@ -6,6 +5,30 @@ properties([
    ])
  ]
 )
+
+
+enum PrLabel {
+    SUCCESS("tests passed"),
+    UNSTABLE("tests unstable"),
+    FAILURE("tests failed"),
+    PENDING("tests pending");
+
+    final String label;
+    PrLabel(String label) {
+      this.label=label;
+    }
+
+    void set() {
+      def newLabels = []
+      newLabels.addAll(pullRequest.labels.asList)
+      newLabels.removeAll(PrLabel.value()*.label)
+      newLabels.add(label)
+      pullRequest.labels=newLabels
+    }
+}
+
+
+PrLabel.PENDING.set();
 
 
 lock(label:'hive-precommit',quantity:1)  {
@@ -30,4 +53,21 @@ echo 'exit'
 
 
 pullRequest.addLabel('Build Failed')
+pullRequest.comment('This PR is highly illogical..')
+
+
+
+
+
+post {
+  success {
+    PrLabel.SUCCESS.set();
+  }
+  unstable {
+    PrLabel.UNSTABLE.set();
+  }
+  failure {
+    PrLabel.FAILURE.set();
+  }
+}
 pullRequest.comment('This PR is highly illogical..')
