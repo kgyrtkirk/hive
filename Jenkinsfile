@@ -18,17 +18,20 @@ enum PrLabel {
       this.label=label;
     }
 
-    void set() {
-      def newLabels = []
-      pullRequest.labels.each { newLabels.add(it) }
-      newLabels.removeAll(PrLabel.value()*.label)
-      newLabels.add(label)
-      pullRequest.labels=newLabels
-    }
+}
+
+def setPrLabel(PrLabel label) {
+   def newLabels = []
+   newLabels.addAll(pullRequest.labels)
+//   pullRequest.labels.each { newLabels.add(it) }
+   newLabels.removeAll(PrLabel.values()*.label)
+   newLabels.add(label)
+   pullRequest.labels=newLabels
 }
 
 
-PrLabel.PENDING.set();
+setPrLabel(PENDING);
+//PrLabel.PENDING.set();
 
 
 lock(label:'hive-precommit',quantity:1)  {
