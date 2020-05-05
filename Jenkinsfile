@@ -32,8 +32,8 @@ def setPrLabel(String prLabel) {
    def newLabels = []
    for( String l : pullRequest.labels )
      newLabels.add(l)
-   for( PrLabel l : mapping.keySet() ) 
-     newLabels.remove(l.label)
+   for( String l : mapping.keySet() ) 
+     newLabels.remove(l)
    newLabels.add(mapping[prLabel])
    pullRequest.labels=newLabels
 }
