@@ -63,7 +63,10 @@ pullRequest.comment('This PR is highly illogical..')
 
 
 
+setPrLabel(PrLabel.valueOf(currentBuild.currentResult.toString()))
 
+
+/*
 
 post {
   success {
@@ -76,4 +79,5 @@ post {
     PrLabel.FAILURE.set();
   }
 }
+*/
 pullRequest.comment('This PR is highly illogical..')
