@@ -22,18 +22,24 @@ enum PrLabel {
 
 }
 
-def setPrLabel(PrLabel prLabel) {
+def setPrLabel(String prLabel) {
+   def mapping=[
+    "SUCCESS":"tests passed",
+    "UNSTABLE":"tests unstable",
+    "FAILURE":"tests failed",
+    "PENDING":"tests pending";
+   ]
    def newLabels = []
    for( String l : pullRequest.labels )
-     newLabels.add(l) //All(pullRequest.labels.asList())
-   for( PrLabel l : PrLabel.values() ) 
+     newLabels.add(l)
+   for( PrLabel l : mapping.keySet() ) 
      newLabels.remove(l.label)
-   newLabels.add(prLabel.label)
+   newLabels.add(mapping[prLabel])
    pullRequest.labels=newLabels
 }
 
 
-setPrLabel(PrLabel.PENDING);
+setPrLabel("PENDING");
 //PrLabel.PENDING.set();
 
 
@@ -63,7 +69,7 @@ pullRequest.comment('This PR is highly illogical..')
 
 
 
-setPrLabel(PrLabel.valueOf(currentBuild.currentResult.toString()))
+setPrLabel(currentBuild.currentResult)
 
 
 /*
