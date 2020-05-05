@@ -27,7 +27,7 @@ def setPrLabel(String prLabel) {
     "SUCCESS":"tests passed",
     "UNSTABLE":"tests unstable",
     "FAILURE":"tests failed",
-    "PENDING":"tests pending";
+    "PENDING":"tests pending",
    ]
    def newLabels = []
    for( String l : pullRequest.labels )
