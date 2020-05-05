@@ -30,7 +30,7 @@ def setPrLabel(PrLabel label) {
 }
 
 
-setPrLabel(PENDING);
+setPrLabel(PrLabel.PENDING);
 //PrLabel.PENDING.set();
 
 
