@@ -26,7 +26,8 @@ def setPrLabel(PrLabel label) {
    for( String l : pullRequest.labels )
      newLabels.add(l) //All(pullRequest.labels.asList())
 //   pullRequest.labels.each { newLabels.add(it) }
-   newLabels.removeAll(PrLabel.values()*.getLabel())
+   for( PrLabel l : PrLabel.values() ) 
+     newLabels.remove(l.label)
    newLabels.add(label)
    pullRequest.labels=newLabels
 }
