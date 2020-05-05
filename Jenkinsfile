@@ -33,9 +33,9 @@ def setPrLabel(String prLabel) {
    for( String l : pullRequest.labels )
      newLabels.add(l)
    for( String l : mapping.keySet() ) 
-     newLabels.remove(l)
+     newLabels.remove(mapping[l])
    newLabels.add(mapping[prLabel])
-   echo newLabels
+   echo ('' +newLabels)
    pullRequest.labels=newLabels
 }
 
