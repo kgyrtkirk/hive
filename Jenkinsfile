@@ -13,7 +13,7 @@ enum PrLabel {
     FAILURE("tests failed"),
     PENDING("tests pending");
 
-    final String label;
+    public final String label;
     PrLabel(String label) {
       this.label=label;
     }
