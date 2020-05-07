@@ -27,7 +27,7 @@ insert into t select id,cnt where not first
 insert overwrite table t_offset select max(s1.id);
  
 -- configure to run ingestion every 2 days
-create scheduled query ingest cron '0 0 0 1 * ? 2016' defined as
+create scheduled query ingest cron '0 0 0 1 * ? 2030' defined as
 from (select id==offset as first,* from s
 join t_offset on id>=offset) s1
 insert into t select id,cnt where not first

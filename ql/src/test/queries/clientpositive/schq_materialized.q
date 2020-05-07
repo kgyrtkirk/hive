@@ -60,7 +60,7 @@ JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01';
 
 -- create a schedule to rebuild mv
-create scheduled query d cron '0 0 0 1 * ? 2016' defined as 
+create scheduled query d cron '0 0 0 1 * ? 2030' defined as 
   alter materialized view mv1 rebuild;
 
 set hive.support.quoted.identifiers=none;
