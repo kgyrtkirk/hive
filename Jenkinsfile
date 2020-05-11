@@ -1,67 +1,4 @@
 
-def setPrLabel(String prLabel) {
-   def mapping=[
-    "SUCCESS":"tests passed",
-    "UNSTABLE":"tests unstable",
-    "FAILURE":"tests failed",
-    "PENDING":"tests pending",
-   ]
-   def newLabels = []
-   for( String l : pullRequest.labels )
-     newLabels.add(l)
-   for( String l : mapping.keySet() )
-     newLabels.remove(mapping[l])
-   newLabels.add(mapping[prLabel])
-   echo ('' +newLabels)
-   pullRequest.labels=newLabels
-}
-
-setPrLabel("PENDING");
-
-def executorNode(run) {
-    node(POD_LABEL) {
-      container('maven') {
-        timestamps {
-          run()
-        }
-      }
-  }
-}
-
-// FIXME decomission this method
-def testInParallel(parallelism, inclusionsFile, exclusionsFile, results, image, prepare, run) {
-  def splits
-  container('maven') {
-    splits = splitTests parallelism: parallelism, generateInclusions: true, estimateTestsFromFiles: true
-  }
-  def branches = [:]
-  for (int i = 0; i < splits.size(); i++) {
-    def num = i
-    def split = splits[num]
-    def splitName=String.format("split-%02d",num+1)
-    branches[splitName] = {
-      executorNode {
-      	stage('Prepare') {
-            prepare()
-            writeFile file: (split.includes ? inclusionsFile : exclusionsFile), text: split.list.join("\n")
-            writeFile file: (split.includes ? exclusionsFile : inclusionsFile), text: ''
-        }
-        try {
-      		stage('Test') {
-            run()
-      		}
-        } finally {
-      		stage('Archive') {
-            junit '**/TEST-*.xml'
-      		}
-        }
-      }
-    }
-  }
-  parallel branches
-}
-
-
 def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
@@ -73,7 +10,7 @@ export USER="`whoami`"
 export MAVEN_OPTS="-Xmx1333m"
 export -n HIVE_CONF_DIR
 #export HIVE_HOME="$PWD"
-OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignoreX -Dtest.groups= "
 OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
@@ -82,7 +19,17 @@ if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.t
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 #cd hive
 mvn $OPTS '''+args+'''
-du -h --max-depth=1
+set +e
+for((i=0;i<100;i++));do
+	time mvn $OPTS -q -pl itests/qtest/ -Dtest=TestMiniDruidCliDriver
+	r=$?
+	if [ "$r" -ne 0 ];then
+		echo "got it!"
+		sleep 86400
+	fi
+done
+exit 1
+set -e
 '''
     }
   }
