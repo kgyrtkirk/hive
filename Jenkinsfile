@@ -21,10 +21,11 @@ if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.t
 mvn $OPTS '''+args+'''
 set +e
 for((i=0;i<100;i++));do
-	time mvn $OPTS -q -pl itests/qtest/ -Dtest=TestMiniDruidCliDriver
+        banner 'try#$i'
+	time mvn install $OPTS -q -pl itests/qtest/ -Dtest=TestMiniDruidCliDriver
 	r=$?
 	if [ "$r" -ne 0 ];then
-		echo "got it!"
+		banner "got it!"
 		sleep 86400
 	fi
 done
