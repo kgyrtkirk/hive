@@ -60,10 +60,10 @@ OPTS+=" $M_OPTS "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 #cd hive
-mvn $OPTS -am -DskipTests
+mvn $OPTS install -am -DskipTests
 for((i=0;i<100;i++)); do
 	banner "try-$i"
-	mvn $OPTS	
+	mvn $OPTS install	
 done
 '''
     }
