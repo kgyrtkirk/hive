@@ -5,7 +5,6 @@ properties([
     // do not run multiple testruns on the same branch
 //    disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
         string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
@@ -53,7 +52,7 @@ export USER="`whoami`"
 #export MAVEN_OPTS="-Xmx1333m"
 export -n HIVE_CONF_DIR
 #export HIVE_HOME="$PWD"
-OPTS=" -s $SETTINGS -B -Dmaven.test.failure.ignore -Dtest.groups= "
+OPTS=" -s $SETTINGS -q -Dtest.groups= "
 OPTS+=" -Pitests,qsplits"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2"
@@ -61,8 +60,11 @@ OPTS+=" $M_OPTS "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 #cd hive
-mvn $OPTS '''+args+'''
-du -h --max-depth=1
+mvn $OPTS -am -DskipTests
+for((i=0;i<100;i++)); do
+	banner "try-$i"
+	mvn $OPTS	
+done
 '''
     }
   }
@@ -114,23 +116,9 @@ spec:
 def jobWrappers(closure) {
   try {
     // allocate 1 precommit token for the execution
-    lock(label:'hive-precommit',quantity:1)  {
       timestamps {
-        rsyncPodTemplate {
-          node(POD_LABEL) {
-            // launch the "rsync" container to store build data
-            container('rsync') {
-              stage('Prepare rsync') {
-                sh '''printf 'env.S="%s"' "`hostname -i`" | tee load.props'''
-                load 'load.props'
-                sh 'df -h /data'
-              }
-            }
             closure()
-          }
-        }
       }
-    }
   } finally {
     setPrLabel(currentBuild.currentResult)
   }
@@ -138,59 +126,20 @@ def jobWrappers(closure) {
 
 jobWrappers {
 
-  def splits
   executorNode {
     container('hdb') {
       stage('Checkout') {
         checkout scm
-        // why dup?
-        sh '''#!/bin/bash -e
-            # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-            find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-        '''
       }
       stage('Compile') {
-        buildHive("install -Dtest=noMatches")
-        sh '''#!/bin/bash -e
-            # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-            find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-        '''
-      }
-      stage('Upload') {
-        sh  'rsync -rltDq --stats . rsync://$S/data'
-
-        splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
-      }
-    }
-  }
-
-  stage('Testing') {
-
-    def branches = [:]
-    for (int i = 0; i < splits.size(); i++) {
-      def num = i
-      def split = splits[num]
-      def splitName=String.format("split-%02d",num+1)
-      branches[splitName] = {
-        executorNode {
-          stage('Prepare') {
-              sh  'rsync -rltDq --stats rsync://$S/data .'
-              writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
-              writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
-              sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
-          }
-          try {
-            stage('Test') {
-              buildHive("install -q")
-            }
-          } finally {
-            stage('Archive') {
-              junit '**/TEST-*.xml'
-            }
+        try {
+          buildHive("")
+        } finally {
+          stage('Archive') {
+            junit '**/TEST-*.xml'
           }
         }
       }
     }
-    parallel branches
   }
 }
