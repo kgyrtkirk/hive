@@ -5,7 +5,7 @@ properties([
     // do not run multiple testruns on the same branch
 //    disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
         string(name: 'SCRIPT', defaultValue: '', description: 'custom build script'),
     ])
@@ -150,7 +150,7 @@ jobWrappers {
         '''
       }
       stage('Compile') {
-        buildHive("install -Dtest=noMatches")
+        buildHive("install -DskipTests")
         sh '''#!/bin/bash -e
             # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
             find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
@@ -181,7 +181,7 @@ jobWrappers {
           }
           try {
             stage('Test') {
-              buildHive("test -q")
+              buildHive("test -q -Dtest=TestMetaStoreMetrics,TestAcidOnTez")
             }
           } finally {
             stage('Archive') {
