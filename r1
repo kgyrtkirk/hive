@@ -24,7 +24,7 @@ case "$1" in
 			awk "NR % $M == $i" > tests
 		wc -l tests
 		head tests
-		mvn $M_OPTS -q install -Dsurefire.includesFile=$PWD/tests
+		mvn $M_OPTS -q install surefire-report:report -Dsurefire.includesFile=$PWD/tests
 	;;
 	*)
 		echo "unknown $?"
