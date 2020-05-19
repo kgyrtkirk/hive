@@ -18,7 +18,7 @@ case "$1" in
 		i=$2
 		echo "@ tests $i / $M"
 		#time mvn $M_OPTS -q generate-sources -Pitests,qsplits
-		time mvn $M_OPTS -B install -DskipTests
+		time mvn $M_OPTS -q install -DskipTests
 		find . -name Test*.java |
 			sed 's|.*org/apache/|org/apache/|'|
 			sort -R --random-source=<(yes) |
