@@ -11,7 +11,7 @@ on:
 jobs:
 EOF
 
-M=2
+M=20
 
 for ((i=0;i<M;i++));do
 cat << EOF
@@ -32,25 +32,26 @@ cat << EOF
 EOF
 done
 
-cat << EOF
-  deployResults:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 50
-          repository: 'kgyrtkirk/test-results'
-          ref: 'gh-pages'
-      - run: echo asd > README.md
-      - name: Commit report
-        run: |
-          git config --global user.name 'Your Name'
-          git config --global user.email 'your-username@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          git commit -am "Automated report"
-          git push
 
-EOF
+# cat << EOF
+#   deployResults:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 50
+#           repository: 'kgyrtkirk/test-results'
+#           ref: 'gh-pages'
+#       - run: echo asd > README.md
+#       - name: Commit report
+#         run: |
+#           git config --global user.name 'Your Name'
+#           git config --global user.email 'your-username@users.noreply.github.com'
+#           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+#           git commit -am "Automated report"
+#           git push
+
+# EOF
 
 
 ) > .github/workflows/main.yml
