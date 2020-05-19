@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export MAVEN_OPTS="-Xmx2g"
-export M_OPTS="-Dmaven.test.failure.ignore -Dtest.groups= -Pitests,qsplits -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO -pl storage-api"
+export M_OPTS="-Dmaven.test.failure.ignoreX -fae -Dtest.groups= -Pitests,qsplits -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 
 
 #head -n1111 /proc/cpuinfo /proc/meminfo
