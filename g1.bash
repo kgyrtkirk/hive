@@ -33,7 +33,7 @@ EOF
 done
 
 cat << EOF
- deployResults:
+  deployResults:
     runs-on: ubuntu-latest
     steps:
       - run: echo asd > README.md

@@ -33,7 +33,7 @@ jobs:
       - name: 'test 1/2'
         run: time ./r1 test 1 2
 
- deployResults:
+  deployResults:
     runs-on: ubuntu-latest
     steps:
       - run: echo asd > README.md
