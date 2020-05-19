@@ -36,6 +36,11 @@ cat << EOF
   deployResults:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 50
+          repository: 'kgyrtkirk/test-results'
+          ref: 'gh-pages'
       - run: echo asd > README.md
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@releases/v3
