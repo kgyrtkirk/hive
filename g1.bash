@@ -11,7 +11,7 @@ on:
 jobs:
 EOF
 
-M=50
+M=2
 
 for ((i=0;i<M;i++));do
 cat << EOF
