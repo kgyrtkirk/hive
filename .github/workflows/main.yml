@@ -16,8 +16,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: 'build'
-        run: time ./r1 build
       - name: 'test 0/2'
         run: time ./r1 test 0 2
 
@@ -32,8 +30,18 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: 'build'
-        run: time ./r1 build
       - name: 'test 1/2'
         run: time ./r1 test 1 2
+
+ deployResults:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo asd > README.md
+    steps:
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: build # The folder the action should deploy.
 

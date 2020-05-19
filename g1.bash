@@ -30,6 +30,22 @@ cat << EOF
         run: time ./r1 test $i $M
 
 EOF
-#break
 done
+
+cat << EOF
+ deployResults:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo asd > README.md
+    steps:
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: \${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: build # The folder the action should deploy.
+
+EOF
+
+
 ) > .github/workflows/main.yml
