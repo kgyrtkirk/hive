@@ -11,7 +11,7 @@ on:
 jobs:
 EOF
 
-M=20
+M=2
 
 for ((i=0;i<M;i++));do
 cat << EOF
@@ -28,7 +28,11 @@ cat << EOF
           java-version: 8
       - name: 'test $i/$M'
         run: time ./r1 test $i $M
-
+      - name: Unit tests results
+        uses: actions/upload-artifact@v1
+        with:
+          name: unit-tests-results
+          path: storage-api/target/site/surefire-report.html
 EOF
 done
 

@@ -18,7 +18,11 @@ jobs:
           java-version: 8
       - name: 'test 0/2'
         run: time ./r1 test 0 2
-
+      - name: Unit tests results
+        uses: actions/upload-artifact@v1
+        with:
+          name: unit-tests-results
+          path: storage-api/target/site/surefire-report.html
   test1:
     name: 'test1'
     runs-on: ubuntu-latest
@@ -32,20 +36,8 @@ jobs:
           java-version: 8
       - name: 'test 1/2'
         run: time ./r1 test 1 2
-
-  deployResults:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+      - name: Unit tests results
+        uses: actions/upload-artifact@v1
         with:
-          fetch-depth: 50
-          repository: 'kgyrtkirk/test-results'
-          ref: 'gh-pages'
-      - run: echo asd > README.md
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: build # The folder the action should deploy.
-
+          name: unit-tests-results
+          path: storage-api/target/site/surefire-report.html
