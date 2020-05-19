@@ -43,7 +43,7 @@ public class TestMurmur3 {
     HashFunction hf = Hashing.murmur3_32(seed);
     int hc1 = hf.hashBytes(key.getBytes()).asInt();
     int hc2 = Murmur3.hash32(key.getBytes(), key.getBytes().length, seed);
-    assertEquals(hc1, hc2);
+    assertEquals(hc1, hc2+1);
 
     key = "testkey";
     hc1 = hf.hashBytes(key.getBytes()).asInt();
