@@ -17,7 +17,7 @@ case "$1" in
 		M=$3
 		i=$2
 		echo "@ tests $i / $M"
-		time mvn generate-sources -Pitests,qsplits
+		time mvn -q generate-sources -Pitests,qsplits
 		find . -name Test*.java |
 			sed 's|.*org/apache/|org/apache/|'|
 			sort -R --random-source=<(yes) |
