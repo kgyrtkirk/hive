@@ -40,4 +40,4 @@ jobs:
           java-version: 8
       - name: 'Build and test'
         run: |
-           mvn install -pl storage-api
+           mvn -B install -pl storage-api
