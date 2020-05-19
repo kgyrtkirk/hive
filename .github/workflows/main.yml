@@ -8,8 +8,6 @@ jobs:
   split0:
     name: 'split0'
     runs-on: ubuntu-latest
-    env:
-      M_OPTS: -Dmaven.test.failure.ignore -Dtest.groups= -Pitests,qsplits -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO
     steps:
       - uses: actions/checkout@v2
         with:
@@ -19,9 +17,7 @@ jobs:
         with:
           java-version: 8
       - name: 'build'
-        run: time mvn $M_OPTS -B install -DskipTests
-      - run: find . -name Test*.class | sed 's|.*org/apache/|org/apache/|'| sort -R --random-source=<(yes) | awk 'NR % 100 == 0' > tests
-      - run: wc -l tests
-      - run: head tests
-      - run: time mvn $M_OPTS -q install -Dsurefire.includesFile=tests 
+        run: time ./r1 build
+      - name: 'test 0/30'
+        run: time ./r1 test 0 30
 
