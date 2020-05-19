@@ -11,12 +11,12 @@ on:
 jobs:
 EOF
 
-M=30
+M=50
 
 for ((i=0;i<M;i++));do
 cat << EOF
-  split$i:
-    name: 'split$i'
+  test$i:
+    name: 'test$i'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -32,6 +32,6 @@ cat << EOF
         run: time ./r1 test $i $M
 
 EOF
-break
+#break
 done
 ) > .github/workflows/main.yml
