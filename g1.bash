@@ -37,7 +37,6 @@ cat << EOF
     runs-on: ubuntu-latest
     steps:
       - run: echo asd > README.md
-    steps:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
