@@ -11,15 +11,13 @@ on:
 jobs:
 EOF
 
-M=100
+M=30
 
 for ((i=0;i<M;i++));do
 cat << EOF
   split$i:
     name: 'split$i'
     runs-on: ubuntu-latest
-    env:
-      M_OPTS: -Dmaven.test.failure.ignore -Dtest.groups= -Pitests,qsplits -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO
     steps:
       - uses: actions/checkout@v2
         with:
@@ -29,11 +27,9 @@ cat << EOF
         with:
           java-version: 8
       - name: 'build'
-        run: time mvn \$M_OPTS -B install -DskipTests
-      - run: find . -name Test*.class | sed 's|.*org/apache/|org/apache/|'| sort -R --random-source=<(yes) | awk 'NR % $M == $i' > tests
-      - run: wc -l tests
-      - run: head tests
-      - run: time mvn \$M_OPTS -q install -Dsurefire.includesFile=tests 
+        run: time ./r1 build
+      - name: 'test $i/$M'
+        run: time ./r1 test $i $M
 
 EOF
 break
