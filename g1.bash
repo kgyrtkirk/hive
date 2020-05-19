@@ -26,8 +26,6 @@ cat << EOF
         uses: actions/setup-java@v1
         with:
           java-version: 8
-      - name: 'build'
-        run: time ./r1 build
       - name: 'test $i/$M'
         run: time ./r1 test $i $M
 

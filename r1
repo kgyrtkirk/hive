@@ -5,6 +5,8 @@ export M_OPTS="-Dmaven.test.failure.ignore -Dtest.groups= -Pitests,qsplits -Dorg
 
 set -x
 
+head -n1111 /proc/cpuinfo /proc/meminfo
+
 case "$1" in
 	build)
 		echo "@ build"
@@ -14,7 +16,8 @@ case "$1" in
 		M=$3
 		i=$2
 		echo "@ tests $i / $M"
-		find . -name Test*.class |
+		time mvn generate-sources -Pitests,qsplits
+		find . -name Test*.java |
 			sed 's|.*org/apache/|org/apache/|'|
 			sort -R --random-source=<(yes) |
 			awk "NR % $M == $i" > tests
