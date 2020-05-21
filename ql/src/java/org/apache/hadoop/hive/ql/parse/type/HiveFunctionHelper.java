@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
@@ -79,7 +78,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -387,45 +385,32 @@ public class HiveFunctionHelper implements FunctionHelper {
       throws SemanticException {
     TypeInfo returnType = null;
 
-    if (FunctionRegistry.isRankingFunction(aggregateName)) {
-      // Rank functions type is 'int'/'double'
-      if (aggregateName.equalsIgnoreCase("percent_rank")) {
-        returnType = TypeInfoFactory.doubleTypeInfo;
-      } else {
-        returnType = TypeInfoFactory.intTypeInfo;
+    // Try obtaining UDAF evaluators to determine the ret type
+    try {
+      Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(GroupByDesc.Mode.COMPLETE, isDistinct);
+      List<ObjectInspector> aggParameterOIs = new ArrayList<>();
+      for (RexNode aggParameter : aggregateParameters) {
+        aggParameterOIs.add(createObjectInspector(aggParameter));
       }
-    } else {
-      // Try obtaining UDAF evaluators to determine the ret type
-      try {
-        Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(
-            GroupByDesc.Mode.COMPLETE, isDistinct);
-        List<ObjectInspector> aggParameterOIs = new ArrayList<>();
-        for (RexNode aggParameter : aggregateParameters) {
-          aggParameterOIs.add(createObjectInspector(aggParameter));
-        }
-        if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
-            || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
-          GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggregateName,
-              aggParameterOIs, isDistinct, isAllColumns);
-          GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
-              genericUDAFEvaluator, udafMode, aggParameterOIs);
+      if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
+          || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
+        GenericUDAFEvaluator genericUDAFEvaluator =
+            FunctionRegistry.getGenericWindowingEvaluator(aggregateName, aggParameterOIs, isDistinct, isAllColumns);
+        GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(genericUDAFEvaluator, udafMode, aggParameterOIs);
+        returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();
+      } else {
+        GenericUDAFEvaluator genericUDAFEvaluator =
+            SemanticAnalyzer.getGenericUDAFEvaluator2(aggregateName, aggParameterOIs, null, isDistinct, isAllColumns);
+        assert (genericUDAFEvaluator != null);
+        GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(genericUDAFEvaluator, udafMode, aggParameterOIs);
+        if (FunctionRegistry.pivotResult(aggregateName)) {
           returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();
         } else {
-          GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator2(
-              aggregateName, aggParameterOIs, null, isDistinct, isAllColumns);
-          assert (genericUDAFEvaluator != null);
-          GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
-              genericUDAFEvaluator, udafMode, aggParameterOIs);
-          if (FunctionRegistry.pivotResult(aggregateName)) {
-            returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();
-          } else {
-            returnType = udaf.returnType;
-          }
+          returnType = udaf.returnType;
         }
-      } catch (Exception e) {
-        LOG.debug("CBO: Couldn't Obtain UDAF evaluators for " + aggregateName
-            + ", trying to translate to GenericUDF");
       }
+    } catch (Exception e) {
+      LOG.debug("CBO: Couldn't Obtain UDAF evaluators for " + aggregateName + ", trying to translate to GenericUDF");
     }
 
     return returnType != null ?
