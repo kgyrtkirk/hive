@@ -43,14 +43,12 @@
     <module>server-extensions</module>
     <module>webhcat/java-client</module>
     <module>webhcat/svr</module>
-    <module>streaming</module>
   </modules>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
        <exclusions>
         <exclusion>
@@ -70,7 +68,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <version>${hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

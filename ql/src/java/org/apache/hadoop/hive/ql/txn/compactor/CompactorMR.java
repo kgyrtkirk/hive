@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,6 +212,7 @@ public class CompactorMR {
    * @param sd metastore storage descriptor
    * @param writeIds list of valid write ids
    * @param ci CompactionInfo
+   * @param su StatsUpdater which is null if no stats gathering is needed
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
@@ -294,7 +296,9 @@ public class CompactorMR {
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
 
-    su.gatherStats();
+    if (su != null) {
+      su.gatherStats();
+    }
   }
 
   /**
@@ -881,8 +885,10 @@ public class CompactorMR {
       Path tmpLocation = AcidUtils.createFilename(rootDir, options);
       FileSystem fs = tmpLocation.getFileSystem(jobConf);
 
-      if (fs.exists(tmpLocation)) {
+      try {
         fs.delete(tmpLocation, true);
+      } catch (FileNotFoundException e) {
+        // no problem
       }
     }
 
