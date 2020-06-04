@@ -174,4 +174,38 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+    <id>findbugs</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.5</version>
+<executions>
+    <execution>
+      <id>failing-on-high</id>
+      <phase>process-test-resources</phase>
+      <goals>
+        <goal>check</goal>
+      </goals>
+      <configuration>
+        <threshold>High</threshold>
+<!--        <onlyAnalyze>com.example.-</onlyAnalyze>-->
+      </configuration>
+    </execution>
+  </executions>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+<!--              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile> -->
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+  </profile>
+
+  </profiles>
 </project>
