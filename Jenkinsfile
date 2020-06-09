@@ -113,6 +113,8 @@ spec:
 def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
+node {
+  label 'master'
     // allocate 1 precommit token for the execution
 //    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
@@ -120,6 +122,7 @@ def jobWrappers(closure) {
         closure()
 //      }
     }
+}
     finalLabel=currentBuild.currentResult
   } finally {
     setPrLabel(finalLabel)
@@ -140,6 +143,7 @@ def loadWS() {
 }
 
 jobWrappers {
+
 
   def splits
   executorNode {
