@@ -29,7 +29,5 @@ properties([
 
 node {
   label 'master'
-  steps {
     sh 'sleep 30'
-  }
 }
