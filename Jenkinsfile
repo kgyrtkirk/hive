@@ -16,17 +16,6 @@
  * limitations under the License.
  */
 
-properties([
-    // max 5 build/branch/day
-//    rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
-    // do not run multiple testruns on the same branch
-  //  disableConcurrentBuilds(),
-    parameters([
-        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
-        string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
-    ])
-])
-
 node {
   label 'master'
     sh 'sleep 30'
