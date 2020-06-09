@@ -2,6 +2,7 @@ pipeline {
 	agent {
 	  label 'master'
 	}
+	scm none
         stages {
 	stage("x") {
 		steps {
