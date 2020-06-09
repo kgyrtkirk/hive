@@ -2,8 +2,12 @@ pipeline {
 	agent {
 	  label 'master'
 	}
-	steps {
-	  sh 'sleep 30'
+        stages {
+	stage("x") {
+		steps {
+		  sh 'sleep 30'
+		}
+}
 	}
 
 }
