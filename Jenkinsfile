@@ -46,8 +46,6 @@ def setPrLabel(String prLabel) {
   }
 }
 
-setPrLabel("PENDING");
-
 def executorNode(run) {
   hdbPodTemplate {
       node(POD_LABEL) {
