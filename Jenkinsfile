@@ -22,7 +22,7 @@ properties([
     // do not run multiple testruns on the same branch
     disableConcurrentBuilds(),
     parameters([
-        string(name: 'SPLIT', defaultValue: '20', description: 'Number of buckets to split tests into.'),
+        string(name: 'SPLIT', defaultValue: '1', description: 'Number of buckets to split tests into.'),
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
@@ -87,10 +87,10 @@ def hdbPodTemplate(closure) {
   containers: [
     containerTemplate(name: 'hdb', image: 'kgyrtkirk/hive-dev-box:executor', ttyEnabled: true, command: 'cat',
         alwaysPullImage: true,
-        resourceRequestCpu: '1800m',
-        resourceLimitCpu: '3000m',
-        resourceRequestMemory: '6400Mi',
-        resourceLimitMemory: '12000Mi'
+        resourceRequestCpu: '180m',
+        resourceLimitCpu: '300m',
+        resourceRequestMemory: '640Mi',
+        resourceLimitMemory: '1200Mi'
     ),
   ], yaml:'''
 spec:
@@ -105,8 +105,6 @@ spec:
       operator: "Equal"
       value: "slave"
       effect: "NoSchedule"
-  nodeSelector:
-    type: slave
 ''') {
     closure();
   }
@@ -116,11 +114,11 @@ def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
-    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
+//    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
         closure()
-      }
+//      }
     }
     finalLabel=currentBuild.currentResult
   } finally {
@@ -146,23 +144,13 @@ jobWrappers {
   def splits
   executorNode {
     container('hdb') {
-      stage('Checkout') {
-        checkout scm
-      }
-      stage('Compile') {
-        buildHive("install -Dtest=noMatches")
-        sh '''#!/bin/bash -e
-            # make parallel-test-execution plugins source scanner happy ~ better results for 1st run
-            find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
-        '''
-      }
-      stage('Upload') {
-        saveWS()
-        splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
+      stage("x") {
+        sh 'sleep 30'
       }
     }
   }
 
+  if(false) 
   stage('Testing') {
 
     def branches = [:]
