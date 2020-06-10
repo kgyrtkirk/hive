@@ -19,18 +19,18 @@ def checkPrHead() {
 }
 
 def getFlakyTestCommand() {
+  def cmd=""
   if(env.CHANGE_ID) {
     for( comment in pullRequest.comments) {
       if(comment.body.trim().startsWith("/flakycheck") ) {
-	def cmd=comment.body.substring(11)
-	if(!cmd  ==~ /^[\s\d _\-]+$/) {
-          error("invalid flakycheck cmd")
-	}
-        return cmd
+        def cmd=comment.body.substring(11).trim()
       }
     }
+    if(!cmd  ==~ /^[\s\d _\-]+$/) {
+      error("invalid flakycheck cmd")
+    }
   }
-  return null
+  return cmd
 }
 
 println("flakycmd:"+getFlakyTestCommand())
