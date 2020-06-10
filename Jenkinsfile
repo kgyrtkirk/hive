@@ -21,7 +21,7 @@ def checkPrHead() {
 def getFlakyTestCommand() {
   if(env.CHANGE_ID) {
     for( comment in pullRequest.comments) {
-      if(comment.body.trim.startsWith("/flakycheck") ) {
+      if(comment.body.trim().startsWith("/flakycheck") ) {
 	return comment.body
       }
     }
