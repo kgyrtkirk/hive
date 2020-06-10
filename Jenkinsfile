@@ -4,6 +4,8 @@
 def checkPrHead() {
   if(env.CHANGE_ID) {
     static prHead = null;
+    println("checkPrHead - prHead:" + prHead)
+    println("checkPrHead - prHead2:" + pullRequest.head)
     if (prHead == null) {
       prHead=pullRequest.head;
     } else {
