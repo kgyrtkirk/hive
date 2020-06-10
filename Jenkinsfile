@@ -27,7 +27,7 @@ def getFlakyTestCommand() {
       }
     }
     println("last flakycmd command: ${cmd}")
-    if(!(cmd.matches('^[a-zA-Z0-9 _\\-#/.]+$'))) {
+    if(!(cmd.matches('^[a-zA-Z0-9 _\\-#/.=]+$'))) {
       error("invalid flakycheck cmd")
     }
   }
