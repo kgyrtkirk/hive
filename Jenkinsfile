@@ -1,5 +1,6 @@
 
 
+
 this.prHead = null;
 def checkPrHead() {
   if(env.CHANGE_ID) {
