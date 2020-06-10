@@ -18,6 +18,19 @@ def checkPrHead() {
   }
 }
 
+def getFlakyTestCommand() {
+  if(env.CHANGE_ID) {
+    for( comment in pullRequest.comments) {
+      if(comment.body.trim ~ "/flakycheck" ) {
+	return comment.body
+      }
+    }
+  }
+  return null
+}
+
+println("flakycmd:"+getFlakyTestCommand())
+
 checkPrHead()
 
 if (env.CHANGE_ID) {
