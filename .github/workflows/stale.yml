@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> kgyrtkirk/master
 name: "Close stale pull requests"
 on:
   schedule:
@@ -10,6 +15,7 @@ jobs:
     - uses: actions/stale@v3
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+<<<<<<< HEAD
         stale-pr-message: This pull request has been automatically marked as
           stale because it has not had recent activity. It will be closed if
           no further activity occurs.
@@ -20,3 +26,8 @@ jobs:
         stale-pr-label: stale
         days-before-stale: 60
         days-before-close: 7
+=======
+        stale-pr-message: 'This pull request has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs.'
+        exempt-pr-labels: 'awaiting-approval,work-in-progress'
+        stale-pr-label: stale
+>>>>>>> kgyrtkirk/master
