@@ -10,7 +10,8 @@ def checkPrHead() {
       prHead = pullRequest.head;
     } else {
       if(prHead != pullRequest.head) {
-        throw new RuntimeException("new changes on PR; failing build")
+        currentBuild.result = 'ABORTED'
+        error('Found new changes on PR; aborting current build')
       }
     }
   }
