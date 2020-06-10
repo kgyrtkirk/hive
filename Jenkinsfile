@@ -26,6 +26,7 @@ def getFlakyTestCommand() {
         cmd=comment.body.substring(11).trim()
       }
     }
+    println("last flakycmd command: ${cmd}")
     if(!cmd  ==~ /^[\s\d _\-]+$/) {
       error("invalid flakycheck cmd")
     }
