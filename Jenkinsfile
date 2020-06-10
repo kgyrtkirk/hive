@@ -1,9 +1,28 @@
 
 
+static class PrHeadChecker {
+	static String prHead;
+	static void check() {
+		if(env.CHANGE_ID) {
+			println("checkPrHead - prHead:" + prHead)
+    println("checkPrHead - prHead2:" + pullRequest.head)
+    if (prHead == null) {
+      prHead = pullRequest.head;
+    } else {
+      if(prHead != pullRequest.head) {
+        throw new RuntimeException("new changes on PR; failing build")
+      }
+    }
 
-def prHead = null;
+		}
+	}
+}
+
+//def prHead = null;
 def checkPrHead() {
-  if(env.CHANGE_ID) {
+
+	PrHeadChecker.check()
+/*  if(env.CHANGE_ID) {
     println("checkPrHead - prHead:" + prHead)
     println("checkPrHead - prHead2:" + pullRequest.head)
     if (prHead == null) {
@@ -13,7 +32,7 @@ def checkPrHead() {
         throw new RuntimeException("new changes on PR; failing build")
       }
     }
-  }
+  }*/
 }
 
 checkPrHead()
