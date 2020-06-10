@@ -22,7 +22,11 @@ def getFlakyTestCommand() {
   if(env.CHANGE_ID) {
     for( comment in pullRequest.comments) {
       if(comment.body.trim().startsWith("/flakycheck") ) {
-	return comment.body.substring(11)
+	def cmd=comment.body.substring(11)
+	if(!cmd  ==~ /^[\s\d _\-]+$/ {
+          error("invalid flakycheck cmd")
+	}
+        return cmd
       }
     }
   }
