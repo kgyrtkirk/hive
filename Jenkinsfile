@@ -22,7 +22,7 @@ def getFlakyTestCommand() {
   if(env.CHANGE_ID) {
     for( comment in pullRequest.comments) {
       if(comment.body.trim().startsWith("/flakycheck") ) {
-	return comment.body
+	return comment.body.substring(11)
       }
     }
   }
