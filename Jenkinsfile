@@ -1,6 +1,6 @@
 
 
-def prHead = null;
+this.prHead = null;
 def checkPrHead() {
   if(env.CHANGE_ID) {
     println("checkPrHead - prHead:" + prHead)
