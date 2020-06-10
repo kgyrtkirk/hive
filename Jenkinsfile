@@ -1,6 +1,7 @@
 
 
 
+
 def checkPrHead() {
   if(env.CHANGE_ID) {
     static prHead = null;
