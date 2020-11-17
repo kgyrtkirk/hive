@@ -622,7 +622,7 @@ public class Driver implements IDriver {
 
       ASTNode tree;
       try {
-        tree = ParseUtils.parse(command, ctx, conf);
+        tree = ParseUtils.parse(command, ctx);
       } catch (ParseException e) {
         parseError = true;
         throw e;

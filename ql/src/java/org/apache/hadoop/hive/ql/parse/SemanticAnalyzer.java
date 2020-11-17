@@ -2568,7 +2568,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewFullyQualifiedName = tab.getCompleteName();
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
-      viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName(), conf);
+      viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
       if (!unparseTranslator.isEnabled() &&
           (viewMask.isEnabled() && analyzeRewrite == null)) {
         viewTree = rewriteASTWithMaskAndFilter(viewMask, viewTree,
@@ -12180,8 +12180,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode rewrittenTree;
       // Parse the rewritten query string
       // check if we need to ctx.setCmd(rewrittenQuery);
+      ParseDriver pd = new ParseDriver();
       try {
-        rewrittenTree = ParseUtils.parse(rewrittenQuery, conf);
+        rewrittenTree = ParseUtils.parse(rewrittenQuery);
       } catch (ParseException e) {
         throw new SemanticException(e);
       }
@@ -15006,7 +15007,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String rewriteStreamName = "__qualified_query_string__";
     ASTNode astNode;
     try {
-      astNode = ParseUtils.parse(queryString, ctx, rewriteStreamName, conf);
+      astNode = ParseUtils.parse(queryString, ctx, rewriteStreamName);
       TokenRewriteStream tokenRewriteStream = ctx.getViewTokenRewriteStream(rewriteStreamName);
       String fullyQualifiedQuery = rewriteQueryWithQualifiedNames(astNode, tokenRewriteStream);
       return fullyQualifiedQuery;

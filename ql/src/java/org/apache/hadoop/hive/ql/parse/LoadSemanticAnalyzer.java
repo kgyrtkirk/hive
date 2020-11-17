@@ -546,7 +546,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     ASTNode rewrittenTree;
     try {
       LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr.toString() + ">");
-      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx, conf);
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.LOAD_DATA_LAUNCH_JOB_PARSE_ERROR.getMsg(), e);
     }

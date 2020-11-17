@@ -315,7 +315,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     ctx.setHDFSCleanup(true);
 
     try {
-      return ParseUtils.parse(rewrittenQuery, ctx, conf);
+      return ParseUtils.parse(rewrittenQuery, ctx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_PARSE_ERROR.getMsg());
     }
