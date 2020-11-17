@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork2;
@@ -44,11 +45,11 @@ public class AuthorizationTestUtil {
   }
 
   public static DDLWork2 analyze(String command, QueryState queryState, Hive db) throws Exception {
-    return analyze(parse(command), queryState, db);
+    return analyze(parse(command, queryState.getConf()), queryState, db);
   }
 
-  private static ASTNode parse(String command) throws Exception {
-    return ParseUtils.parse(command);
+  private static ASTNode parse(String command, HiveConf conf) throws Exception {
+    return ParseUtils.parse(command, conf);
   }
 
   /**

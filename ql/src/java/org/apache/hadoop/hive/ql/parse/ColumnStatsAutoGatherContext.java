@@ -172,12 +172,12 @@ public class ColumnStatsAutoGatherContext {
 
       // The analyze statement has already been rewritten, we just need to create the AST
       // and the corresponding semantic analyzer
-      ast = ParseUtils.parse(command, ctx);
+      ast = ParseUtils.parse(command, ctx, conf);
       BaseSemanticAnalyzer baseSem = SemanticAnalyzerFactory.get(queryState, ast);
       sem = (SemanticAnalyzer) baseSem;
     } else {
       // We need to rewrite the analyze command and get the rewritten AST
-      ASTNode analyzeTree = ParseUtils.parse(command, ctx);
+      ASTNode analyzeTree = ParseUtils.parse(command, ctx, conf);
       BaseSemanticAnalyzer baseSem = SemanticAnalyzerFactory.get(queryState, analyzeTree);
       ColumnStatsSemanticAnalyzer colSem = (ColumnStatsSemanticAnalyzer) baseSem;
       ast = colSem.rewriteAST(analyzeTree, this);

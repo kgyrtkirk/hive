@@ -1,0 +1,44 @@
+PREHOOK: query: CREATE TABLE t (a1 INT, a2 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (a1 INT, a2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: SELECT `(a1)?+.+` FROM t
+UNION
+SELECT `(a2)?+.+` FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT `(a1)?+.+` FROM t
+UNION
+SELECT `(a2)?+.+` FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+PREHOOK: query: SELECT `(a1)?+.+` FROM t
+UNION DISTINCT
+SELECT `(a2)?+.+` FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT `(a1)?+.+` FROM t
+UNION DISTINCT
+SELECT `(a2)?+.+` FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+PREHOOK: query: SELECT `(a1)?+.+` FROM t
+UNION ALL
+SELECT `(a2)?+.+` FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT `(a1)?+.+` FROM t
+UNION ALL
+SELECT `(a2)?+.+` FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
