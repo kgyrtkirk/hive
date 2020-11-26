@@ -1,0 +1,36 @@
+PREHOOK: query: CREATE TABLE source_tbl(col_001 INT, col_002 INT, col_003 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source_tbl
+POSTHOOK: query: CREATE TABLE source_tbl(col_001 INT, col_002 INT, col_003 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source_tbl
+PREHOOK: query: CREATE TABLE target_tbl(col_001 INT, col_002 INT, col_003 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_tbl
+POSTHOOK: query: CREATE TABLE target_tbl(col_001 INT, col_002 INT, col_003 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_tbl
+PREHOOK: query: INSERT INTO target_tbl SELECT v1.col_001, v1.col_002, v1.col_003 FROM (SELECT col_001, col_002, col_003, ROW_NUMBER() OVER() AS r_num FROM source_tbl) v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_tbl
+PREHOOK: Output: default@target_tbl
+POSTHOOK: query: INSERT INTO target_tbl SELECT v1.col_001, v1.col_002, v1.col_003 FROM (SELECT col_001, col_002, col_003, ROW_NUMBER() OVER() AS r_num FROM source_tbl) v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_tbl
+POSTHOOK: Output: default@target_tbl
+POSTHOOK: Lineage: target_tbl.col_001 SIMPLE [(source_tbl)source_tbl.FieldSchema(name:col_001, type:int, comment:null), ]
+POSTHOOK: Lineage: target_tbl.col_002 SIMPLE [(source_tbl)source_tbl.FieldSchema(name:col_002, type:int, comment:null), ]
+POSTHOOK: Lineage: target_tbl.col_003 SIMPLE [(source_tbl)source_tbl.FieldSchema(name:col_003, type:int, comment:null), ]
+PREHOOK: query: select '^^^expectation of this test is to not see unrelated columns (like col_002 as a lineatge dependency for col_001)'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '^^^expectation of this test is to not see unrelated columns (like col_002 as a lineatge dependency for col_001)'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+^^^expectation of this test is to not see unrelated columns (like col_002 as a lineatge dependency for col_001)
