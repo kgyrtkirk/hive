@@ -1,4 +1,3 @@
---! qt:disabled:multi insert is falky
 --! qt:dataset:src
 -- SORT_QUERY_RESULTS
 set hive.stats.column.autogather=false;
