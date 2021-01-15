@@ -1104,7 +1104,7 @@ public class ExprNodeDescUtils {
     return false;
   }
 
-  private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+  public static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
     if (isAnd(expr)) {
       for (ExprNodeDesc c : expr.getChildren()) {
         conjunctiveDecomposition(c, operands);

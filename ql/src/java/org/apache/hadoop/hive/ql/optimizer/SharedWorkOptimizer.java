@@ -70,8 +70,11 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -763,9 +766,85 @@ public class SharedWorkOptimizer extends Transform {
           optimizerCache.removeOp(cJ);
           j--;
           downStreamMerge(cI, optimizerCache, pctx);
+        } else {
+
+          analyze(cI, cJ);
         }
       }
     }
+  }
+
+  static class DecomposedExpression {
+
+    private ExprNodeDesc expr;
+    private Set<ExprNodeDesc> con;
+    private Set<ExprNodeDesc> dis;
+
+    public DecomposedExpression(ExprNodeDesc e) {
+      this.expr = e;
+      List<ExprNodeDesc> con0 = new ArrayList<>();
+      List<ExprNodeDesc> dis0 = new ArrayList<>();
+      ExprNodeDescUtils.conjunctiveDecomposition(e, con0);
+      ExprNodeDescUtils.disjunctiveDecomposition(e, dis0);
+      con = new HashSet<ExprNodeDesc>(con0);
+      dis = new HashSet<ExprNodeDesc>(dis0);
+
+    }
+
+    private DecomposedExpression(Set<ExprNodeDesc> con, Set<ExprNodeDesc> dis) {
+      this.con = con;
+      this.dis = dis;
+    }
+
+    public DecomposedExpression symDiff(DecomposedExpression dJ) {
+      return new DecomposedExpression(Sets.symmetricDifference(con, dJ.con), Sets.symmetricDifference(dis, dJ.dis));
+    }
+
+  }
+
+  private static void analyze(Operator<?> cI, Operator<?> cJ) {
+    if (cI instanceof FilterOperator && cJ instanceof FilterOperator) {
+      FilterOperator fI = (FilterOperator) cI;
+      FilterOperator fJ = (FilterOperator) cJ;
+      DecomposedExpression dI = new DecomposedExpression(fI.getConf().getPredicate());
+      DecomposedExpression dJ = new DecomposedExpression(fJ.getConf().getPredicate());
+
+      DecomposedExpression isect = dI.symDiff(dJ);
+
+      if (onlyIsNull(isect.con, isect.dis)) {
+
+      }
+
+    }
+
+  }
+
+  private static boolean onlyIsNull(Set<ExprNodeDesc> con, Set<ExprNodeDesc> dis) {
+    return (con.isEmpty() && onlyIsnull(dis)) || (dis.isEmpty() && onlyIsnull(con));
+
+  }
+
+  private static boolean onlyIsnull(Set<ExprNodeDesc> dis) {
+    if (dis.isEmpty()) {
+      return false;
+    }
+    for (ExprNodeDesc exprNodeDesc : dis) {
+      if (!isNullFn(exprNodeDesc)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean isNullFn(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      GenericUDF genericUDF = exprNodeGenericFuncDesc.getGenericUDF();
+      return (genericUDF instanceof GenericUDFOPNull)
+          || (genericUDF instanceof GenericUDFOPNotNull);
+    }
+    return false;
+
   }
 
   private static void adoptChildren(Operator<?> target, Operator<?> donor) {
