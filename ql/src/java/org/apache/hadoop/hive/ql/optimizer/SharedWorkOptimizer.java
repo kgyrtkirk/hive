@@ -1337,9 +1337,9 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean areSupportedDppUnionOps(ParseContext pctx, SharedWorkOptimizerCache cache, TableScanOperator tsOp1,
       TableScanOperator tsOp2) {
     Collection<Operator<?>> dppOps = cache.tableScanToDPPSource.get(tsOp1);
-    if (dppOps.isEmpty()) {
+    /*    if (dppOps.isEmpty()) {
       return false;
-    }
+    }*/
     for (Operator<?> op : dppOps) {
       if (op instanceof ReduceSinkOperator) {
         ReduceSinkOperator semijoinRSOp = (ReduceSinkOperator) op;
